@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SHITBOT CORAL | LOJA</title>
+    <link rel="icon" href="img/sclogo.png" type="image/png">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        brand: {
+                            black: '#0a0a0a',
+                            red: '#dc2626',
+                            gray: '#f4f4f5',
+                            darkgray: '#27272a'
+                        }
+                    },
+                    animation: {
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'fade-in': 'fadeIn 0.3s ease-out forwards',
+                        'toast': 'toastSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+                        'error-pulse': 'errorPulse 0.5s ease-in-out 2'
+                    },
+                    keyframes: {
+                        slideUp: {
+                            '0%': { transform: 'translateY(20px)', opacity: '0' },
+                            '100%': { transform: 'translateY(0)', opacity: '1' },
+                        },
+                        fadeIn: {
+                            '0%': { opacity: '0' },
+                            '100%': { opacity: '1' },
+                        },
+                        toastSlide: {
+                            '0%': { transform: 'translate(-50%, 100%)', opacity: '0' },
+                            '100%': { transform: 'translate(-50%, 0)', opacity: '1' },
+                        },
+                        errorPulse: {
+                            '0%, 100%': { transform: 'scale(1)', backgroundColor: '#fef2f2', borderColor: '#dc2626' },
+                            '50%': { transform: 'scale(1.02)', backgroundColor: '#fee2e2', borderColor: '#b91c1c' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #111;
+            background-image: url('img/BG.png');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Ocultar barra de rolagem */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Input file escondido e customizado */
+        input[type=file]::file-selector-button { display: none; }
+
+        /* Estilo para tamanho esgotado */
+        .esgotado {
+            background: linear-gradient(to top right, transparent calc(50% - 1px), #a1a1aa calc(50% - 1px), #a1a1aa calc(50% + 1px), transparent calc(50% + 1px)) !important;
+            color: #a1a1aa !important;
+            opacity: 0.6;
+            pointer-events: none;
+            border-color: #e4e4e7 !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans antialiased text-brand-black">
+
+    <div class="bg-white w-full max-w-[414px] h-[90vh] max-h-[896px] rounded-[32px] shadow-2xl relative overflow-hidden flex flex-col">
+        
+        <div id="loading-screen" class="absolute inset-0 bg-white z-[100] flex flex-col items-center justify-center text-brand-black transition-opacity duration-500">
+            <svg class="animate-spin h-10 w-10 text-brand-red mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <p class="font-bold text-sm tracking-widest uppercase animate-pulse">PREPARANDO LOJA...</p>
+        </div>
+
+        <div id="screen-1" class="h-full flex flex-col animate-slide-up overflow-y-auto no-scrollbar relative">
+            
+            <header class="pt-8 pb-4 px-6 flex justify-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
+                <img src="img/logo.png" alt="Shitbot Logo" class="h-8 object-contain" onerror="this.src='https://placehold.co/120x40/0a0a0a/FFFFFF?text=SHITBOT'">
+            </header>
+
+            <main class="flex-1 pb-8">
+                <div class="px-6 flex gap-3 mb-6">
+                    <div class="flex-1 bg-brand-gray rounded-2xl overflow-hidden aspect-[3/4] relative">
+                        <img id="main-img" src="img/1.png" alt="Camisa" class="w-full h-full object-cover transition-opacity duration-300" onerror="this.src='https://placehold.co/300x400/f4f4f5/a1a1aa?text=Camisa+1'">
+                    </div>
+                    <div class="w-16 flex flex-col gap-3">
+                        <button onclick="changeImage(this, 'img/1.png')" class="thumb-btn w-full aspect-square rounded-xl overflow-hidden border-2 border-brand-black opacity-100 transition-all">
+                            <img src="img/1.png" class="w-full h-full object-cover bg-brand-gray" onerror="this.src='https://placehold.co/100x100/f4f4f5/a1a1aa?text=1'">
+                        </button>
+                        <button onclick="changeImage(this, 'img/2.png')" class="thumb-btn w-full aspect-square rounded-xl overflow-hidden border-2 border-transparent opacity-50 hover:opacity-100 transition-all">
+                            <img src="img/2.png" class="w-full h-full object-cover bg-brand-gray" onerror="this.src='https://placehold.co/100x100/f4f4f5/a1a1aa?text=2'">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="px-6 mb-8">
+                    <p class="text-brand-red text-4xl font-black tracking-tight mb-2">R$ 99,90</p>
+                    <h1 class="text-2xl font-bold uppercase tracking-wide text-brand-darkgray">Camisa Shitbot</h1>
+                </div>
+
+                <div class="px-6 mb-8">
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Escolha o Tamanho</p>
+                    <div class="grid grid-cols-3 gap-3" id="size-container">
+                        <button onclick="selectSize('P', this)" data-size="P" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">P</button>
+                        <button onclick="selectSize('M', this)" data-size="M" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">M</button>
+                        <button onclick="selectSize('G', this)" data-size="G" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">G</button>
+                        <button onclick="selectSize('GG', this)" data-size="GG" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">GG</button>
+                        <button onclick="selectSize('XG', this)" data-size="XG" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">XG</button>
+                        <button onclick="selectSize('XXG', this)" data-size="XXG" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">XXG</button>
+                    </div>
+                </div>
+
+                <div class="px-6">
+                    <button onclick="addToCart()" class="w-full bg-brand-black text-white font-bold text-lg py-4 rounded-2xl shadow-lg shadow-black/20 active:scale-[0.98] transition-all">
+                        Adicionar ao Carrinho
+                    </button>
+                </div>
+
+                <div id="mini-cart" class="hidden mt-8 px-6 animate-fade-in">
+                    <div class="bg-brand-gray border border-gray-100 rounded-[24px] p-5 shadow-sm">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg text-brand-darkgray">🛒 Seu Carrinho</h3>
+                            <span id="cart-count" class="bg-brand-black text-white text-xs font-bold px-2.5 py-1 rounded-full">0</span>
+                        </div>
+                        <div id="cart-items" class="max-h-40 overflow-y-auto no-scrollbar flex flex-col gap-2 mb-4">
+                            </div>
+                        <div class="flex justify-between items-center mb-4 pt-4 border-t border-gray-200">
+                            <span class="font-bold text-gray-500">Total</span>
+                            <span id="cart-total" class="font-black text-xl text-brand-black">R$ 0,00</span>
+                        </div>
+                        <button onclick="navTo(2)" class="w-full bg-brand-red text-white font-bold text-lg py-4 rounded-xl shadow-lg shadow-red-500/20 active:scale-[0.98] transition-all">
+                            Finalizar Compra
+                        </button>
+                    </div>
+                </div>
+            </main>
+        </div>
+
+        <div id="screen-2" class="hidden h-full flex-col bg-white overflow-y-auto no-scrollbar absolute top-0 left-0 w-full z-30">
+            <header class="pt-8 pb-4 px-6 flex items-center sticky top-0 bg-white/90 backdrop-blur-md z-10 border-b border-gray-50">
+                <button onclick="navTo(1)" class="w-10 h-10 flex items-center justify-center rounded-full bg-brand-gray text-gray-600 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="flex-1 text-center font-bold text-lg pr-10">Dados e Entrega</h2>
+            </header>
+
+            <div class="p-6 flex-1">
+                <div class="space-y-4 mb-8">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Nome Completo</label>
+                        <input type="text" id="nome" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="João da Silva">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">WhatsApp</label>
+                        <input type="tel" id="zap" oninput="maskPhone(this)" maxlength="15" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="(00) 90000-0000">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">CEP</label>
+                        <input type="tel" id="cep" oninput="maskCEP(this)" maxlength="9" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="00000-000">
+                        <button onclick="showManualAddress()" class="text-sm font-semibold text-gray-400 mt-2 pl-1 underline active:text-brand-black">Não sei meu CEP</button>
+                    </div>
+
+                    <div id="address-fields" class="hidden space-y-4 animate-fade-in pt-2">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Rua / Logradouro</label>
+                            <input type="text" id="rua" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Nome da rua">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Bairro</label>
+                                <input type="text" id="bairro" onblur="recalcFreight()" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Bairro">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Número</label>
+                                <input type="tel" id="numero" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="123">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Cidade</label>
+                                <input type="text" id="cidade" onblur="recalcFreight()" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Cidade">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">UF</label>
+                                <input type="text" id="estado" onblur="recalcFreight()" maxlength="2" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium uppercase" placeholder="PE">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Complemento (Opcional)</label>
+                            <input type="text" id="complemento" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Apt, Bloco, etc">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="border-t border-gray-100 pt-6 mb-6">
+                    <h3 class="font-bold text-lg mb-4">Método de Entrega</h3>
+                    <div class="flex flex-col gap-3">
+                        
+                        <div onclick="setDelivery('loja')" id="opt-loja" class="delivery-card border-2 border-brand-gray bg-brand-gray rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all">
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center min-w-[20px]">
+                                <div class="w-2.5 h-2.5 bg-brand-black rounded-full radio-inner scale-0 transition-transform"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <span class="font-bold text-sm">Entrega Padrão</span>
+                                    <span id="label-frete" class="font-black text-sm text-brand-black">A calcular</span>
+                                </div>
+                                <p class="text-xs text-gray-500 font-medium">Até 3 dias úteis. Taxa fixa.</p>
+                            </div>
+                        </div>
+
+                        <div onclick="setDelivery('retirada')" id="opt-retirada" class="delivery-card border-2 border-brand-gray bg-brand-gray rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all">
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center min-w-[20px]">
+                                <div class="w-2.5 h-2.5 bg-brand-black rounded-full radio-inner scale-0 transition-transform"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <span class="font-bold text-sm">Retirada</span>
+                                    <span class="font-black text-sm text-green-600">Grátis</span>
+                                </div>
+                                <p class="text-xs text-gray-500 font-medium">Pina ou Candeias.</p>
+                            </div>
+                        </div>
+
+                        <div onclick="setDelivery('app')" id="opt-app" class="delivery-card border-2 border-brand-gray bg-brand-gray rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all">
+                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center min-w-[20px]">
+                                <div class="w-2.5 h-2.5 bg-brand-black rounded-full radio-inner scale-0 transition-transform"></div>
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-center mb-0.5">
+                                    <span class="font-bold text-sm">Pronta Entrega (App)</span>
+                                    <span class="font-black text-sm text-brand-black">A Cobrar</span>
+                                </div>
+                                <p class="text-xs text-gray-500 font-medium">UberFlash ou 99 Entrega. Tu que paga.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <button onclick="validateDataAndProceed()" class="w-full bg-brand-black text-white font-bold text-lg py-4 rounded-2xl active:scale-[0.98] transition-all mb-4">
+                    Continuar para Pagamento
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-3" class="hidden h-full flex-col bg-white overflow-y-auto no-scrollbar absolute top-0 left-0 w-full z-40">
+            <header class="pt-8 pb-4 px-6 flex items-center sticky top-0 bg-white/90 backdrop-blur-md z-10 border-b border-gray-50">
+                <button onclick="navTo(2)" class="w-10 h-10 flex items-center justify-center rounded-full bg-brand-gray text-gray-600 active:scale-95 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="flex-1 text-center font-bold text-lg pr-10">Pagamento</h2>
+            </header>
+
+            <div class="p-6 flex-1">
+                <div class="bg-brand-gray rounded-2xl p-5 mb-6">
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-2">
+                        <span id="resumo-itens">2 itens</span>
+                        <span id="resumo-subtotal">R$ 199,80</span>
+                    </div>
+                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-4 pb-4 border-b border-gray-200">
+                        <span>Frete</span>
+                        <span id="resumo-frete">R$ 15,00</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="font-bold">Total a Pagar</span>
+                        <span id="resumo-total" class="text-2xl font-black text-brand-black">R$ 214,80</span>
+                    </div>
+                </div>
+
+                <div class="flex bg-brand-gray p-1 rounded-xl mb-6">
+                    <button onclick="setPayment('pix')" id="tab-pix" class="flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-brand-black shadow-sm transition-all">PIX</button>
+                    <button onclick="setPayment('card')" id="tab-card" class="flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-500 transition-all">CARTÃO</button>
+                </div>
+
+                <div id="content-pix" class="animate-fade-in">
+                    <div class="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center mb-6 bg-gray-50">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Copie o Código PIX</p>
+                        <p id="pix-code" class="bg-white border border-gray-200 rounded-lg p-3 text-[10px] break-all font-mono text-gray-600 mb-4 h-16 overflow-hidden relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-6 after:bg-gradient-to-t after:from-white after:to-transparent">
+                            Gerando código PIX...
+                        </p>
+                        <button onclick="copyToClipboard('pix-code', this)" class="w-full bg-white border-2 border-brand-black text-brand-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-gray-100 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Copiar Código
+                        </button>
+                    </div>
+                </div>
+
+                <div id="content-card" class="hidden animate-fade-in">
+                    <div class="border-2 border-dashed border-[#009EE3] rounded-2xl p-5 text-center mb-6 bg-blue-50/50">
+                        <p class="text-xs font-bold text-[#009EE3] uppercase tracking-wider mb-3">Pague com Cartão ou Saldo</p>
+                        <p id="card-link" class="bg-white border border-blue-200 rounded-lg p-3 text-xs break-all font-mono text-brand-black mb-4 font-bold">
+                            https://link.mercadopago.com.br/shitbotcoral
+                        </p>
+                        <button onclick="copyToClipboard('card-link', this); setTimeout(() => window.open('https://link.mercadopago.com.br/shitbotcoral', '_blank'), 500);" class="w-full bg-[#009EE3] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-500/30">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                            Abrir Mercado Pago
+                        </button>
+                    </div>
+                    
+                    <div class="bg-brand-black rounded-xl p-4 text-center mb-4 shadow-lg">
+                        <p class="text-sm text-gray-300 font-medium mb-1">⚠️ Ao abrir o link, digite o valor exato de:</p>
+                        <p id="valor-mp" class="text-2xl font-black text-white">R$ 0,00</p>
+                    </div>
+                    
+                    <p class="text-xs text-gray-500 text-center px-2 font-medium mb-4">⚠️ <strong class="text-brand-red">Atenção:</strong> O envio da camisa só será realizado após a compensação do valor no Mercado Pago (pode levar até 7 dias).</p>
+                </div>
+
+                <div class="border-t border-gray-100 pt-6 mb-2">
+                    <p class="text-sm font-bold text-center text-gray-600 mb-3">Anexe o Comprovante de Pagamento <span class="text-brand-red">*</span></p>
+                    <label class="relative flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-gray-300 rounded-2xl cursor-pointer bg-brand-gray hover:bg-gray-200 transition-colors" id="upload-label">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-content">
+                            <svg class="w-6 h-6 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <p class="text-xs font-semibold text-gray-500">Toque para selecionar imagem ou PDF</p>
+                        </div>
+                        <input type="file" id="comprovante" class="hidden" accept="image/*,.pdf" onchange="handleFileUpload(this)">
+                    </label>
+                </div>
+            </div>
+
+            <div class="p-6 pt-0">
+                <button id="btn-finalizar" onclick="finishOrder()" class="w-full bg-brand-red text-white font-bold text-lg py-4 rounded-2xl active:scale-[0.98] transition-all">
+                    Finalizar Pedido
+                </button>
+            </div>
+        </div>
+
+        <div id="screen-4" class="hidden h-full flex-col items-center justify-center bg-white absolute top-0 left-0 w-full z-50 p-6 text-center animate-slide-up">
+            <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-600 shadow-inner">
+                <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            
+            <h2 class="text-3xl font-black text-brand-black mb-3">Pedido Confirmado! 🎉</h2>
+            <p class="text-gray-500 font-medium mb-8 leading-relaxed">
+                Tudo certo com a sua compra! <strong>Em breve iremos entrar em contato com você pelo WhatsApp</strong> para alinhar os detalhes da entrega.
+            </p>
+            
+            <div class="bg-brand-gray w-full rounded-2xl p-6 mb-8 border-2 border-gray-100 border-dashed">
+                <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">Número do Pedido</p>
+                <p id="order-number" class="text-4xl font-black text-brand-red">#0000</p>
+            </div>
+        </div>
+
+        <a href="https://wa.me/5581994465372?text=Ol%C3%A1%2C%20estou%20no%20site%20da%20Shitbot%20e%20preciso%20de%20suporte." target="_blank" class="absolute bottom-6 right-6 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 z-[60] active:scale-95 transition-all animate-slide-up">
+            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"></path></svg>
+        </a>
+
+        <div id="toast-container" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-max max-w-[90%] pointer-events-none"></div>
+
+    </div>
+
+    <script>
+        // --- URL DO APP SCRIPT AQUI ---
+        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrK3AeX99G44aU-kfkRZLJCDWM_LpTHxQMOctLJ25dUYKorcLvSGjCnpBOM4CiD8Zdrw/exec";
+
+        // --- CONFIGURAÇÃO DO PIX ---
+        const PIX_CHAVE = "d071f949-a0bb-432e-8ad6-d3659cdb3da8"; 
+        const PIX_NOME = "Gabriel Da Silva Marques";
+        const PIX_CIDADE = "Sao Paulo";
+
+        // --- ESTADO GLOBAL ---
+        const PRECO = 99.90;
+        const state = {
+            cart: [],
+            size: null,
+            deliveryType: null,
+            freightValue: 0,
+            paymentType: 'pix',
+            user: {},
+            comprovanteBase64: null,
+            comprovanteMime: null,
+            comprovanteName: null,
+            estoque: {} 
+        };
+
+        window.onload = () => {
+            fetchStock();
+        };
+
+        // --- SISTEMA DE ESTOQUE ---
+        async function fetchStock(silent = false) {
+            try {
+                const res = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: "getStock" })
+                });
+                const data = await res.json();
+                
+                if(data.status === "sucesso") {
+                    state.estoque = data.estoque;
+                    updateSizeButtons();
+                }
+            } catch(e) {
+                console.error("Erro ao puxar estoque", e);
+                if(!silent) toast('Erro ao conectar com o estoque.');
+            } finally {
+                const loader = document.getElementById('loading-screen');
+                if(loader) {
+                    loader.style.opacity = '0';
+                    setTimeout(() => loader.classList.add('hidden'), 500);
+                }
+            }
+        }
+
+        function updateSizeButtons() {
+            const buttons = document.querySelectorAll('.size-btn');
+            buttons.forEach(btn => {
+                const size = btn.dataset.size;
+                const inCart = state.cart.filter(i => i.size === size).length;
+                const available = (state.estoque[size] || 0) - inCart;
+
+                if (available <= 0) {
+                    btn.classList.add('esgotado', 'bg-brand-gray', 'text-gray-400');
+                    btn.classList.remove('bg-brand-black', 'text-white');
+                    if(state.size === size) state.size = null;
+                } else {
+                    btn.classList.remove('esgotado');
+                    if(state.size !== size) {
+                        btn.classList.add('bg-brand-gray', 'text-gray-400');
+                        btn.classList.remove('bg-brand-black', 'text-white');
+                    }
+                }
+            });
+        }
+
+        // --- SISTEMA DE TOAST ---
+        function toast(msg, type = 'error') {
+            const container = document.getElementById('toast-container');
+            const el = document.createElement('div');
+            const bgColor = type === 'error' ? 'bg-brand-black' : 'bg-green-600';
+            el.className = `${bgColor} text-white px-5 py-3 rounded-full text-sm font-bold shadow-xl animate-toast`;
+            el.innerText = msg;
+            container.appendChild(el);
+            setTimeout(() => {
+                el.style.opacity = '0';
+                el.style.transform = 'translate(-50%, 20px)';
+                el.style.transition = 'all 0.3s ease';
+                setTimeout(() => el.remove(), 300);
+            }, 3000);
+        }
+
+        async function navTo(screen) {
+            if(screen === 2) {
+                if(state.cart.length === 0) return toast('O carrinho está vazio!');
+                
+                fetchStock(true).then(() => {
+                    let invalid = false;
+                    state.cart.forEach(item => {
+                        const inCart = state.cart.filter(i => i.size === item.size).length;
+                        if((state.estoque[item.size] || 0) < inCart) invalid = true;
+                    });
+                    if(invalid) {
+                        navTo(1);
+                        toast('Eita! Algum tamanho do seu carrinho esgotou agora. Verifique os botões.');
+                    }
+                });
+            }
+            
+            document.querySelectorAll('[id^="screen-"]').forEach(s => {
+                s.classList.add('hidden');
+                s.classList.remove('flex');
+            });
+            
+            const target = document.getElementById(`screen-${screen}`);
+            target.classList.remove('hidden');
+            target.classList.add('flex');
+            target.scrollTop = 0; 
+            
+            if(screen === 3) updateSummary();
+        }
+
+        function changeImage(btn, src) {
+            const main = document.getElementById('main-img');
+            main.style.opacity = '0';
+            setTimeout(() => {
+                main.src = src;
+                main.style.opacity = '1';
+            }, 150);
+
+            document.querySelectorAll('.thumb-btn').forEach(b => {
+                b.classList.remove('border-brand-black', 'opacity-100');
+                b.classList.add('border-transparent', 'opacity-50');
+            });
+            btn.classList.add('border-brand-black', 'opacity-100');
+            btn.classList.remove('border-transparent', 'opacity-50');
+        }
+
+        function selectSize(size, btn) {
+            if(btn.classList.contains('esgotado')) return; 
+            
+            state.size = size;
+            updateSizeButtons(); 
+            
+            btn.classList.remove('bg-brand-gray', 'text-gray-400');
+            btn.classList.add('bg-brand-black', 'text-white');
+        }
+
+        function addToCart() {
+            if(!state.size) return toast('Selecione um tamanho!');
+            
+            const inCart = state.cart.filter(i => i.size === state.size).length;
+            const available = state.estoque[state.size] || 0;
+            
+            if(inCart >= available) return toast('Estoque limite atingido para este tamanho!');
+
+            state.cart.push({ nome: 'Camisa Shitbot', size: state.size, price: PRECO });
+            state.size = null;
+            
+            updateSizeButtons();
+            renderCart();
+            toast('Adicionado ao carrinho!', 'success');
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-items');
+            const miniCart = document.getElementById('mini-cart');
+            list.innerHTML = '';
+            
+            let total = 0;
+            state.cart.forEach((item, index) => {
+                total += item.price;
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border border-gray-100">
+                        <div>
+                            <p class="font-bold text-sm text-brand-black">${item.nome} [${item.size}]</p>
+                            <p class="text-xs text-gray-500 font-medium">${formatMoney(item.price)}</p>
+                        </div>
+                        <button onclick="removeFromCart(${index})" class="text-brand-red font-bold px-2 py-1 active:scale-90 transition-transform">✕</button>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cart-count').innerText = state.cart.length;
+            document.getElementById('cart-total').innerText = formatMoney(total);
+            
+            if(state.cart.length > 0) {
+                if(miniCart.classList.contains('hidden')) {
+                    miniCart.classList.remove('hidden');
+                    setTimeout(() => miniCart.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+                }
+            } else {
+                miniCart.classList.add('hidden');
+            }
+        }
+
+        function removeFromCart(index) {
+            state.cart.splice(index, 1);
+            updateSizeButtons(); 
+            renderCart();
+        }
+
+        function maskPhone(input) {
+            let v = input.value.replace(/\D/g, '');
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d)(\d{4})$/, '$1-$2');
+            input.value = v.substring(0, 15);
+        }
+
+        function maskCEP(input) {
+            let v = input.value.replace(/\D/g, '');
+            if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+            input.value = v.substring(0, 9);
+            
+            if (v.replace(/\D/g, '').length === 8) fetchCEP(v.replace(/\D/g, ''));
+        }
+
+        async function fetchCEP(cep) {
+            toast('Buscando endereço...', 'success');
+            try {
+                const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+                const data = await res.json();
+                
+                if(!data.erro) {
+                    document.getElementById('rua').value = data.logradouro || '';
+                    document.getElementById('bairro').value = data.bairro || '';
+                    document.getElementById('cidade').value = data.localidade || '';
+                    document.getElementById('estado').value = data.uf || '';
+                    
+                    showManualAddress();
+                    recalcFreight();
+                    document.getElementById('numero').focus();
+                } else {
+                    showManualAddress();
+                    toast('CEP não encontrado. Digite manualmente.');
+                }
+            } catch(e) {
+                showManualAddress();
+                toast('Erro na busca. Digite manualmente.');
+            }
+        }
+
+        function showManualAddress() {
+            document.getElementById('address-fields').classList.remove('hidden');
+        }
+
+        function recalcFreight() {
+            const cidadeRaw = document.getElementById('cidade').value || '';
+            const bairroRaw = document.getElementById('bairro').value || '';
+            
+            const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            
+            const cidade = normalize(cidadeRaw);
+            const bairro = normalize(bairroRaw);
+
+            let valor = null;
+
+            if (cidade === 'jaboatao dos guararapes' || cidade === 'jaboatao' || cidade === 'recife') {
+                if (bairro === 'candeias' || bairro === 'piedade') {
+                    valor = 5.00;
+                } else {
+                    valor = 15.00;
+                }
+            } else if (['olinda', 'camaragibe', 'paulista', 'cabo de santo agostinho', 'cabo'].includes(cidade)) {
+                valor = 25.00;
+            }
+
+            const label = document.getElementById('label-frete');
+            const optLoja = document.getElementById('opt-loja');
+
+            if (cidade === '') {
+                label.innerText = 'A calcular';
+                label.classList.replace('text-brand-red', 'text-brand-black');
+                optLoja.style.opacity = '1';
+            } else if (valor !== null) {
+                state.freightValue = valor;
+                label.innerText = formatMoney(valor);
+                label.classList.replace('text-brand-red', 'text-brand-black');
+                optLoja.style.opacity = '1';
+            } else {
+                state.freightValue = 0;
+                label.innerText = 'Indisponível';
+                label.classList.replace('text-brand-black', 'text-brand-red');
+                if (state.deliveryType === 'loja') setDelivery(null);
+                optLoja.style.opacity = '0.5';
+            }
+        }
+
+        function setDelivery(type) {
+            if (type === 'loja') {
+                const label = document.getElementById('label-frete').innerText;
+                if (label === 'Indisponível') return toast('Entrega padrão não atende esta cidade.');
+                if (label === 'A calcular') return toast('Preencha o CEP ou endereço primeiro.');
+            }
+
+            state.deliveryType = type;
+            
+            document.querySelectorAll('.delivery-card').forEach(c => {
+                c.classList.remove('border-brand-black', 'bg-white');
+                c.classList.add('border-brand-gray', 'bg-brand-gray');
+                c.querySelector('.radio-inner').classList.replace('scale-100', 'scale-0');
+            });
+            
+            if (type) {
+                const target = document.getElementById(`opt-${type}`);
+                target.classList.remove('border-brand-gray', 'bg-brand-gray');
+                target.classList.add('border-brand-black', 'bg-white');
+                target.querySelector('.radio-inner').classList.replace('scale-0', 'scale-100');
+            }
+        }
+
+        function validateDataAndProceed() {
+            const nome = document.getElementById('nome').value.trim();
+            const zap = document.getElementById('zap').value.trim();
+
+            if(!nome || zap.length < 14) return toast('Preencha Nome e WhatsApp corretos.');
+            if(!state.deliveryType) return toast('Selecione uma opção de entrega!');
+
+            if(state.deliveryType === 'loja' || state.deliveryType === 'app') {
+                const r = document.getElementById('rua').value.trim();
+                const n = document.getElementById('numero').value.trim();
+                const b = document.getElementById('bairro').value.trim();
+                const c = document.getElementById('cidade').value.trim();
+                if(!r || !n || !b || !c) {
+                    showManualAddress();
+                    return toast('Preencha o endereço completo para entrega.');
+                }
+            }
+
+            state.user = {
+                nome, zap,
+                cep: document.getElementById('cep').value.trim(), 
+                rua: document.getElementById('rua').value,
+                numero: document.getElementById('numero').value,
+                comp: document.getElementById('complemento').value,
+                bairro: document.getElementById('bairro').value,
+                cidade: document.getElementById('cidade').value,
+                estado: document.getElementById('estado').value
+            };
+
+            navTo(3);
+        }
+
+        function gerarPayloadPix(valor) {
+            const valorStr = valor.toFixed(2);
+            let payload = "000201";
+            let gui = "0014br.gov.bcb.pix";
+            let chave = "01" + PIX_CHAVE.length.toString().padStart(2, '0') + PIX_CHAVE;
+            let infoConta = gui + chave;
+            payload += "26" + infoConta.length.toString().padStart(2, '0') + infoConta;
+            payload += "52040000530398654" + valorStr.length.toString().padStart(2, '0') + valorStr;
+            payload += "5802BR";
+            let nome = PIX_NOME.substring(0, 25);
+            payload += "59" + nome.length.toString().padStart(2, '0') + nome;
+            let cidade = PIX_CIDADE.substring(0, 15);
+            payload += "60" + cidade.length.toString().padStart(2, '0') + cidade;
+            let txid = "***";
+            let infoAdicional = "05" + txid.length.toString().padStart(2, '0') + txid;
+            payload += "62" + infoAdicional.length.toString().padStart(2, '0') + infoAdicional;
+            payload += "6304";
+            
+            let crc = 0xFFFF;
+            for (let i = 0; i < payload.length; i++) {
+                crc ^= payload.charCodeAt(i) << 8;
+                for (let j = 0; j < 8; j++) {
+                    if ((crc & 0x8000) !== 0) {
+                        crc = ((crc << 1) ^ 0x1021) & 0xFFFF;
+                    } else {
+                        crc = (crc << 1) & 0xFFFF;
+                    }
+                }
+            }
+            return payload + crc.toString(16).toUpperCase().padStart(4, '0');
+        }
+
+        function updateSummary() {
+            const subtotal = state.cart.reduce((acc, item) => acc + item.price, 0);
+            document.getElementById('resumo-itens').innerText = `${state.cart.length} item(s)`;
+            document.getElementById('resumo-subtotal').innerText = formatMoney(subtotal);
+            
+            let freteExibicao = formatMoney(state.freightValue);
+            let freteReal = state.freightValue;
+
+            if (state.deliveryType === 'retirada') {
+                freteExibicao = 'Grátis';
+                freteReal = 0;
+            } else if (state.deliveryType === 'app') {
+                freteExibicao = 'A pagar no App';
+                freteReal = 0; 
+            }
+
+            document.getElementById('resumo-frete').innerText = freteExibicao;
+            
+            const totalPagar = subtotal + freteReal;
+            document.getElementById('resumo-total').innerText = formatMoney(totalPagar);
+
+            const valorMpAviso = document.getElementById('valor-mp');
+            if(valorMpAviso) valorMpAviso.innerText = formatMoney(totalPagar);
+
+            const pixPronto = gerarPayloadPix(totalPagar);
+            document.getElementById('pix-code').innerText = pixPronto;
+        }
+
+        function setPayment(type) {
+            state.paymentType = type;
+            
+            const btnPix = document.getElementById('tab-pix');
+            const btnCard = document.getElementById('tab-card');
+            const contPix = document.getElementById('content-pix');
+            const contCard = document.getElementById('content-card');
+
+            if(type === 'pix') {
+                btnPix.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-brand-black shadow-sm transition-all';
+                btnCard.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-500 transition-all';
+                contPix.classList.remove('hidden');
+                contCard.classList.add('hidden');
+            } else {
+                btnCard.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold bg-white text-brand-black shadow-sm transition-all';
+                btnPix.className = 'flex-1 py-2.5 rounded-lg text-sm font-bold text-gray-500 transition-all';
+                contCard.classList.remove('hidden');
+                contPix.classList.add('hidden');
+            }
+        }
+
+        function copyToClipboard(elementId, btn) {
+            const text = document.getElementById(elementId).innerText.trim();
+            const textarea = document.createElement('textarea');
+            textarea.value = text;
+            document.body.appendChild(textarea);
+            textarea.select();
+            try {
+                document.execCommand('copy');
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = `<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg> Copiado!`;
+                btn.classList.add('border-green-600', 'text-green-600');
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.classList.remove('border-green-600', 'text-green-600');
+                }, 2000);
+            } catch(e) {
+                toast('Erro ao copiar');
+            }
+            document.body.removeChild(textarea);
+        }
+
+        function handleFileUpload(input) {
+            const label = document.getElementById('upload-label');
+            const content = document.getElementById('upload-content');
+            
+            if (input.files && input.files[0]) {
+                const file = input.files[0];
+                const name = file.name;
+                
+                label.classList.remove('border-brand-red', 'bg-red-50', 'animate-error-pulse');
+                label.classList.replace('border-gray-300', 'border-green-500');
+                label.classList.replace('bg-brand-gray', 'bg-green-50');
+                content.innerHTML = `
+                    <svg class="w-6 h-6 mb-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <p class="text-xs font-bold text-green-600">${name.substring(0,20)}${name.length > 20 ? '...' : ''}</p>
+                `;
+
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            const canvas = document.createElement('canvas');
+                            let width = img.width;
+                            let height = img.height;
+                            const MAX_WIDTH = 800; 
+                            
+                            if (width > MAX_WIDTH) {
+                                height = Math.round((height * MAX_WIDTH) / width);
+                                width = MAX_WIDTH;
+                            }
+                            
+                            canvas.width = width;
+                            canvas.height = height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0, width, height);
+                            
+                            const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
+                            state.comprovanteBase64 = dataUrl.split(',')[1];
+                            state.comprovanteMime = 'image/jpeg';
+                            state.comprovanteName = 'comprovante.jpg';
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        state.comprovanteBase64 = e.target.result.split(',')[1];
+                        state.comprovanteMime = file.type;
+                        state.comprovanteName = file.name;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        async function finishOrder() {
+            const file = document.getElementById('comprovante');
+            
+            if(file.files.length === 0 || !state.comprovanteBase64) {
+                const label = document.getElementById('upload-label');
+                label.classList.add('border-brand-red', 'bg-red-50', 'animate-error-pulse');
+                setTimeout(() => label.classList.remove('animate-error-pulse'), 1000); 
+                return toast('⚠️ É obrigatório anexar o comprovante para finalizar!');
+            }
+
+            const btn = document.getElementById('btn-finalizar');
+            btn.innerHTML = 'Processando... ⌛';
+            btn.disabled = true;
+            btn.classList.add('opacity-70');
+
+            let freteReal = state.freightValue;
+            if (state.deliveryType === 'retirada' || state.deliveryType === 'app') {
+                freteReal = 0; 
+            }
+            const totalFinal = state.cart.reduce((a, b) => a + b.price, 0) + freteReal;
+
+            const orderData = {
+                action: "saveOrder", 
+                cliente: state.user,
+                itens: state.cart,
+                frete: state.deliveryType,
+                pagamento: state.paymentType,
+                total: totalFinal, 
+                fileBase64: state.comprovanteBase64,
+                fileMime: state.comprovanteMime,
+                fileName: state.comprovanteName
+            };
+            
+            try {
+                const response = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify(orderData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.status === "erro_estoque") {
+                    btn.innerHTML = 'Finalizar Pedido';
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-70');
+                    navTo(1);
+                    return toast(result.detalhe);
+                }
+                
+                if(result.status === "sucesso") {
+                    document.getElementById('order-number').innerText = `#${result.orderId}`;
+                    navTo(4);
+                } else {
+                    throw new Error(result.detalhe);
+                }
+            } catch (error) {
+                toast('Erro ao processar pedido. Tente novamente.');
+                btn.innerHTML = 'Finalizar Pedido';
+                btn.disabled = false;
+                btn.classList.remove('opacity-70');
+            }
+        }
+
+        function formatMoney(val) {
+            return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        }
+    </script>
+</body>
+</html>
