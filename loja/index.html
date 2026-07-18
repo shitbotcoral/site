@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHITBOT CORAL | LOJA</title>
+    <title>SHITBOT CORAL | LINKS</title>
     <link rel="icon" href="img/sclogo.png" type="image/png">
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -127,6 +127,7 @@
                         <button onclick="selectSize('XG', this)" data-size="XG" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">XG</button>
                         <button onclick="selectSize('XXG', this)" data-size="XXG" class="size-btn py-3 rounded-xl font-bold text-gray-400 bg-brand-gray border-2 border-transparent transition-all active:scale-95">XXG</button>
                     </div>
+                    <p id="low-stock-msg" class="hidden mt-3 text-xs font-bold text-brand-red animate-fade-in">🔥 Últimas unidades! Garanta logo.</p>
                 </div>
 
                 <div class="px-6">
@@ -212,6 +213,11 @@
                     </div>
                 </div>
 
+                <div class="mb-8">
+                    <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Observação do Pedido <span class="text-gray-400 font-normal">(Opcional)</span></label>
+                    <textarea id="observacao" rows="3" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium resize-none" placeholder="Ex: Quero o número 10 nas costas, nome personalizado, etc."></textarea>
+                </div>
+
                 <div class="border-t border-gray-100 pt-6 mb-6">
                     <h3 class="font-bold text-lg mb-4">Método de Entrega</h3>
                     <div class="flex flex-col gap-3">
@@ -273,15 +279,26 @@
             </header>
 
             <div class="p-6 flex-1">
-                <div class="bg-brand-gray rounded-2xl p-5 mb-6">
+                <div class="bg-brand-gray rounded-2xl p-5 mb-6 transition-all">
+                    <div id="resumo-obs-container" class="hidden mb-3 pb-3 border-b border-gray-200">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Obs do Pedido</p>
+                        <p id="resumo-obs" class="text-sm font-medium text-brand-darkgray"></p>
+                    </div>
                     <div class="flex justify-between text-sm font-medium text-gray-600 mb-2">
                         <span id="resumo-itens">2 itens</span>
                         <span id="resumo-subtotal">R$ 199,80</span>
                     </div>
-                    <div class="flex justify-between text-sm font-medium text-gray-600 mb-4 pb-4 border-b border-gray-200">
+                    
+                    <div id="resumo-frete-container" class="flex justify-between text-sm font-medium text-gray-600 border-b border-gray-200 pb-4 mb-4 transition-all">
                         <span>Frete</span>
                         <span id="resumo-frete">R$ 15,00</span>
                     </div>
+
+                    <div id="resumo-taxa-container" class="hidden justify-between text-sm font-medium text-gray-600 border-b border-gray-200 pb-4 mb-4 transition-all">
+                        <span>Taxa do Cartão</span>
+                        <span id="resumo-taxa" class="text-brand-red">+ R$ 5,00</span>
+                    </div>
+
                     <div class="flex justify-between items-center">
                         <span class="font-bold">Total a Pagar</span>
                         <span id="resumo-total" class="text-2xl font-black text-brand-black">R$ 214,80</span>
@@ -296,9 +313,13 @@
                 <div id="content-pix" class="animate-fade-in">
                     <div class="border-2 border-dashed border-gray-200 rounded-2xl p-5 text-center mb-6 bg-gray-50">
                         <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Copie o Código PIX</p>
-                        <p id="pix-code" class="bg-white border border-gray-200 rounded-lg p-3 text-[10px] break-all font-mono text-gray-600 mb-4 h-16 overflow-hidden relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-6 after:bg-gradient-to-t after:from-white after:to-transparent">
-                            Gerando código PIX...
-                        </p>
+                        <!-- Skeleton de carregamento -->
+                        <div id="pix-skeleton" class="mb-4 space-y-2">
+                            <div class="h-3 bg-gray-200 rounded animate-pulse w-full"></div>
+                            <div class="h-3 bg-gray-200 rounded animate-pulse w-5/6 mx-auto"></div>
+                            <div class="h-3 bg-gray-200 rounded animate-pulse w-4/6 mx-auto"></div>
+                        </div>
+                        <p id="pix-code" class="hidden bg-white border border-gray-200 rounded-lg p-3 text-[10px] break-all font-mono text-gray-600 mb-4 h-16 overflow-hidden relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-6 after:bg-gradient-to-t after:from-white after:to-transparent"></p>
                         <button onclick="copyToClipboard('pix-code', this)" class="w-full bg-white border-2 border-brand-black text-brand-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-gray-100 transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                             Copiar Código
@@ -308,19 +329,22 @@
 
                 <div id="content-card" class="hidden animate-fade-in">
                     <div class="border-2 border-dashed border-[#009EE3] rounded-2xl p-5 text-center mb-6 bg-blue-50/50">
-                        <p class="text-xs font-bold text-[#009EE3] uppercase tracking-wider mb-3">Pague com Cartão ou Saldo</p>
+                        <p class="text-xs font-bold text-[#009EE3] uppercase tracking-wider mb-4">Pague com Cartão ou Saldo</p>
+                        
+                        <div class="bg-brand-black rounded-xl p-4 text-center mb-4 shadow-lg">
+                            <p class="text-sm text-gray-300 font-medium mb-1">⚠️ Ao abrir o link, digite o valor exato de:</p>
+                            <p id="valor-mp" class="text-2xl font-black text-white">R$ 0,00</p>
+                            <p class="text-xs text-gray-400 mt-1 font-medium">(Já inclui a taxa de R$ 5,00 do cartão)</p>
+                        </div>
+
                         <p id="card-link" class="bg-white border border-blue-200 rounded-lg p-3 text-xs break-all font-mono text-brand-black mb-4 font-bold">
                             https://link.mercadopago.com.br/shitbotcoral
                         </p>
+                        
                         <button onclick="copyToClipboard('card-link', this); setTimeout(() => window.open('https://link.mercadopago.com.br/shitbotcoral', '_blank'), 500);" class="w-full bg-[#009EE3] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-500/30">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             Abrir Mercado Pago
                         </button>
-                    </div>
-                    
-                    <div class="bg-brand-black rounded-xl p-4 text-center mb-4 shadow-lg">
-                        <p class="text-sm text-gray-300 font-medium mb-1">⚠️ Ao abrir o link, digite o valor exato de:</p>
-                        <p id="valor-mp" class="text-2xl font-black text-white">R$ 0,00</p>
                     </div>
                     
                     <p class="text-xs text-gray-500 text-center px-2 font-medium mb-4">⚠️ <strong class="text-brand-red">Atenção:</strong> O envio da camisa só será realizado após a compensação do valor no Mercado Pago (pode levar até 7 dias).</p>
@@ -361,7 +385,7 @@
             </div>
         </div>
 
-        <a href="https://wa.me/5581994465372?text=Ol%C3%A1%2C%20estou%20no%20site%20da%20Shitbot%20e%20preciso%20de%20suporte." target="_blank" class="absolute bottom-6 right-6 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 z-[60] active:scale-95 transition-all animate-slide-up">
+        <a href="https://wa.me/5581994465372?text=%2AOPA%2C%20T%C3%94%20NO%20SITE%20DA%20LOJA%20E%20PRECISO%20DE%20AJUDA%21%2A" target="_blank" class="absolute bottom-6 right-6 w-14 h-14 bg-[#25D366] rounded-full flex items-center justify-center shadow-lg shadow-green-500/30 z-[60] active:scale-95 transition-all animate-slide-up">
             <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.768 5.766-.001 1.298.38 2.27 1.019 3.287l-.582 2.128 2.182-.573c.978.58 1.911.928 3.145.929 3.178 0 5.767-2.587 5.768-5.766.001-3.187-2.575-5.77-5.764-5.771zm3.392 8.244c-.144.405-.837.774-1.17.824-.299.045-.677.063-1.092-.069-.252-.08-.575-.187-.988-.365-1.739-.751-2.874-2.502-2.961-2.617-.087-.116-.708-.94-.708-1.793s.448-1.273.607-1.446c.159-.173.346-.217.462-.217l.332.006c.106.005.249-.04.39.298.144.347.491 1.2.534 1.287.043.087.072.188.014.304-.058.116-.087.188-.173.289l-.26.304c-.087.086-.177.18-.076.354.101.174.449.741.964 1.201.662.591 1.221.774 1.394.86s.274.072.376-.043c.101-.116.433-.506.549-.68.116-.173.231-.145.39-.087s1.011.477 1.184.564c.173.087.289.129.332.202.043.073.043.423-.101.827z"></path></svg>
         </a>
 
@@ -394,31 +418,45 @@
         };
 
         window.onload = () => {
-            fetchStock();
+            // Segurança: esconde o loader após 6s independente de qualquer coisa
+            const safetyTimer = setTimeout(() => esconderLoader(), 6000);
+            fetchStock(false, safetyTimer);
         };
 
+        function esconderLoader() {
+            const loader = document.getElementById('loading-screen');
+            if (loader && !loader.classList.contains('hidden')) {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.classList.add('hidden'), 500);
+            }
+        }
+
         // --- SISTEMA DE ESTOQUE ---
-        async function fetchStock(silent = false) {
+        async function fetchStock(silent = false, safetyTimer = null) {
             try {
+                // Timeout de 8s na requisição
+                const controller = new AbortController();
+                const reqTimer = setTimeout(() => controller.abort(), 8000);
+
                 const res = await fetch(GOOGLE_SCRIPT_URL, {
                     method: 'POST',
-                    body: JSON.stringify({ action: "getStock" })
+                    body: JSON.stringify({ action: "getStock" }),
+                    signal: controller.signal
                 });
+                clearTimeout(reqTimer);
+
                 const data = await res.json();
-                
+
                 if(data.status === "sucesso") {
                     state.estoque = data.estoque;
                     updateSizeButtons();
                 }
             } catch(e) {
                 console.error("Erro ao puxar estoque", e);
-                if(!silent) toast('Erro ao conectar com o estoque.');
+                if(!silent) toast('⚠️ Estoque offline. Tente recarregar.');
             } finally {
-                const loader = document.getElementById('loading-screen');
-                if(loader) {
-                    loader.style.opacity = '0';
-                    setTimeout(() => loader.classList.add('hidden'), 500);
-                }
+                if (safetyTimer) clearTimeout(safetyTimer);
+                esconderLoader();
             }
         }
 
@@ -428,6 +466,10 @@
                 const size = btn.dataset.size;
                 const inCart = state.cart.filter(i => i.size === size).length;
                 const available = (state.estoque[size] || 0) - inCart;
+
+                // Remove badge anterior
+                const oldBadge = btn.querySelector('.stock-badge');
+                if (oldBadge) oldBadge.remove();
 
                 if (available <= 0) {
                     btn.classList.add('esgotado', 'bg-brand-gray', 'text-gray-400');
@@ -439,8 +481,24 @@
                         btn.classList.add('bg-brand-gray', 'text-gray-400');
                         btn.classList.remove('bg-brand-black', 'text-white');
                     }
+                    // Badge de "pouco estoque" (≤ 3)
+                    if (available <= 3) {
+                        const badge = document.createElement('span');
+                        badge.className = 'stock-badge absolute -top-1.5 -right-1.5 bg-brand-red text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none shadow';
+                        badge.innerText = available;
+                        btn.style.position = 'relative';
+                        btn.appendChild(badge);
+                    }
                 }
             });
+
+            // Mostra aviso geral se qualquer tamanho tiver estoque baixo
+            const hasLow = Object.entries(state.estoque).some(([sz, qty]) => {
+                const inCart = state.cart.filter(i => i.size === sz).length;
+                return (qty - inCart) > 0 && (qty - inCart) <= 3;
+            });
+            const msg = document.getElementById('low-stock-msg');
+            if (msg) hasLow ? msg.classList.remove('hidden') : msg.classList.add('hidden');
         }
 
         // --- SISTEMA DE TOAST ---
@@ -680,9 +738,22 @@
 
         function validateDataAndProceed() {
             const nome = document.getElementById('nome').value.trim();
-            const zap = document.getElementById('zap').value.trim();
+            const zap = document.getElementById('zap').value;
+            const zapLimpo = zap.replace(/\D/g, ''); 
 
-            if(!nome || zap.length < 14) return toast('Preencha Nome e WhatsApp corretos.');
+            if(!nome) return toast('Preencha seu Nome Completo.');
+            
+            if(zapLimpo.length !== 11 || zapLimpo[2] !== '9') {
+                return toast('⚠️ Digite um WhatsApp válido! Ex: (81) 90000-0000');
+            }
+
+            // Validação de CEP: se preenchido, exige 8 dígitos
+            const cepLimpo = document.getElementById('cep').value.replace(/\D/g, '');
+            if(cepLimpo.length > 0 && cepLimpo.length < 8) {
+                document.getElementById('cep').focus();
+                return toast('⚠️ CEP inválido! Digite os 8 números.');
+            }
+
             if(!state.deliveryType) return toast('Selecione uma opção de entrega!');
 
             if(state.deliveryType === 'loja' || state.deliveryType === 'app') {
@@ -690,21 +761,28 @@
                 const n = document.getElementById('numero').value.trim();
                 const b = document.getElementById('bairro').value.trim();
                 const c = document.getElementById('cidade').value.trim();
+                const e = document.getElementById('estado').value.trim();
                 if(!r || !n || !b || !c) {
                     showManualAddress();
                     return toast('Preencha o endereço completo para entrega.');
                 }
+                if(!e || e.length < 2) {
+                    showManualAddress();
+                    return toast('Preencha o Estado (UF) do endereço.');
+                }
             }
 
             state.user = {
-                nome, zap,
+                nome, 
+                zap: zap.trim(),
                 cep: document.getElementById('cep').value.trim(), 
                 rua: document.getElementById('rua').value,
                 numero: document.getElementById('numero').value,
                 comp: document.getElementById('complemento').value,
                 bairro: document.getElementById('bairro').value,
                 cidade: document.getElementById('cidade').value,
-                estado: document.getElementById('estado').value
+                estado: document.getElementById('estado').value,
+                obs: document.getElementById('observacao').value.trim()
             };
 
             navTo(3);
@@ -746,6 +824,16 @@
             const subtotal = state.cart.reduce((acc, item) => acc + item.price, 0);
             document.getElementById('resumo-itens').innerText = `${state.cart.length} item(s)`;
             document.getElementById('resumo-subtotal').innerText = formatMoney(subtotal);
+
+            // Mostra observação no resumo se preenchida
+            const obsContainer = document.getElementById('resumo-obs-container');
+            const obsEl = document.getElementById('resumo-obs');
+            if (state.user.obs) {
+                obsEl.innerText = state.user.obs;
+                obsContainer.classList.remove('hidden');
+            } else {
+                obsContainer.classList.add('hidden');
+            }
             
             let freteExibicao = formatMoney(state.freightValue);
             let freteReal = state.freightValue;
@@ -760,14 +848,40 @@
 
             document.getElementById('resumo-frete').innerText = freteExibicao;
             
-            const totalPagar = subtotal + freteReal;
+            let taxaCartao = 0;
+            const containerTaxa = document.getElementById('resumo-taxa-container');
+            const freteContainer = document.getElementById('resumo-frete-container');
+
+            if (state.paymentType === 'card') {
+                taxaCartao = 5.00;
+                containerTaxa.classList.remove('hidden');
+                containerTaxa.classList.add('flex');
+                freteContainer.classList.remove('border-b', 'border-gray-200', 'pb-4', 'mb-4');
+            } else {
+                containerTaxa.classList.add('hidden');
+                containerTaxa.classList.remove('flex');
+                freteContainer.classList.add('border-b', 'border-gray-200', 'pb-4', 'mb-4');
+            }
+
+            const totalPagar = subtotal + freteReal + taxaCartao;
             document.getElementById('resumo-total').innerText = formatMoney(totalPagar);
 
             const valorMpAviso = document.getElementById('valor-mp');
             if(valorMpAviso) valorMpAviso.innerText = formatMoney(totalPagar);
 
-            const pixPronto = gerarPayloadPix(totalPagar);
-            document.getElementById('pix-code').innerText = pixPronto;
+            // Gera PIX com skeleton animado
+            const pixEl = document.getElementById('pix-code');
+            const pixSkeleton = document.getElementById('pix-skeleton');
+            if (pixEl && pixSkeleton) {
+                pixEl.classList.add('hidden');
+                pixSkeleton.classList.remove('hidden');
+                setTimeout(() => {
+                    const pixPronto = gerarPayloadPix(totalPagar);
+                    pixEl.innerText = pixPronto;
+                    pixSkeleton.classList.add('hidden');
+                    pixEl.classList.remove('hidden');
+                }, 600);
+            }
         }
 
         function setPayment(type) {
@@ -789,6 +903,8 @@
                 contCard.classList.remove('hidden');
                 contPix.classList.add('hidden');
             }
+            
+            updateSummary(); 
         }
 
         function copyToClipboard(elementId, btn) {
@@ -887,7 +1003,9 @@
             if (state.deliveryType === 'retirada' || state.deliveryType === 'app') {
                 freteReal = 0; 
             }
-            const totalFinal = state.cart.reduce((a, b) => a + b.price, 0) + freteReal;
+            
+            let taxaCartao = state.paymentType === 'card' ? 5.00 : 0;
+            const totalFinal = state.cart.reduce((a, b) => a + b.price, 0) + freteReal + taxaCartao;
 
             const orderData = {
                 action: "saveOrder", 
@@ -895,7 +1013,8 @@
                 itens: state.cart,
                 frete: state.deliveryType,
                 pagamento: state.paymentType,
-                total: totalFinal, 
+                total: totalFinal,
+                obs: state.user.obs || '',
                 fileBase64: state.comprovanteBase64,
                 fileMime: state.comprovanteMime,
                 fileName: state.comprovanteName
