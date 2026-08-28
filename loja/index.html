@@ -174,7 +174,7 @@
                         <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">WhatsApp</label>
                         <input type="tel" id="zap" oninput="maskPhone(this)" maxlength="15" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="(00) 90000-0000">
                     </div>
-                    
+
                     <div>
                         <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">CEP</label>
                         <input type="tel" id="cep" oninput="maskCEP(this)" maxlength="9" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="00000-000">
@@ -189,7 +189,7 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Bairro</label>
-                                <input type="text" id="bairro" onblur="recalcFreight()" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Bairro">
+                                <input type="text" id="bairro" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Bairro">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Número</label>
@@ -199,11 +199,11 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Cidade</label>
-                                <input type="text" id="cidade" onblur="recalcFreight()" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Cidade">
+                                <input type="text" id="cidade" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Cidade">
                             </div>
                             <div>
                                 <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">UF</label>
-                                <input type="text" id="estado" onblur="recalcFreight()" maxlength="2" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium uppercase" placeholder="PE">
+                                <input type="text" id="estado" maxlength="2" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium uppercase" placeholder="PE">
                             </div>
                         </div>
                         <div>
@@ -211,30 +211,13 @@
                             <input type="text" id="complemento" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium" placeholder="Apt, Bloco, etc">
                         </div>
                     </div>
-                </div>
 
-                <div class="mb-8">
-                    <label class="block text-sm font-semibold text-gray-600 mb-1 pl-1">Observação do Pedido <span class="text-gray-400 font-normal">(Opcional)</span></label>
-                    <textarea id="observacao" rows="3" class="w-full bg-brand-gray border-2 border-transparent focus:border-brand-black focus:bg-white rounded-xl px-4 py-3 outline-none transition-all font-medium resize-none" placeholder="Ex: Quero o número 10 nas costas, nome personalizado, etc."></textarea>
                 </div>
 
                 <div class="border-t border-gray-100 pt-6 mb-6">
                     <h3 class="font-bold text-lg mb-4">Método de Entrega</h3>
                     <div class="flex flex-col gap-3">
                         
-                        <div onclick="setDelivery('loja')" id="opt-loja" class="delivery-card border-2 border-brand-gray bg-brand-gray rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all">
-                            <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center min-w-[20px]">
-                                <div class="w-2.5 h-2.5 bg-brand-black rounded-full radio-inner scale-0 transition-transform"></div>
-                            </div>
-                            <div class="flex-1">
-                                <div class="flex justify-between items-center mb-0.5">
-                                    <span class="font-bold text-sm">Entrega Padrão</span>
-                                    <span id="label-frete" class="font-black text-sm text-brand-black">A calcular</span>
-                                </div>
-                                <p class="text-xs text-gray-500 font-medium">Até 3 dias úteis. Taxa fixa.</p>
-                            </div>
-                        </div>
-
                         <div onclick="setDelivery('retirada')" id="opt-retirada" class="delivery-card border-2 border-brand-gray bg-brand-gray rounded-2xl p-4 flex items-center gap-3 cursor-pointer transition-all">
                             <div class="w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center min-w-[20px]">
                                 <div class="w-2.5 h-2.5 bg-brand-black rounded-full radio-inner scale-0 transition-transform"></div>
@@ -280,20 +263,11 @@
 
             <div class="p-6 flex-1">
                 <div class="bg-brand-gray rounded-2xl p-5 mb-6 transition-all">
-                    <div id="resumo-obs-container" class="hidden mb-3 pb-3 border-b border-gray-200">
-                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Obs do Pedido</p>
-                        <p id="resumo-obs" class="text-sm font-medium text-brand-darkgray"></p>
-                    </div>
                     <div class="flex justify-between text-sm font-medium text-gray-600 mb-2">
                         <span id="resumo-itens">2 itens</span>
                         <span id="resumo-subtotal">R$ 199,80</span>
                     </div>
                     
-                    <div id="resumo-frete-container" class="flex justify-between text-sm font-medium text-gray-600 border-b border-gray-200 pb-4 mb-4 transition-all">
-                        <span>Frete</span>
-                        <span id="resumo-frete">R$ 15,00</span>
-                    </div>
-
                     <div id="resumo-taxa-container" class="hidden justify-between text-sm font-medium text-gray-600 border-b border-gray-200 pb-4 mb-4 transition-all">
                         <span>Taxa do Cartão</span>
                         <span id="resumo-taxa" class="text-brand-red">+ R$ 5,00</span>
@@ -408,13 +382,12 @@
             cart: [],
             size: null,
             deliveryType: null,
-            freightValue: 0,
             paymentType: 'pix',
             user: {},
             comprovanteBase64: null,
             comprovanteMime: null,
             comprovanteName: null,
-            estoque: {} 
+            estoque: {}
         };
 
         window.onload = () => {
@@ -638,7 +611,7 @@
             let v = input.value.replace(/\D/g, '');
             if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
             input.value = v.substring(0, 9);
-            
+
             if (v.replace(/\D/g, '').length === 8) fetchCEP(v.replace(/\D/g, ''));
         }
 
@@ -647,15 +620,14 @@
             try {
                 const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
                 const data = await res.json();
-                
+
                 if(!data.erro) {
                     document.getElementById('rua').value = data.logradouro || '';
                     document.getElementById('bairro').value = data.bairro || '';
                     document.getElementById('cidade').value = data.localidade || '';
                     document.getElementById('estado').value = data.uf || '';
-                    
+
                     showManualAddress();
-                    recalcFreight();
                     document.getElementById('numero').focus();
                 } else {
                     showManualAddress();
@@ -671,55 +643,7 @@
             document.getElementById('address-fields').classList.remove('hidden');
         }
 
-        function recalcFreight() {
-            const cidadeRaw = document.getElementById('cidade').value || '';
-            const bairroRaw = document.getElementById('bairro').value || '';
-            
-            const normalize = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-            
-            const cidade = normalize(cidadeRaw);
-            const bairro = normalize(bairroRaw);
-
-            let valor = null;
-
-            if (cidade === 'jaboatao dos guararapes' || cidade === 'jaboatao' || cidade === 'recife') {
-                if (bairro === 'candeias' || bairro === 'piedade') {
-                    valor = 5.00;
-                } else {
-                    valor = 15.00;
-                }
-            } else if (['olinda', 'camaragibe', 'paulista', 'cabo de santo agostinho', 'cabo'].includes(cidade)) {
-                valor = 25.00;
-            }
-
-            const label = document.getElementById('label-frete');
-            const optLoja = document.getElementById('opt-loja');
-
-            if (cidade === '') {
-                label.innerText = 'A calcular';
-                label.classList.replace('text-brand-red', 'text-brand-black');
-                optLoja.style.opacity = '1';
-            } else if (valor !== null) {
-                state.freightValue = valor;
-                label.innerText = formatMoney(valor);
-                label.classList.replace('text-brand-red', 'text-brand-black');
-                optLoja.style.opacity = '1';
-            } else {
-                state.freightValue = 0;
-                label.innerText = 'Indisponível';
-                label.classList.replace('text-brand-black', 'text-brand-red');
-                if (state.deliveryType === 'loja') setDelivery(null);
-                optLoja.style.opacity = '0.5';
-            }
-        }
-
         function setDelivery(type) {
-            if (type === 'loja') {
-                const label = document.getElementById('label-frete').innerText;
-                if (label === 'Indisponível') return toast('Entrega padrão não atende esta cidade.');
-                if (label === 'A calcular') return toast('Preencha o CEP ou endereço primeiro.');
-            }
-
             state.deliveryType = type;
             
             document.querySelectorAll('.delivery-card').forEach(c => {
@@ -739,50 +663,46 @@
         function validateDataAndProceed() {
             const nome = document.getElementById('nome').value.trim();
             const zap = document.getElementById('zap').value;
-            const zapLimpo = zap.replace(/\D/g, ''); 
+            const zapLimpo = zap.replace(/\D/g, '');
 
-            if(!nome) return toast('Preencha seu Nome Completo.');
-            
-            if(zapLimpo.length !== 11 || zapLimpo[2] !== '9') {
+            if (!nome) return toast('Preencha seu Nome Completo.');
+
+            if (zapLimpo.length !== 11 || zapLimpo[2] !== '9') {
                 return toast('⚠️ Digite um WhatsApp válido! Ex: (81) 90000-0000');
             }
 
-            // Validação de CEP: se preenchido, exige 8 dígitos
             const cepLimpo = document.getElementById('cep').value.replace(/\D/g, '');
-            if(cepLimpo.length > 0 && cepLimpo.length < 8) {
+            if (cepLimpo.length > 0 && cepLimpo.length < 8) {
                 document.getElementById('cep').focus();
                 return toast('⚠️ CEP inválido! Digite os 8 números.');
             }
 
-            if(!state.deliveryType) return toast('Selecione uma opção de entrega!');
-
-            if(state.deliveryType === 'loja' || state.deliveryType === 'app') {
-                const r = document.getElementById('rua').value.trim();
-                const n = document.getElementById('numero').value.trim();
-                const b = document.getElementById('bairro').value.trim();
-                const c = document.getElementById('cidade').value.trim();
-                const e = document.getElementById('estado').value.trim();
-                if(!r || !n || !b || !c) {
-                    showManualAddress();
-                    return toast('Preencha o endereço completo para entrega.');
-                }
-                if(!e || e.length < 2) {
-                    showManualAddress();
-                    return toast('Preencha o Estado (UF) do endereço.');
-                }
+            const r = document.getElementById('rua').value.trim();
+            const n = document.getElementById('numero').value.trim();
+            const b = document.getElementById('bairro').value.trim();
+            const c = document.getElementById('cidade').value.trim();
+            const e = document.getElementById('estado').value.trim();
+            if (!r || !n || !b || !c) {
+                showManualAddress();
+                return toast('Preencha o endereço completo.');
+            }
+            if (!e || e.length < 2) {
+                showManualAddress();
+                return toast('Preencha o Estado (UF) do endereço.');
             }
 
+            if (!state.deliveryType) return toast('Selecione uma opção de entrega!');
+
             state.user = {
-                nome, 
+                nome,
                 zap: zap.trim(),
-                cep: document.getElementById('cep').value.trim(), 
-                rua: document.getElementById('rua').value,
-                numero: document.getElementById('numero').value,
+                cep: document.getElementById('cep').value.trim(),
+                rua: r,
+                numero: n,
                 comp: document.getElementById('complemento').value,
-                bairro: document.getElementById('bairro').value,
-                cidade: document.getElementById('cidade').value,
-                estado: document.getElementById('estado').value,
-                obs: document.getElementById('observacao').value.trim()
+                bairro: b,
+                cidade: c,
+                estado: e
             };
 
             navTo(3);
@@ -825,45 +745,19 @@
             document.getElementById('resumo-itens').innerText = `${state.cart.length} item(s)`;
             document.getElementById('resumo-subtotal').innerText = formatMoney(subtotal);
 
-            // Mostra observação no resumo se preenchida
-            const obsContainer = document.getElementById('resumo-obs-container');
-            const obsEl = document.getElementById('resumo-obs');
-            if (state.user.obs) {
-                obsEl.innerText = state.user.obs;
-                obsContainer.classList.remove('hidden');
-            } else {
-                obsContainer.classList.add('hidden');
-            }
-            
-            let freteExibicao = formatMoney(state.freightValue);
-            let freteReal = state.freightValue;
-
-            if (state.deliveryType === 'retirada') {
-                freteExibicao = 'Grátis';
-                freteReal = 0;
-            } else if (state.deliveryType === 'app') {
-                freteExibicao = 'A pagar no App';
-                freteReal = 0; 
-            }
-
-            document.getElementById('resumo-frete').innerText = freteExibicao;
-            
             let taxaCartao = 0;
             const containerTaxa = document.getElementById('resumo-taxa-container');
-            const freteContainer = document.getElementById('resumo-frete-container');
 
             if (state.paymentType === 'card') {
                 taxaCartao = 5.00;
                 containerTaxa.classList.remove('hidden');
                 containerTaxa.classList.add('flex');
-                freteContainer.classList.remove('border-b', 'border-gray-200', 'pb-4', 'mb-4');
             } else {
                 containerTaxa.classList.add('hidden');
                 containerTaxa.classList.remove('flex');
-                freteContainer.classList.add('border-b', 'border-gray-200', 'pb-4', 'mb-4');
             }
 
-            const totalPagar = subtotal + freteReal + taxaCartao;
+            const totalPagar = subtotal + taxaCartao;
             document.getElementById('resumo-total').innerText = formatMoney(totalPagar);
 
             const valorMpAviso = document.getElementById('valor-mp');
@@ -999,22 +893,16 @@
             btn.disabled = true;
             btn.classList.add('opacity-70');
 
-            let freteReal = state.freightValue;
-            if (state.deliveryType === 'retirada' || state.deliveryType === 'app') {
-                freteReal = 0; 
-            }
-            
-            let taxaCartao = state.paymentType === 'card' ? 5.00 : 0;
-            const totalFinal = state.cart.reduce((a, b) => a + b.price, 0) + freteReal + taxaCartao;
+            const taxaCartao = state.paymentType === 'card' ? 5.00 : 0;
+            const totalFinal = state.cart.reduce((a, b) => a + b.price, 0) + taxaCartao;
 
             const orderData = {
-                action: "saveOrder", 
+                action: "saveOrder",
                 cliente: state.user,
                 itens: state.cart,
                 frete: state.deliveryType,
                 pagamento: state.paymentType,
                 total: totalFinal,
-                obs: state.user.obs || '',
                 fileBase64: state.comprovanteBase64,
                 fileMime: state.comprovanteMime,
                 fileName: state.comprovanteName
