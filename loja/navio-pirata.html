@@ -113,6 +113,7 @@
         }
         .size-btn:active { transform: scale(0.95); }
         .size-btn.on { background: #fff; border-color: #fff; color: #0a0a0a; }
+        .size-btn:disabled { opacity: .4; pointer-events: none; }
 
         .cart-row { background: #1c1c1c; border: 1px solid #2a2a2a; border-radius: 12px; }
         .cart-x {
@@ -198,8 +199,9 @@
                 <!-- Tamanhos -->
                 <div class="px-6 mb-8">
                     <p class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Escolha o Tamanho</p>
+                    <p id="vagas-restantes" class="hidden text-xs font-bold text-white bg-brand-red/90 border border-white/30 rounded-lg px-3 py-2 mb-3"></p>
                     <div id="size-grid" class="grid grid-cols-3 gap-3"></div>
-                    <div id="msg-encerrada" class="hidden mt-4 panel p-4 text-center text-sm font-bold">🔒 Pré-venda encerrada</div>
+                    <div id="msg-encerrada" class="hidden mt-4 panel p-4 text-center text-sm font-bold">Pré-venda encerrada</div>
                 </div>
 
                 <div class="px-6">
@@ -452,11 +454,12 @@
 
     // Preço e datas ficam em config-prevenda.js (se o arquivo faltar, usa estes valores padrão)
     const CFG = (typeof PREVENDA !== 'undefined') ? PREVENDA : {
-        preco: 149.90, entregaPrevista: 'A definir', encerraEm: ''
+        preco: 149.90, entregaPrevista: 'A definir', encerraEm: '', limiteCamisas: 0
     };
     const PRECO = CFG.preco;
     const ENTREGA_PREVISTA = CFG.entregaPrevista;
     const PREVENDA_ENCERRA_EM = CFG.encerraEm;
+    const LIMITE_CAMISAS = Number(CFG.limiteCamisas) || 0; // 0 = sem limite (aviso; quem trava é o Apps Script)
     // PIX: vem do arquivo config-pix.js (o MESMO do Pipico)
     const PIX_OK = (typeof PIX !== 'undefined') && !!PIX.chave && !String(PIX.chave).startsWith('COLE');
     const PIX_CHAVE = PIX_OK ? String(PIX.chave).replace(/\s/g, '') : '';
@@ -483,6 +486,8 @@
         paymentType: 'pix',
         user: {},
         txid: null,
+        vendidas: 0,
+        statusCarregado: false,
         comprovanteBase64: null, comprovanteMime: null, comprovanteName: null
     };
 
@@ -519,11 +524,69 @@
         btn.classList.add('on');
     }
 
-    // ---------- Pré-venda aberta / encerrada ----------
+    // ---------- Pré-venda aberta / encerrada / esgotada ----------
     function prevendaEncerrada() {
         if (!PREVENDA_ENCERRA_EM) return false;
         const t = new Date(PREVENDA_ENCERRA_EM).getTime();
         return !isNaN(t) && Date.now() > t;
+    }
+
+    // true só depois que a consulta ao servidor voltou e confirmou que esgotou.
+    // Enquanto não carrega, NÃO bloqueia (igual ao estoque do Pipico) — quem
+    // impede de verdade é o Apps Script na hora de finalizar.
+    function limiteAtingido() {
+        return LIMITE_CAMISAS > 0 && state.statusCarregado && state.vendidas >= LIMITE_CAMISAS;
+    }
+
+    function prevendaFechada() {
+        return prevendaEncerrada() || limiteAtingido();
+    }
+
+    function avisoFechada() {
+        return limiteAtingido() && !prevendaEncerrada()
+            ? 'A pré-venda do Navio Pirata esgotou.'
+            : 'A pré-venda foi encerrada.';
+    }
+
+    function aplicarFechamento() {
+        const fechada = prevendaFechada();
+        if (fechada) {
+            $('msg-encerrada').innerText = limiteAtingido() && !prevendaEncerrada() ? 'Pré-venda esgotada' : 'Pré-venda encerrada';
+            $('msg-encerrada').classList.remove('hidden');
+        }
+        $('btn-add').disabled = fechada;
+        $('btn-add').classList.toggle('off', fechada);
+        document.querySelectorAll('.size-btn').forEach(b => b.disabled = fechada);
+    }
+
+    // Consulta quantas já foram vendidas, pra avisar ANTES do pagamento.
+    // Se falhar, a compra continua liberada: a trava real é no Apps Script.
+    async function carregarStatusPreVenda() {
+        if (LIMITE_CAMISAS <= 0) return;
+        try {
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), 8000);
+            const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getPreVendaStatus' }), signal: controller.signal });
+            clearTimeout(t);
+            const data = await res.json();
+            if (data.status === 'sucesso') {
+                state.vendidas = data.vendidas;
+                state.statusCarregado = true;
+                const restantes = Math.max(0, LIMITE_CAMISAS - data.vendidas);
+                const aviso = $('vagas-restantes');
+                if (aviso) {
+                    if (data.esgotada) {
+                        aviso.textContent = 'Pré-venda esgotada';
+                    } else if (restantes <= 15) {
+                        aviso.textContent = restantes === 1 ? 'Última camisa disponível!' : `Restam ${restantes} camisas na pré-venda`;
+                        aviso.classList.remove('hidden');
+                    }
+                }
+                aplicarFechamento();
+            }
+        } catch (e) {
+            console.error('Não foi possível checar o limite da pré-venda', e);
+        }
     }
 
     function iniciarInfos() {
@@ -535,7 +598,7 @@
             $('info-encerra-wrap').classList.remove('hidden');
             $('info-encerra-wrap').classList.add('flex');
         }
-        if (prevendaEncerrada()) $('msg-encerrada').classList.remove('hidden');
+        aplicarFechamento();
         const linkSuporte = `https://wa.me/${WHATS_LOJA}?text=${encodeURIComponent('Olá! Estou na pré-venda do Navio Pirata do Arruda e preciso de ajuda.')}`;
         document.querySelectorAll('.js-suporte').forEach(a => a.href = linkSuporte);
     }
@@ -547,13 +610,13 @@
     }
 
     function selectSize(size, btn) {
-        if (prevendaEncerrada()) return toast('🔒 A pré-venda foi encerrada.');
+        if (prevendaFechada()) return toast(avisoFechada());
         state.size = size;
         document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('on', b === btn));
     }
 
     function addToCart() {
-        if (prevendaEncerrada()) return toast('🔒 A pré-venda foi encerrada.');
+        if (prevendaFechada()) return toast(avisoFechada());
         if (!state.size) return toast('Selecione um tamanho!');
         if (state.cart.length >= MAX_ITENS_CARRINHO) return toast(`Máximo de ${MAX_ITENS_CARRINHO} camisas por pedido.`);
 
@@ -595,7 +658,7 @@
     }
 
     function goToData() {
-        if (prevendaEncerrada()) return toast('🔒 A pré-venda foi encerrada.');
+        if (prevendaFechada()) return toast(avisoFechada());
         if (state.cart.length === 0) return toast('O carrinho está vazio!');
         navTo(2);
     }
@@ -855,7 +918,7 @@
             $('upload-label').classList.add('border-white');
             return toast('⚠️ É obrigatório anexar o comprovante para finalizar!');
         }
-        if (prevendaEncerrada()) return toast('🔒 A pré-venda foi encerrada.');
+        if (prevendaFechada()) return toast(avisoFechada());
 
         const btn = $('btn-finalizar');
         btn.innerHTML = 'Processando... ⌛';
@@ -900,6 +963,16 @@
                 const msg = `Olá! Acabei de fazer o pedido ${result.orderId} na pré-venda do Navio Pirata do Arruda (${resumoItens().replace(/×/g, 'x')}). Gostaria de acompanhar o andamento.`;
                 $('btn-whats-ok').href = `https://wa.me/${WHATS_LOJA}?text=${encodeURIComponent(msg)}`;
                 navTo(4);
+            } else if (result.status === 'erro_limite') {
+                // O Apps Script recusou por causa do limite de camisas (a trava de verdade).
+                // Atualiza a página com o número certo de vagas restantes.
+                if (typeof result.vendidas === 'number') state.vendidas = result.vendidas;
+                state.statusCarregado = true;
+                aplicarFechamento();
+                toast(result.detalhe);
+                btn.innerHTML = 'Finalizar Pedido';
+                btn.disabled = false;
+                return;
             } else {
                 const e = new Error(result.detalhe || 'erro');
                 e.doServidor = true;
@@ -927,6 +1000,7 @@
     renderSizes();
     iniciarInfos();
     renderCart();
+    carregarStatusPreVenda();
 </script>
 </body>
 </html>

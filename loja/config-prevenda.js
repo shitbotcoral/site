@@ -12,5 +12,11 @@ const PREVENDA = {
 
     // Data limite da pré-venda. Vazio = sem data limite.
     // Formato: "2026-10-31T23:59:00-03:00"  (passou desse horário, a página fecha sozinha)
-    encerraEm: ""
+    encerraEm: "",
+
+    // Limite de camisas vendidas na pré-venda. 0 (ou vazio) = sem limite.
+    // Ao atingir, a página fecha sozinha e mostra "Pré-venda esgotada".
+    // IMPORTANTE: quem trava de verdade é o Apps Script (LIMITE_PREVENDA, no topo
+    // do Codigo_AppScript.gs) — mude o mesmo número nos dois lugares.
+    limiteCamisas: 90
 };
