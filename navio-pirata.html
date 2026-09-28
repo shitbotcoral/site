@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NAVIO PIRATA DO ARRUDA | PRÉ-VENDA</title>
+    <link rel="icon" href="img/sclogo.png" type="image/png">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'], display: ['Anton', 'sans-serif'] },
+                    colors: {
+                        brand: { black: '#0a0a0a', red: '#dc2626', gray: '#f4f4f5', darkgray: '#27272a' }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* ===================================================
+           IDENTIDADE NAVIO PIRATA
+           Preto dominante, vermelho e branco de detalhe.
+           REGRA: o vermelho nunca encosta no preto — sempre
+           com contorno branco entre os dois.
+           =================================================== */
+        @property --fs { syntax: '<length>'; inherits: false; initial-value: 80px; }
+        @property --fe { syntax: '<length>'; inherits: false; initial-value: 150px; }
+
+        body {
+            background-color: #f4f4f5;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        input[type=file]::file-selector-button { display: none; }
+
+        /* ---------- TRANSIÇÃO BRANCO → PRETO ----------
+           Cada tela tem uma faixa branca no topo (mesma cara da vitrine)
+           que se dissolve em preto. Ao entrar, o preto SOBE de baixo pra cima. */
+        .np-screen { background: #0a0a0a; color: #fff; }
+        .np-inner {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            --fs: 80px;
+            --fe: 150px;
+            background: linear-gradient(180deg, #ffffff 0, #ffffff var(--fs), #0a0a0a var(--fe));
+        }
+        .np-inner.g-produto { --fs: 76px; --fe: 360px; }
+
+        .rise-full { animation: riseFull 1.25s cubic-bezier(.22,.8,.24,1) both; }
+        .rise-mid  { animation: riseMid .85s cubic-bezier(.22,.8,.24,1) both; }
+        @keyframes riseFull { from { --fs: 1100px; --fe: 1300px; } }
+        @keyframes riseMid  { from { --fs: 620px;  --fe: 900px;  } }
+
+        .np-fade { animation: npFade .6s ease .4s both; }
+        .np-fade-fast { animation: npFade .4s ease .1s both; }
+        @keyframes npFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            .rise-full, .rise-mid, .np-fade, .np-fade-fast { animation: none !important; }
+        }
+
+        /* ---------- VERMELHO SEMPRE COM CONTORNO BRANCO ---------- */
+        .red-btn {
+            background: #dc2626;
+            border: 3px solid #fff;
+            color: #fff;
+            transition: transform .15s ease, opacity .2s ease;
+        }
+        .red-btn:active { transform: scale(0.97); }
+        .red-btn[disabled], .red-btn.off { background: #2a2a2a; border-color: #3a3a3a; color: #777; }
+        .red-tag { background: #dc2626; border: 2px solid #fff; color: #fff; }
+        /* Texto vermelho: traçado branco grosso (a metade de fora fica visível em volta da letra) */
+        .stroke-red-text {
+            color: #dc2626;
+            -webkit-text-stroke: 7px #fff;
+            paint-order: stroke fill;
+            stroke-linejoin: round;
+        }
+
+        /* ---------- CAMPOS ---------- */
+        .np-input {
+            width: 100%;
+            background: #161616;
+            border: 2px solid #2a2a2a;
+            color: #fff;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-weight: 500;
+            outline: none;
+            transition: border-color .15s ease;
+        }
+        .np-input::placeholder { color: #666; }
+        .np-input:focus { border-color: #fff; }
+        .np-label { display: block; font-size: 14px; font-weight: 600; color: #d4d4d8; margin: 0 0 4px 4px; }
+
+        .panel { background: #141414; border: 2px solid #262626; border-radius: 20px; }
+
+        /* Botões de tamanho (mesmo comportamento do Pipico: escolhe e adiciona ao carrinho) */
+        .size-btn {
+            background: #141414; border: 2px solid #262626; color: #a1a1aa;
+            border-radius: 12px; padding: 12px 0; font-weight: 800;
+            transition: all .15s ease;
+        }
+        .size-btn:active { transform: scale(0.95); }
+        .size-btn.on { background: #fff; border-color: #fff; color: #0a0a0a; }
+        .size-btn:disabled { opacity: .4; pointer-events: none; }
+
+        .cart-row { background: #1c1c1c; border: 1px solid #2a2a2a; border-radius: 12px; }
+        .cart-x {
+            width: 30px; height: 30px; border-radius: 999px; border: 2px solid #4a4a4a;
+            color: #fff; font-weight: 800; line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            transition: transform .12s ease;
+        }
+        .cart-x:active { transform: scale(0.88); }
+
+        /* Entrega (radio: bolinha vermelha SEMPRE dentro de anel branco) */
+        .delivery-card { background: #141414; border: 2px solid #262626; border-radius: 16px; transition: border-color .15s ease; cursor: pointer; }
+        .delivery-card.on { border-color: #fff; }
+        .radio-ring { width: 22px; height: 22px; border-radius: 999px; background: #3a3a3a; display: flex; align-items: center; justify-content: center; min-width: 22px; }
+        .delivery-card.on .radio-ring { background: #fff; }
+        .radio-dot { width: 10px; height: 10px; border-radius: 999px; background: #dc2626; transform: scale(0); transition: transform .15s ease; }
+        .delivery-card.on .radio-dot { transform: scale(1); }
+
+        /* Abas de pagamento */
+        .pay-tabs { background: #141414; border: 2px solid #262626; border-radius: 14px; padding: 4px; display: flex; }
+        .pay-tab { flex: 1; padding: 10px 0; border-radius: 10px; font-weight: 800; font-size: 14px; color: #888; transition: all .15s ease; }
+        .pay-tab.on { background: #fff; color: #0a0a0a; }
+
+        .thumb-btn { border: 2px solid transparent; opacity: .55; transition: all .15s ease; }
+        .thumb-btn.on { border-color: #fff; opacity: 1; }
+
+        .toast { background: #fff; color: #0a0a0a; font-weight: 700; font-size: 14px; padding: 12px 18px; border-radius: 14px;
+                 box-shadow: 0 10px 30px rgba(0,0,0,.45); animation: toastIn .3s cubic-bezier(.16,1,.3,1) both; text-align: center; }
+        @keyframes toastIn { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans antialiased text-white">
+
+<div class="bg-white w-full max-w-[414px] h-[90vh] max-h-[896px] rounded-[32px] shadow-2xl relative overflow-hidden">
+
+    <!-- ===================== TELA 1 — PRODUTO E TAMANHOS ===================== -->
+    <div id="screen-1" class="np-screen absolute inset-0 overflow-y-auto no-scrollbar">
+        <div id="inner-1" class="np-inner g-produto rise-full">
+
+            <header class="pt-8 pb-3 px-6 flex items-center justify-between">
+                <a href="index.html" class="w-10 h-10 flex items-center justify-center rounded-full bg-brand-gray text-gray-700 active:scale-95 transition-all" aria-label="Voltar para a vitrine">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </a>
+                <img src="img/logo.png" alt="Shitbot Coral" class="h-8 object-contain" onerror="this.src='https://placehold.co/120x40/ffffff/0a0a0a?text=SHITBOT'">
+                <span class="w-10"></span>
+            </header>
+
+            <main class="np-fade flex-1">
+                <!-- Galeria -->
+                <div class="px-6 flex gap-3 mb-6">
+                    <div class="flex-1 rounded-2xl overflow-hidden aspect-[3/4] relative shadow-2xl shadow-black/40" style="background: radial-gradient(circle at 50% 38%, #ffffff 0%, #e4e4e7 100%);">
+                        <img id="main-img" data-img-base="img/naviopirata 1" alt="Camisa Navio Pirata do Arruda" class="w-full h-full object-contain p-2 transition-opacity duration-300">
+                        <span class="red-tag absolute top-3 left-3 rounded-md px-2 py-1 font-display text-[11px] tracking-wide">PRÉ-VENDA</span>
+                    </div>
+                    <div class="w-16 flex flex-col gap-3">
+                        <button onclick="changeImage(this, 'img/naviopirata 1')" class="thumb-btn on w-full aspect-square rounded-xl overflow-hidden" style="background:#f4f4f5">
+                            <img data-img-base="img/naviopirata 1" class="w-full h-full object-contain p-0.5" alt="Frente">
+                        </button>
+                        <button onclick="changeImage(this, 'img/naviopirata 2')" class="thumb-btn w-full aspect-square rounded-xl overflow-hidden" style="background:#f4f4f5">
+                            <img data-img-base="img/naviopirata 2" class="w-full h-full object-contain p-0.5" alt="Costas">
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Nome e preço -->
+                <div class="px-6 mb-6">
+                    <p class="font-display text-5xl leading-none stroke-red-text mb-3">R$ 149,90</p>
+                    <h1 class="font-display text-3xl leading-tight text-white">NAVIO PIRATA<br>DO ARRUDA</h1>
+                </div>
+
+                <!-- Como funciona a pré-venda -->
+                <div class="px-6 mb-8">
+                    <div class="panel p-4">
+                        <p class="font-bold text-white mb-1">🏴‍☠️ Como funciona a pré-venda</p>
+                        <p class="text-sm text-zinc-400 leading-relaxed mb-3">A camisa ainda vai ser produzida. Você garante a sua agora e recebe depois que a produção ficar pronta.</p>
+                        <div class="flex flex-col gap-1.5 text-sm">
+                            <div class="flex justify-between"><span class="text-zinc-500 font-semibold">Entrega prevista</span><span id="info-prazo" class="font-bold text-white text-right"></span></div>
+                            <div id="info-encerra-wrap" class="hidden justify-between"><span class="text-zinc-500 font-semibold">Pré-venda até</span><span id="info-encerra" class="font-bold text-white text-right"></span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tamanhos -->
+                <div class="px-6 mb-8">
+                    <p class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Escolha o Tamanho</p>
+                    <p id="vagas-restantes" class="hidden text-xs font-bold text-white bg-brand-red/90 border border-white/30 rounded-lg px-3 py-2 mb-3"></p>
+                    <div id="size-grid" class="grid grid-cols-3 gap-3"></div>
+                    <div id="msg-encerrada" class="hidden mt-4 panel p-4 text-center text-sm font-bold">Pré-venda encerrada</div>
+                </div>
+
+                <div class="px-6">
+                    <button id="btn-add" onclick="addToCart()" class="red-btn w-full rounded-2xl py-4 font-bold text-lg">Adicionar ao Carrinho</button>
+                </div>
+
+                <!-- Mini carrinho (igual ao do Pipico) -->
+                <div id="mini-cart" class="hidden mt-8 px-6">
+                    <div class="panel p-5">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-bold text-lg">🛒 Seu Carrinho</h3>
+                            <span id="cart-count" class="bg-white text-brand-black text-xs font-bold px-2.5 py-1 rounded-full">0</span>
+                        </div>
+                        <div id="cart-items" class="max-h-48 overflow-y-auto no-scrollbar flex flex-col gap-2 mb-4"></div>
+                        <div class="flex justify-between items-center mb-4 pt-4 border-t border-zinc-800">
+                            <span class="font-bold text-zinc-400">Total</span>
+                            <span id="cart-total" class="font-display text-2xl text-white">R$ 0,00</span>
+                        </div>
+                        <button onclick="goToData()" class="red-btn w-full rounded-xl py-4 font-bold text-lg">Finalizar Compra</button>
+                    </div>
+                </div>
+
+                <div class="px-6 mt-4 pb-8">
+                    <a href="#" target="_blank" rel="noopener" class="js-suporte block text-center text-sm font-semibold text-zinc-500 underline py-2">Dúvidas? Fale com a gente no WhatsApp</a>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- ===================== TELA 2 — DADOS E ENTREGA ===================== -->
+    <div id="screen-2" class="hidden np-screen absolute inset-0 overflow-y-auto no-scrollbar">
+        <div id="inner-2" class="np-inner">
+            <header class="pt-8 pb-3 px-6 flex items-center">
+                <button onclick="navTo(1)" class="w-10 h-10 flex items-center justify-center rounded-full bg-brand-gray text-gray-700 active:scale-95 transition-all" aria-label="Voltar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="flex-1 text-center font-bold text-lg text-brand-black pr-10">Dados e Entrega</h2>
+            </header>
+
+            <div class="np-fade px-6 pt-[72px] pb-8 flex-1">
+                <div class="space-y-4 mb-8">
+                    <div>
+                        <label class="np-label">Nome Completo</label>
+                        <input type="text" id="nome" class="np-input" placeholder="João da Silva" autocomplete="name">
+                    </div>
+                    <div>
+                        <label class="np-label">WhatsApp</label>
+                        <input type="tel" id="zap" oninput="maskPhone(this)" maxlength="15" class="np-input" placeholder="(81) 90000-0000" autocomplete="tel">
+                    </div>
+                    <div>
+                        <label class="np-label">CEP</label>
+                        <input type="tel" id="cep" oninput="maskCEP(this)" maxlength="9" class="np-input" placeholder="00000-000">
+                        <button onclick="showManualAddress()" class="text-sm font-semibold text-zinc-500 mt-2 pl-1 underline active:text-white">Não sei meu CEP</button>
+                    </div>
+
+                    <div id="address-fields" class="hidden space-y-4 pt-2">
+                        <div>
+                            <label class="np-label">Rua / Logradouro</label>
+                            <input type="text" id="rua" class="np-input" placeholder="Nome da rua">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="np-label">Bairro</label>
+                                <input type="text" id="bairro" class="np-input" placeholder="Bairro">
+                            </div>
+                            <div>
+                                <label class="np-label">Número</label>
+                                <input type="tel" id="numero" class="np-input" placeholder="123">
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-[1fr_84px] gap-4">
+                            <div>
+                                <label class="np-label">Cidade</label>
+                                <input type="text" id="cidade" class="np-input" placeholder="Cidade">
+                            </div>
+                            <div>
+                                <label class="np-label">UF</label>
+                                <input type="text" id="estado" maxlength="2" class="np-input uppercase" placeholder="PE">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="np-label">Complemento (Opcional)</label>
+                            <input type="text" id="complemento" class="np-input" placeholder="Apt, Bloco, etc">
+                        </div>
+                    </div>
+                </div>
+
+                <p class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Como você quer receber</p>
+                <div class="space-y-3 mb-3">
+                    <div onclick="setDelivery('retirada')" id="opt-retirada" class="delivery-card p-4 flex items-center gap-3">
+                        <div class="radio-ring"><div class="radio-dot"></div></div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-bold text-sm">Retirada</span>
+                                <span class="font-black text-sm">Grátis</span>
+                            </div>
+                            <p class="text-xs text-zinc-400 font-medium">Você retira quando a camisa ficar pronta.</p>
+                        </div>
+                    </div>
+                    <div onclick="setDelivery('app')" id="opt-app" class="delivery-card p-4 flex items-center gap-3">
+                        <div class="radio-ring"><div class="radio-dot"></div></div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-0.5">
+                                <span class="font-bold text-sm">Entrega por app</span>
+                                <span class="font-black text-sm">A pagar no app</span>
+                            </div>
+                            <p class="text-xs text-zinc-400 font-medium">Uber/99 no seu endereço, combinado depois da produção.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mb-8"></div>
+
+                <button onclick="validateDataAndProceed()" class="red-btn w-full rounded-2xl py-4 font-bold text-lg">Ir para o pagamento</button>
+                <div class="mt-3"><a href="#" target="_blank" rel="noopener" class="js-suporte block text-center text-sm font-semibold text-zinc-500 underline py-2">Dúvidas? Fale com a gente no WhatsApp</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TELA 3 — PAGAMENTO ===================== -->
+    <div id="screen-3" class="hidden np-screen absolute inset-0 overflow-y-auto no-scrollbar">
+        <div id="inner-3" class="np-inner">
+            <header class="pt-8 pb-3 px-6 flex items-center">
+                <button onclick="navTo(2)" class="w-10 h-10 flex items-center justify-center rounded-full bg-brand-gray text-gray-700 active:scale-95 transition-all" aria-label="Voltar">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <h2 class="flex-1 text-center font-bold text-lg text-brand-black pr-10">Pagamento</h2>
+            </header>
+
+            <div class="np-fade-fast px-6 pt-[72px] pb-8 flex-1">
+                <!-- Resumo -->
+                <div class="panel p-5 mb-6">
+                    <p class="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-2">Seu pedido</p>
+                    <p id="resumo-itens" class="font-bold text-white mb-3"></p>
+                    <div class="flex justify-between text-sm font-medium text-zinc-400 mb-2">
+                        <span id="resumo-qtd"></span>
+                        <span id="resumo-subtotal"></span>
+                    </div>
+                    <div id="resumo-taxa-container" class="hidden justify-between text-sm font-medium text-zinc-400 border-b border-zinc-800 pb-3 mb-3">
+                        <span>Taxa do Cartão</span>
+                        <span id="resumo-taxa" class="text-white font-bold">+ R$ 5,00</span>
+                    </div>
+                    <div class="flex justify-between items-center pt-1">
+                        <span class="font-bold">Total a Pagar</span>
+                        <span id="resumo-total" class="font-display text-3xl text-white"></span>
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-3">Pré-venda · entrega prevista: <span id="resumo-prazo" class="text-zinc-300 font-semibold"></span></p>
+                </div>
+
+                <div class="pay-tabs mb-6">
+                    <button onclick="setPayment('pix')" id="tab-pix" class="pay-tab on">PIX</button>
+                    <button onclick="setPayment('card')" id="tab-card" class="pay-tab">CARTÃO</button>
+                </div>
+
+                <!-- PIX -->
+                <div id="content-pix">
+                    <div class="border-2 border-dashed border-zinc-700 rounded-2xl p-5 text-center mb-6 bg-[#111]">
+                        <p class="text-xs font-bold text-zinc-400 uppercase tracking-wider mb-3">Copie o Código PIX</p>
+                        <div id="pix-skeleton" class="mb-4 space-y-2">
+                            <div class="h-3 bg-zinc-800 rounded animate-pulse w-full"></div>
+                            <div class="h-3 bg-zinc-800 rounded animate-pulse w-5/6 mx-auto"></div>
+                            <div class="h-3 bg-zinc-800 rounded animate-pulse w-4/6 mx-auto"></div>
+                        </div>
+                        <p id="pix-code" class="hidden bg-white border border-zinc-300 rounded-lg p-3 text-[10px] break-all font-mono text-zinc-700 mb-4 h-16 overflow-hidden"></p>
+                        <p id="pix-aviso" class="hidden text-sm font-bold text-white bg-zinc-800 rounded-lg p-3 mb-4">⚠️ PIX indisponível no momento. Pague pelo cartão ou fale com a gente no WhatsApp.</p>
+                        <button id="btn-copy-pix" onclick="copyToClipboard('pix-code', this)" class="w-full bg-white text-brand-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            Copiar Código
+                        </button>
+                    </div>
+                </div>
+
+                <!-- CARTÃO -->
+                <div id="content-card" class="hidden">
+                    <div class="border-2 border-dashed border-[#009EE3] rounded-2xl p-5 text-center mb-4 bg-[#0d1a22]">
+                        <p class="text-xs font-bold text-[#4fc3f7] uppercase tracking-wider mb-4">Pague com Cartão ou Saldo</p>
+                        <div class="bg-white rounded-xl p-4 text-center mb-4">
+                            <p class="text-sm text-zinc-600 font-medium mb-1">⚠️ Ao abrir o link, digite o valor exato de:</p>
+                            <p id="valor-mp" class="text-2xl font-black text-brand-black">R$ 0,00</p>
+                            <p class="text-xs text-zinc-500 mt-1 font-medium">(Já inclui a taxa de R$ 5,00 do cartão)</p>
+                        </div>
+                        <p id="card-link" class="bg-white border border-blue-200 rounded-lg p-3 text-xs break-all font-mono text-brand-black mb-4 font-bold"></p>
+                        <button onclick="abrirMercadoPago(this)" class="w-full bg-[#009EE3] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all">
+                            Abrir Mercado Pago
+                        </button>
+                    </div>
+                    <p class="text-xs text-zinc-400 text-center px-2 font-medium mb-4">⚠️ A produção só conta o seu pedido depois da compensação do valor no Mercado Pago (pode levar até 7 dias).</p>
+                </div>
+
+                <!-- Comprovante -->
+                <div class="border-t border-zinc-800 pt-6 mb-6">
+                    <p class="text-sm font-bold text-center text-zinc-300 mb-3">Anexe o Comprovante de Pagamento <span class="text-white">*</span></p>
+                    <label id="upload-label" class="relative flex flex-col items-center justify-center w-full h-24 border-2 border-dashed border-zinc-600 rounded-2xl cursor-pointer bg-[#141414] hover:bg-[#1c1c1c] transition-colors">
+                        <div class="flex flex-col items-center justify-center pt-5 pb-6" id="upload-content">
+                            <svg class="w-6 h-6 text-zinc-500 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            <p class="text-xs font-semibold text-zinc-400">Toque para selecionar imagem ou PDF</p>
+                        </div>
+                        <input type="file" id="comprovante" class="hidden" accept="image/*,.pdf" onchange="handleFileUpload(this)">
+                    </label>
+                </div>
+
+                <button id="btn-finalizar" onclick="finishOrder()" class="red-btn w-full rounded-2xl py-4 font-bold text-lg">Finalizar Pedido</button>
+                <div class="mt-3"><a href="#" target="_blank" rel="noopener" class="js-suporte block text-center text-sm font-semibold text-zinc-500 underline py-2">Dúvidas? Fale com a gente no WhatsApp</a></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===================== TELA 4 — CONFIRMAÇÃO ===================== -->
+    <div id="screen-4" class="hidden np-screen absolute inset-0 overflow-y-auto no-scrollbar">
+        <div id="inner-4" class="np-inner">
+            <header class="pt-8 pb-3 px-6 flex justify-center">
+                <img src="img/logo.png" alt="Shitbot Coral" class="h-8 object-contain" onerror="this.src='https://placehold.co/120x40/ffffff/0a0a0a?text=SHITBOT'">
+            </header>
+
+            <div class="np-fade px-6 pt-[72px] pb-10 flex-1 text-center">
+                <div class="w-20 h-20 mx-auto mb-6 rounded-full bg-white text-brand-black flex items-center justify-center shadow-xl shadow-black/40">
+                    <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="font-display text-4xl mb-3 text-white">PEDIDO A BORDO!</h2>
+                <p class="text-zinc-400 font-medium mb-8 leading-relaxed">Sua camisa do <strong class="text-white">Navio Pirata do Arruda</strong> está garantida na pré-venda. <strong class="text-white">Vamos te avisar pelo WhatsApp</strong> a cada etapa da produção.</p>
+
+                <div class="panel border-dashed p-6 mb-4">
+                    <p class="text-xs font-bold text-zinc-500 uppercase tracking-widest mb-2">Número do Pedido</p>
+                    <p id="order-number" class="font-display text-5xl stroke-red-text">#NP-000</p>
+                </div>
+
+                <div class="panel p-4 mb-8 text-left text-sm">
+                    <div class="flex justify-between mb-2"><span class="text-zinc-500 font-semibold">Camisas</span><span id="ok-itens" class="font-bold text-white text-right"></span></div>
+                    <div class="flex justify-between"><span class="text-zinc-500 font-semibold">Entrega prevista</span><span id="ok-prazo" class="font-bold text-white text-right"></span></div>
+                </div>
+
+                <a id="btn-whats-ok" href="#" target="_blank" rel="noopener" class="w-full bg-white text-brand-black font-bold py-4 rounded-2xl flex items-center justify-center gap-2 active:scale-95 transition-all mb-4">
+                    Falar com a gente no WhatsApp
+                </a>
+                <a href="index.html" class="text-sm font-semibold text-zinc-500 underline">Voltar para a vitrine</a>
+            </div>
+        </div>
+    </div>
+
+
+    <div id="toast-container" class="absolute bottom-6 left-1/2 -translate-x-1/2 z-[100] flex flex-col gap-2 w-max max-w-[90%] pointer-events-none"></div>
+</div>
+
+<script src="config-prevenda.js"></script>
+<script src="config-pix.js"></script>
+<script>
+    // ═══════════════════════════════════════════════════════════
+    //  CONFIGURAÇÃO
+    // ═══════════════════════════════════════════════════════════
+    const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrK3AeX99G44aU-kfkRZLJCDWM_LpTHxQMOctLJ25dUYKorcLvSGjCnpBOM4CiD8Zdrw/exec";
+
+    // Preço e datas ficam em config-prevenda.js (se o arquivo faltar, usa estes valores padrão)
+    const CFG = (typeof PREVENDA !== 'undefined') ? PREVENDA : {
+        preco: 149.90, entregaPrevista: 'A definir', encerraEm: '', limiteCamisas: 0
+    };
+    const PRECO = CFG.preco;
+    const ENTREGA_PREVISTA = CFG.entregaPrevista;
+    const PREVENDA_ENCERRA_EM = CFG.encerraEm;
+    const LIMITE_CAMISAS = Number(CFG.limiteCamisas) || 0; // 0 = sem limite (aviso; quem trava é o Apps Script)
+    // PIX: vem do arquivo config-pix.js (o MESMO do Pipico)
+    const PIX_OK = (typeof PIX !== 'undefined') && !!PIX.chave && !String(PIX.chave).startsWith('COLE');
+    const PIX_CHAVE = PIX_OK ? String(PIX.chave).replace(/\s/g, '') : '';
+    const PIX_NOME = PIX_OK ? PIX.nome : '';
+    const PIX_CIDADE = PIX_OK ? PIX.cidade : '';
+
+    const TAXA_CARTAO = 5.00;
+
+    // Cartão (mesmo link do Pipico)
+    const MP_LINK = "https://link.mercadopago.com.br/shitbotcoral";
+
+    // WhatsApp da loja (suporte)
+    const WHATS_LOJA = "5581994465372";
+
+    // ═══════════════════════════════════════════════════════════
+    const SIZES = ['P', 'M', 'G', 'GG', 'XG', 'XXG'];
+    const MAX_ITENS_CARRINHO = 30; // só pra evitar toque acidental; NÃO há limite de estoque
+    const PIX_PENDENTE = !PIX_OK;
+
+    const state = {
+        cart: [],
+        size: null,
+        deliveryType: null,
+        paymentType: 'pix',
+        user: {},
+        txid: null,
+        vendidas: 0,
+        statusCarregado: false,
+        comprovanteBase64: null, comprovanteMime: null, comprovanteName: null
+    };
+
+    const $ = id => document.getElementById(id);
+    const totalQtd = () => state.cart.length;
+    const round2 = v => Math.round(v * 100) / 100;
+    const subtotal = () => round2(state.cart.reduce((a, i) => a + i.price, 0));
+    const taxa = () => state.paymentType === 'card' ? TAXA_CARTAO : 0;
+    const totalPagar = () => round2(subtotal() + taxa());
+    const formatMoney = v => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const resumoItens = () => SIZES
+        .map(s => [s, state.cart.filter(i => i.size === s).length])
+        .filter(([, n]) => n > 0)
+        .map(([s, n]) => `${n}× ${s}`).join(', ');
+
+    // ---------- Imagens (aceita png/jpg/webp com nome com espaço) ----------
+    const EXTS = ['png', 'jpg', 'jpeg', 'webp'];
+    function carregarImg(el, base) {
+        let i = 0;
+        el.onerror = () => {
+            i++;
+            if (i < EXTS.length) el.src = encodeURI(`${base}.${EXTS[i]}`);
+            else { el.onerror = null; el.src = 'https://placehold.co/300x400/e4e4e7/71717a?text=Foto'; }
+        };
+        el.src = encodeURI(`${base}.${EXTS[0]}`);
+    }
+    document.querySelectorAll('[data-img-base]').forEach(el => carregarImg(el, el.dataset.imgBase));
+
+    function changeImage(btn, base) {
+        const main = $('main-img');
+        main.style.opacity = '0';
+        setTimeout(() => { carregarImg(main, base); main.style.opacity = '1'; }, 180);
+        document.querySelectorAll('.thumb-btn').forEach(b => b.classList.remove('on'));
+        btn.classList.add('on');
+    }
+
+    // ---------- Pré-venda aberta / encerrada / esgotada ----------
+    function prevendaEncerrada() {
+        if (!PREVENDA_ENCERRA_EM) return false;
+        const t = new Date(PREVENDA_ENCERRA_EM).getTime();
+        return !isNaN(t) && Date.now() > t;
+    }
+
+    // true só depois que a consulta ao servidor voltou e confirmou que esgotou.
+    // Enquanto não carrega, NÃO bloqueia (igual ao estoque do Pipico) — quem
+    // impede de verdade é o Apps Script na hora de finalizar.
+    function limiteAtingido() {
+        return LIMITE_CAMISAS > 0 && state.statusCarregado && state.vendidas >= LIMITE_CAMISAS;
+    }
+
+    function prevendaFechada() {
+        return prevendaEncerrada() || limiteAtingido();
+    }
+
+    function avisoFechada() {
+        return limiteAtingido() && !prevendaEncerrada()
+            ? 'A pré-venda do Navio Pirata esgotou.'
+            : 'A pré-venda foi encerrada.';
+    }
+
+    function aplicarFechamento() {
+        const fechada = prevendaFechada();
+        if (fechada) {
+            $('msg-encerrada').innerText = limiteAtingido() && !prevendaEncerrada() ? 'Pré-venda esgotada' : 'Pré-venda encerrada';
+            $('msg-encerrada').classList.remove('hidden');
+        }
+        $('btn-add').disabled = fechada;
+        $('btn-add').classList.toggle('off', fechada);
+        document.querySelectorAll('.size-btn').forEach(b => b.disabled = fechada);
+    }
+
+    // Consulta quantas já foram vendidas, pra avisar ANTES do pagamento.
+    // Se falhar, a compra continua liberada: a trava real é no Apps Script.
+    async function carregarStatusPreVenda() {
+        if (LIMITE_CAMISAS <= 0) return;
+        try {
+            const controller = new AbortController();
+            const t = setTimeout(() => controller.abort(), 8000);
+            const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getPreVendaStatus' }), signal: controller.signal });
+            clearTimeout(t);
+            const data = await res.json();
+            if (data.status === 'sucesso') {
+                state.vendidas = data.vendidas;
+                state.statusCarregado = true;
+                const restantes = Math.max(0, LIMITE_CAMISAS - data.vendidas);
+                const aviso = $('vagas-restantes');
+                if (aviso) {
+                    if (data.esgotada) {
+                        aviso.textContent = 'Pré-venda esgotada';
+                    } else if (restantes <= 15) {
+                        aviso.textContent = restantes === 1 ? 'Última camisa disponível!' : `Restam ${restantes} camisas na pré-venda`;
+                        aviso.classList.remove('hidden');
+                    }
+                }
+                aplicarFechamento();
+            }
+        } catch (e) {
+            console.error('Não foi possível checar o limite da pré-venda', e);
+        }
+    }
+
+    function iniciarInfos() {
+        $('info-prazo').innerText = ENTREGA_PREVISTA;
+        $('resumo-prazo').innerText = ENTREGA_PREVISTA;
+        $('ok-prazo').innerText = ENTREGA_PREVISTA;
+        if (PREVENDA_ENCERRA_EM && !isNaN(new Date(PREVENDA_ENCERRA_EM).getTime())) {
+            $('info-encerra').innerText = new Date(PREVENDA_ENCERRA_EM).toLocaleDateString('pt-BR');
+            $('info-encerra-wrap').classList.remove('hidden');
+            $('info-encerra-wrap').classList.add('flex');
+        }
+        aplicarFechamento();
+        const linkSuporte = `https://wa.me/${WHATS_LOJA}?text=${encodeURIComponent('Olá! Estou na pré-venda do Navio Pirata do Arruda e preciso de ajuda.')}`;
+        document.querySelectorAll('.js-suporte').forEach(a => a.href = linkSuporte);
+    }
+
+    // ---------- Tamanhos + carrinho (mesmo fluxo do Pipico, sem estoque) ----------
+    function renderSizes() {
+        $('size-grid').innerHTML = SIZES.map(s =>
+            `<button onclick="selectSize('${s}', this)" data-size="${s}" class="size-btn">${s}</button>`).join('');
+    }
+
+    function selectSize(size, btn) {
+        if (prevendaFechada()) return toast(avisoFechada());
+        state.size = size;
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('on', b === btn));
+    }
+
+    function addToCart() {
+        if (prevendaFechada()) return toast(avisoFechada());
+        if (!state.size) return toast('Selecione um tamanho!');
+        if (state.cart.length >= MAX_ITENS_CARRINHO) return toast(`Máximo de ${MAX_ITENS_CARRINHO} camisas por pedido.`);
+
+        state.cart.push({ nome: 'Camisa Navio Pirata', size: state.size, price: PRECO });
+        state.size = null;
+        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('on'));
+        renderCart();
+        toast('Adicionado ao carrinho!');
+    }
+
+    function renderCart() {
+        const list = $('cart-items');
+        const mini = $('mini-cart');
+        list.innerHTML = state.cart.map((item, index) => `
+            <div class="cart-row flex justify-between items-center p-3">
+                <div>
+                    <p class="font-bold text-sm text-white">${item.nome} [${item.size}]</p>
+                    <p class="text-xs text-zinc-400 font-medium">${formatMoney(item.price)}</p>
+                </div>
+                <button onclick="removeFromCart(${index})" class="cart-x" aria-label="Remover ${item.size}">✕</button>
+            </div>`).join('');
+
+        $('cart-count').innerText = state.cart.length;
+        $('cart-total').innerText = formatMoney(subtotal());
+
+        if (state.cart.length > 0) {
+            if (mini.classList.contains('hidden')) {
+                mini.classList.remove('hidden');
+                setTimeout(() => mini.scrollIntoView({ behavior: 'smooth', block: 'end' }), 100);
+            }
+        } else {
+            mini.classList.add('hidden');
+        }
+    }
+
+    function removeFromCart(index) {
+        state.cart.splice(index, 1);
+        renderCart();
+    }
+
+    function goToData() {
+        if (prevendaFechada()) return toast(avisoFechada());
+        if (state.cart.length === 0) return toast('O carrinho está vazio!');
+        navTo(2);
+    }
+
+    // ---------- Navegação (com a transição branco → preto) ----------
+    let jaEntrou = false;
+    function navTo(n) {
+        [1, 2, 3, 4].forEach(i => $('screen-' + i).classList.toggle('hidden', i !== n));
+        const inner = $('inner-' + n);
+        inner.classList.remove('rise-full', 'rise-mid');
+        void inner.offsetWidth; // reinicia a animação
+        if (n === 1 || n === 2) inner.classList.add(n === 1 && !jaEntrou ? 'rise-full' : 'rise-mid');
+        jaEntrou = true;
+        $('screen-' + n).scrollTop = 0;
+        if (n === 3) atualizarPagamento();
+    }
+
+    // ---------- Máscaras e CEP ----------
+    function maskPhone(input) {
+        let v = input.value.replace(/\D/g, '');
+        v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+        v = v.replace(/(\d)(\d{4})$/, '$1-$2');
+        input.value = v.substring(0, 15);
+    }
+
+    function maskCEP(input) {
+        let v = input.value.replace(/\D/g, '');
+        if (v.length > 5) v = v.replace(/^(\d{5})(\d)/, '$1-$2');
+        input.value = v.substring(0, 9);
+        if (v.replace(/\D/g, '').length === 8) fetchCEP(v.replace(/\D/g, ''));
+    }
+
+    async function fetchCEP(cep) {
+        toast('Buscando endereço...');
+        try {
+            const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+            const data = await res.json();
+            if (!data.erro) {
+                $('rua').value = data.logradouro || '';
+                $('bairro').value = data.bairro || '';
+                $('cidade').value = data.localidade || '';
+                $('estado').value = data.uf || '';
+                showManualAddress();
+                $('numero').focus();
+            } else {
+                showManualAddress();
+                toast('CEP não encontrado. Digite manualmente.');
+            }
+        } catch (e) {
+            showManualAddress();
+            toast('Erro na busca. Digite manualmente.');
+        }
+    }
+
+    function showManualAddress() { $('address-fields').classList.remove('hidden'); }
+
+    function setDelivery(type) {
+        state.deliveryType = type;
+        $('opt-retirada').classList.toggle('on', type === 'retirada');
+        $('opt-app').classList.toggle('on', type === 'app');
+    }
+
+    // ---------- Validação dos dados ----------
+    function validateDataAndProceed() {
+        const nome = $('nome').value.trim();
+        const zap = $('zap').value;
+        const zapLimpo = zap.replace(/\D/g, '');
+
+        if (!nome) return toast('Preencha seu Nome Completo.');
+        if (zapLimpo.length !== 11 || zapLimpo[2] !== '9') return toast('⚠️ Digite um WhatsApp válido! Ex: (81) 90000-0000');
+
+        const cepLimpo = $('cep').value.replace(/\D/g, '');
+        if (cepLimpo.length > 0 && cepLimpo.length < 8) { $('cep').focus(); return toast('⚠️ CEP inválido! Digite os 8 números.'); }
+
+        const r = $('rua').value.trim(), n = $('numero').value.trim(), b = $('bairro').value.trim();
+        const c = $('cidade').value.trim(), e = $('estado').value.trim();
+        if (!r || !n || !b || !c) { showManualAddress(); return toast('Preencha o endereço completo.'); }
+        if (!e || e.length < 2) { showManualAddress(); return toast('Preencha o Estado (UF).'); }
+        if (!state.deliveryType) return toast('Selecione como você quer receber!');
+
+        state.user = {
+            nome, zap: zap.trim(),
+            cep: $('cep').value.trim(), rua: r, numero: n, comp: $('complemento').value.trim(),
+            bairro: b, cidade: c, estado: e.toUpperCase()
+        };
+
+        // Código único do pedido + registro ANTES do pagamento
+        // (se a pessoa pagar e sumir, você já tem os dados dela na aba "Intencoes")
+        if (!state.txid) state.txid = gerarTxid();
+        logIntencaoCompra();
+        navTo(3);
+    }
+
+    function enderecoTexto() {
+        const u = state.user;
+        return `${u.rua}, ${u.numero} ${u.comp || ''} - ${u.bairro}, ${u.cidade}-${u.estado}${u.cep ? ', ' + u.cep : ''}`;
+    }
+
+    function gerarTxid() {
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let id = 'NP';
+        for (let i = 0; i < 6; i++) id += chars.charAt(Math.floor(Math.random() * chars.length));
+        return id;
+    }
+
+    function logIntencaoCompra() {
+        fetch(GOOGLE_SCRIPT_URL, {
+            method: 'POST',
+            body: JSON.stringify({
+                action: 'logIntencao', produto: 'NAVIO PIRATA', txid: state.txid,
+                nome: state.user.nome, zap: state.user.zap, tamanhos: resumoItens(),
+                endereco: enderecoTexto(), valor: subtotal()
+            })
+        }).catch(e => console.error('Falha ao registrar intenção:', e));
+    }
+
+    // ---------- Pagamento ----------
+    function atualizarPagamento() {
+        $('resumo-itens').innerText = resumoItens();
+        const n = totalQtd();
+        $('resumo-qtd').innerText = `${n} ${n === 1 ? 'camisa' : 'camisas'}`;
+        $('resumo-subtotal').innerText = formatMoney(subtotal());
+
+        const box = $('resumo-taxa-container');
+        box.classList.toggle('hidden', state.paymentType !== 'card');
+        box.classList.toggle('flex', state.paymentType === 'card');
+        $('resumo-total').innerText = formatMoney(totalPagar());
+        $('valor-mp').innerText = formatMoney(totalPagar());
+        $('card-link').innerText = MP_LINK;
+
+        gerarPixNaTela();
+    }
+
+    function gerarPixNaTela() {
+        const el = $('pix-code'), sk = $('pix-skeleton'), aviso = $('pix-aviso'), btn = $('btn-copy-pix');
+        el.classList.add('hidden'); aviso.classList.add('hidden'); sk.classList.remove('hidden');
+        setTimeout(() => {
+            sk.classList.add('hidden');
+            if (PIX_PENDENTE) {
+                aviso.classList.remove('hidden');
+                btn.classList.add('hidden');
+                return;
+            }
+            btn.classList.remove('hidden');
+            el.innerText = gerarPayloadPix(subtotal());
+            el.classList.remove('hidden');
+        }, 500);
+    }
+
+    function setPayment(type) {
+        state.paymentType = type;
+        $('tab-pix').classList.toggle('on', type === 'pix');
+        $('tab-card').classList.toggle('on', type === 'card');
+        $('content-pix').classList.toggle('hidden', type !== 'pix');
+        $('content-card').classList.toggle('hidden', type !== 'card');
+        atualizarPagamento();
+    }
+
+    function pixTexto(str, max) {
+        // O padrão do PIX só aceita caracteres simples: tira acentos e símbolos
+        return String(str || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .replace(/[^\x20-\x7E]/g, '').trim().substring(0, max);
+    }
+
+    function gerarPayloadPix(valor) {
+        const valorStr = valor.toFixed(2);
+        let payload = '000201';
+        const gui = '0014br.gov.bcb.pix';
+        const chave = '01' + PIX_CHAVE.length.toString().padStart(2, '0') + PIX_CHAVE;
+        const infoConta = gui + chave;
+        payload += '26' + infoConta.length.toString().padStart(2, '0') + infoConta;
+        payload += '52040000530398654' + valorStr.length.toString().padStart(2, '0') + valorStr;
+        payload += '5802BR';
+        const nome = pixTexto(PIX_NOME, 25);
+        payload += '59' + nome.length.toString().padStart(2, '0') + nome;
+        const cidade = pixTexto(PIX_CIDADE, 15);
+        payload += '60' + cidade.length.toString().padStart(2, '0') + cidade;
+        const txid = (state.txid || '***').substring(0, 25);
+        const infoAdicional = '05' + txid.length.toString().padStart(2, '0') + txid;
+        payload += '62' + infoAdicional.length.toString().padStart(2, '0') + infoAdicional;
+        payload += '6304';
+        let crc = 0xFFFF;
+        for (let i = 0; i < payload.length; i++) {
+            crc ^= payload.charCodeAt(i) << 8;
+            for (let j = 0; j < 8; j++) crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+        }
+        return payload + crc.toString(16).toUpperCase().padStart(4, '0');
+    }
+
+    async function copyToClipboard(id, btn) {
+        const text = $(id).innerText;
+        try {
+            await navigator.clipboard.writeText(text);
+        } catch (e) {
+            const ta = document.createElement('textarea');
+            ta.value = text; document.body.appendChild(ta); ta.select();
+            document.execCommand('copy'); document.body.removeChild(ta);
+        }
+        const original = btn.innerHTML;
+        btn.innerHTML = '✅ Copiado!';
+        setTimeout(() => btn.innerHTML = original, 1800);
+    }
+
+    function abrirMercadoPago(btn) {
+        copyToClipboard('card-link', btn);
+        setTimeout(() => window.open(MP_LINK, '_blank'), 500);
+    }
+
+    // ---------- Comprovante (comprime imagem antes de enviar) ----------
+    function handleFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+        const conteudo = $('upload-content');
+
+        const marcarOk = nome => {
+            conteudo.innerHTML = `<p class="text-sm font-bold text-white">✅ ${nome}</p><p class="text-xs text-zinc-500 mt-1">Toque para trocar</p>`;
+            $('upload-label').classList.replace('border-zinc-600', 'border-white');
+        };
+
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = ev => {
+                const img = new Image();
+                img.onload = () => {
+                    const max = 1280;
+                    let w = img.width, h = img.height;
+                    if (w > h && w > max) { h *= max / w; w = max; }
+                    else if (h >= w && h > max) { w *= max / h; h = max; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    state.comprovanteBase64 = dataUrl.split(',')[1];
+                    state.comprovanteMime = 'image/jpeg';
+                    state.comprovanteName = 'comprovante.jpg';
+                    marcarOk('Comprovante anexado');
+                };
+                img.src = ev.target.result;
+            };
+            reader.readAsDataURL(file);
+        } else {
+            if (file.size > 5 * 1024 * 1024) { input.value = ''; return toast('PDF muito grande (máx. 5 MB).'); }
+            const reader = new FileReader();
+            reader.onload = ev => {
+                state.comprovanteBase64 = ev.target.result.split(',')[1];
+                state.comprovanteMime = file.type;
+                state.comprovanteName = file.name;
+                marcarOk(file.name);
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    // ---------- Finalizar ----------
+    async function finishOrder() {
+        if (!state.comprovanteBase64) {
+            $('upload-label').classList.add('border-white');
+            return toast('⚠️ É obrigatório anexar o comprovante para finalizar!');
+        }
+        if (prevendaFechada()) return toast(avisoFechada());
+
+        const btn = $('btn-finalizar');
+        btn.innerHTML = 'Processando... ⌛';
+        btn.disabled = true;
+
+        const itens = state.cart.map(i => ({ size: i.size, price: i.price }));
+
+        const orderData = {
+            action: 'saveOrderPreVenda',
+            produto: 'NAVIO PIRATA',
+            cliente: state.user,
+            itens,
+            frete: state.deliveryType,
+            pagamento: state.paymentType,
+            total: totalPagar(),
+            prazo: ENTREGA_PREVISTA,
+            txid: state.txid,
+            fileBase64: state.comprovanteBase64,
+            fileMime: state.comprovanteMime,
+            fileName: state.comprovanteName
+        };
+
+        try {
+            let result = null, ultimoErro = null;
+            for (let tentativa = 1; tentativa <= 2 && !result; tentativa++) {
+                try {
+                    const controller = new AbortController();
+                    const t = setTimeout(() => controller.abort(), 30000);
+                    const response = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify(orderData), signal: controller.signal });
+                    clearTimeout(t);
+                    result = await response.json();
+                } catch (e) {
+                    ultimoErro = e;
+                    if (tentativa < 2) await new Promise(r => setTimeout(r, 2000));
+                }
+            }
+            if (!result) throw ultimoErro || new Error('sem resposta do servidor');
+
+            if (result.status === 'sucesso') {
+                $('order-number').innerText = `#${result.orderId}`;
+                $('ok-itens').innerText = resumoItens();
+                const msg = `Olá! Acabei de fazer o pedido ${result.orderId} na pré-venda do Navio Pirata do Arruda (${resumoItens().replace(/×/g, 'x')}). Gostaria de acompanhar o andamento.`;
+                $('btn-whats-ok').href = `https://wa.me/${WHATS_LOJA}?text=${encodeURIComponent(msg)}`;
+                navTo(4);
+            } else if (result.status === 'erro_limite') {
+                // O Apps Script recusou por causa do limite de camisas (a trava de verdade).
+                // Atualiza a página com o número certo de vagas restantes.
+                if (typeof result.vendidas === 'number') state.vendidas = result.vendidas;
+                state.statusCarregado = true;
+                aplicarFechamento();
+                toast(result.detalhe);
+                btn.innerHTML = 'Finalizar Pedido';
+                btn.disabled = false;
+                return;
+            } else {
+                const e = new Error(result.detalhe || 'erro');
+                e.doServidor = true;
+                throw e;
+            }
+        } catch (error) {
+            if (error.doServidor) toast(`Não foi possível salvar o pedido: ${error.message}. Se já pagou, chama a gente no WhatsApp.`);
+            else toast('Sem conexão com o servidor. Seu comprovante continua anexado, tente de novo em instantes. Se já pagou, chama a gente no WhatsApp.');
+            btn.innerHTML = 'Finalizar Pedido';
+            btn.disabled = false;
+        }
+    }
+
+    // ---------- Toast ----------
+    function toast(msg) {
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerText = msg;
+        $('toast-container').innerHTML = ''; // um aviso por vez (não empilha)
+        $('toast-container').appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; el.style.transition = 'opacity .3s'; setTimeout(() => el.remove(), 300); }, 3200);
+    }
+
+    // ---------- Início ----------
+    renderSizes();
+    iniciarInfos();
+    renderCart();
+    carregarStatusPreVenda();
+</script>
+</body>
+</html>
