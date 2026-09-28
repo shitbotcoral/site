@@ -108,7 +108,8 @@
         /* Botões de tamanho (mesmo comportamento do Pipico: escolhe e adiciona ao carrinho) */
         .size-btn {
             background: #141414; border: 2px solid #262626; color: #a1a1aa;
-            border-radius: 12px; padding: 12px 0; font-weight: 800;
+            border-radius: 12px; padding: 12px 0; font-weight: 800; min-height: 52px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
             transition: all .15s ease;
         }
         .size-btn:active { transform: scale(0.95); }
@@ -452,14 +453,20 @@
     // ═══════════════════════════════════════════════════════════
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrK3AeX99G44aU-kfkRZLJCDWM_LpTHxQMOctLJ25dUYKorcLvSGjCnpBOM4CiD8Zdrw/exec";
 
-    // Preço e datas ficam em config-prevenda.js (se o arquivo faltar, usa estes valores padrão)
+    // Preço e datas ficam em config-prevenda.js. Se esse arquivo não carregar por
+    // algum motivo (ex: pré-visualizando só este HTML, sem os arquivos vizinhos),
+    // usa este padrão de segurança — que mantém o XXG travado. Nunca deixe
+    // "tamanhosIndisponiveis" vazio aqui, senão uma falha de carregamento libera
+    // um tamanho que não deveria estar à venda.
     const CFG = (typeof PREVENDA !== 'undefined') ? PREVENDA : {
-        preco: 149.90, entregaPrevista: 'A definir', encerraEm: '', limiteCamisas: 0
+        preco: 149.90, entregaPrevista: 'A definir', encerraEm: '', limiteCamisas: 0,
+        tamanhosIndisponiveis: ['XXG']
     };
     const PRECO = CFG.preco;
     const ENTREGA_PREVISTA = CFG.entregaPrevista;
     const PREVENDA_ENCERRA_EM = CFG.encerraEm;
     const LIMITE_CAMISAS = Number(CFG.limiteCamisas) || 0; // 0 = sem limite (aviso; quem trava é o Apps Script)
+    const TAMANHOS_INDISPONIVEIS = Array.isArray(CFG.tamanhosIndisponiveis) ? CFG.tamanhosIndisponiveis.map(s => String(s).toUpperCase()) : [];
     // PIX: vem do arquivo config-pix.js (o MESMO do Pipico)
     const PIX_OK = (typeof PIX !== 'undefined') && !!PIX.chave && !String(PIX.chave).startsWith('COLE');
     const PIX_CHAVE = PIX_OK ? String(PIX.chave).replace(/\s/g, '') : '';
@@ -556,7 +563,10 @@
         }
         $('btn-add').disabled = fechada;
         $('btn-add').classList.toggle('off', fechada);
-        document.querySelectorAll('.size-btn').forEach(b => b.disabled = fechada);
+        document.querySelectorAll('.size-btn').forEach(b => {
+            if (tamanhoIndisponivel(b.dataset.size)) return; // esse continua travado sempre
+            b.disabled = fechada;
+        });
     }
 
     // Consulta quantas já foram vendidas, pra avisar ANTES do pagamento.
@@ -604,12 +614,19 @@
     }
 
     // ---------- Tamanhos + carrinho (mesmo fluxo do Pipico, sem estoque) ----------
+    function tamanhoIndisponivel(s) {
+        return TAMANHOS_INDISPONIVEIS.includes(s);
+    }
+
     function renderSizes() {
-        $('size-grid').innerHTML = SIZES.map(s =>
-            `<button onclick="selectSize('${s}', this)" data-size="${s}" class="size-btn">${s}</button>`).join('');
+        $('size-grid').innerHTML = SIZES.map(s => tamanhoIndisponivel(s)
+            ? `<button data-size="${s}" class="size-btn" disabled title="Tamanho indisponível">${s}<span class="block text-[9px] font-normal normal-case opacity-70">Indisponível</span></button>`
+            : `<button onclick="selectSize('${s}', this)" data-size="${s}" class="size-btn">${s}</button>`
+        ).join('');
     }
 
     function selectSize(size, btn) {
+        if (tamanhoIndisponivel(size)) return; // segurança extra; o botão já vem desabilitado
         if (prevendaFechada()) return toast(avisoFechada());
         state.size = size;
         document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('on', b === btn));

@@ -18,5 +18,11 @@ const PREVENDA = {
     // Ao atingir, a página fecha sozinha e mostra "Pré-venda esgotada".
     // IMPORTANTE: quem trava de verdade é o Apps Script (LIMITE_PREVENDA, no topo
     // do Codigo_AppScript.gs) — mude o mesmo número nos dois lugares.
-    limiteCamisas: 90
+    limiteCamisas: 90,
+
+    // Tamanhos que NÃO estão à venda nesta pré-venda (aparecem cinza e travados).
+    // Ex: ["XXG"] ou ["XG", "XXG"]. Vazio [] = todos os tamanhos disponíveis.
+    // IMPORTANTE: quem trava de verdade é o Apps Script (TAMANHOS_INDISPONIVEIS_PREVENDA,
+    // perto de LIMITE_PREVENDA) — mude a mesma lista nos dois lugares.
+    tamanhosIndisponiveis: ["XXG"]
 };
