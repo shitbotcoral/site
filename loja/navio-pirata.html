@@ -115,6 +115,15 @@
         .size-btn:active { transform: scale(0.95); }
         .size-btn.on { background: #fff; border-color: #fff; color: #0a0a0a; }
         .size-btn:disabled { opacity: .4; pointer-events: none; }
+        /* Tamanho esgotado (igual ao Pipico: risco diagonal, travado) */
+        .size-btn.esgotado {
+            background: linear-gradient(to top right, transparent calc(50% - 1px), #4a4a4a calc(50% - 1px), #4a4a4a calc(50% + 1px), transparent calc(50% + 1px)) !important;
+            color: #6a6a6a !important;
+            opacity: 0.6;
+            pointer-events: none;
+            border-color: #262626 !important;
+        }
+        .stock-badge { position: absolute; top: -6px; right: -6px; }
 
         .cart-row { background: #1c1c1c; border: 1px solid #2a2a2a; border-radius: 12px; }
         .cart-x {
@@ -200,7 +209,7 @@
                 <!-- Tamanhos -->
                 <div class="px-6 mb-8">
                     <p class="text-sm font-semibold text-zinc-400 uppercase tracking-wider mb-3">Escolha o Tamanho</p>
-                    <p id="vagas-restantes" class="hidden text-xs font-bold text-white bg-brand-red/90 border border-white/30 rounded-lg px-3 py-2 mb-3"></p>
+                    <p id="low-stock-msg" class="hidden text-xs font-bold text-white bg-brand-red/90 border border-white/30 rounded-lg px-3 py-2 mb-3">🔥 Últimas unidades! Garanta logo.</p>
                     <div id="size-grid" class="grid grid-cols-3 gap-3"></div>
                     <div id="msg-encerrada" class="hidden mt-4 panel p-4 text-center text-sm font-bold">Pré-venda encerrada</div>
                 </div>
@@ -453,20 +462,12 @@
     // ═══════════════════════════════════════════════════════════
     const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwrK3AeX99G44aU-kfkRZLJCDWM_LpTHxQMOctLJ25dUYKorcLvSGjCnpBOM4CiD8Zdrw/exec";
 
-    // Preço e datas ficam em config-prevenda.js. Se esse arquivo não carregar por
-    // algum motivo (ex: pré-visualizando só este HTML, sem os arquivos vizinhos),
-    // usa este padrão de segurança — que mantém o XXG travado. Nunca deixe
-    // "tamanhosIndisponiveis" vazio aqui, senão uma falha de carregamento libera
-    // um tamanho que não deveria estar à venda.
     const CFG = (typeof PREVENDA !== 'undefined') ? PREVENDA : {
-        preco: 149.90, entregaPrevista: 'A definir', encerraEm: '', limiteCamisas: 0,
-        tamanhosIndisponiveis: ['XXG']
+        preco: 149.90, entregaPrevista: 'A definir', encerraEm: ''
     };
     const PRECO = CFG.preco;
     const ENTREGA_PREVISTA = CFG.entregaPrevista;
     const PREVENDA_ENCERRA_EM = CFG.encerraEm;
-    const LIMITE_CAMISAS = Number(CFG.limiteCamisas) || 0; // 0 = sem limite (aviso; quem trava é o Apps Script)
-    const TAMANHOS_INDISPONIVEIS = Array.isArray(CFG.tamanhosIndisponiveis) ? CFG.tamanhosIndisponiveis.map(s => String(s).toUpperCase()) : [];
     // PIX: vem do arquivo config-pix.js (o MESMO do Pipico)
     const PIX_OK = (typeof PIX !== 'undefined') && !!PIX.chave && !String(PIX.chave).startsWith('COLE');
     const PIX_CHAVE = PIX_OK ? String(PIX.chave).replace(/\s/g, '') : '';
@@ -483,7 +484,7 @@
 
     // ═══════════════════════════════════════════════════════════
     const SIZES = ['P', 'M', 'G', 'GG', 'XG', 'XXG'];
-    const MAX_ITENS_CARRINHO = 30; // só pra evitar toque acidental; NÃO há limite de estoque
+    const MAX_ITENS_CARRINHO = 30; // só pra evitar toque acidental — quem limita de verdade é o estoque
     const PIX_PENDENTE = !PIX_OK;
 
     const state = {
@@ -493,8 +494,8 @@
         paymentType: 'pix',
         user: {},
         txid: null,
-        vendidas: 0,
-        statusCarregado: false,
+        estoque: {},
+        estoqueCarregado: false,
         comprovanteBase64: null, comprovanteMime: null, comprovanteName: null
     };
 
@@ -531,72 +532,33 @@
         btn.classList.add('on');
     }
 
-    // ---------- Pré-venda aberta / encerrada / esgotada ----------
+    // ---------- Pré-venda aberta / encerrada por data ----------
     function prevendaEncerrada() {
         if (!PREVENDA_ENCERRA_EM) return false;
         const t = new Date(PREVENDA_ENCERRA_EM).getTime();
         return !isNaN(t) && Date.now() > t;
     }
 
-    // true só depois que a consulta ao servidor voltou e confirmou que esgotou.
-    // Enquanto não carrega, NÃO bloqueia (igual ao estoque do Pipico) — quem
-    // impede de verdade é o Apps Script na hora de finalizar.
-    function limiteAtingido() {
-        return LIMITE_CAMISAS > 0 && state.statusCarregado && state.vendidas >= LIMITE_CAMISAS;
-    }
-
+    // Mantido como um pequeno "apelido" pra não precisar trocar cada chamada
+    // espalhada pelo código — hoje só depende da data (o estoque é tratado
+    // tamanho a tamanho, igual ao Pipico, não fecha a pré-venda inteira).
     function prevendaFechada() {
-        return prevendaEncerrada() || limiteAtingido();
+        return prevendaEncerrada();
     }
 
     function avisoFechada() {
-        return limiteAtingido() && !prevendaEncerrada()
-            ? 'A pré-venda do Navio Pirata esgotou.'
-            : 'A pré-venda foi encerrada.';
+        return 'A pré-venda foi encerrada.';
     }
 
     function aplicarFechamento() {
         const fechada = prevendaFechada();
         if (fechada) {
-            $('msg-encerrada').innerText = limiteAtingido() && !prevendaEncerrada() ? 'Pré-venda esgotada' : 'Pré-venda encerrada';
+            $('msg-encerrada').innerText = 'Pré-venda encerrada';
             $('msg-encerrada').classList.remove('hidden');
         }
         $('btn-add').disabled = fechada;
         $('btn-add').classList.toggle('off', fechada);
-        document.querySelectorAll('.size-btn').forEach(b => {
-            if (tamanhoIndisponivel(b.dataset.size)) return; // esse continua travado sempre
-            b.disabled = fechada;
-        });
-    }
-
-    // Consulta quantas já foram vendidas, pra avisar ANTES do pagamento.
-    // Se falhar, a compra continua liberada: a trava real é no Apps Script.
-    async function carregarStatusPreVenda() {
-        if (LIMITE_CAMISAS <= 0) return;
-        try {
-            const controller = new AbortController();
-            const t = setTimeout(() => controller.abort(), 8000);
-            const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: JSON.stringify({ action: 'getPreVendaStatus' }), signal: controller.signal });
-            clearTimeout(t);
-            const data = await res.json();
-            if (data.status === 'sucesso') {
-                state.vendidas = data.vendidas;
-                state.statusCarregado = true;
-                const restantes = Math.max(0, LIMITE_CAMISAS - data.vendidas);
-                const aviso = $('vagas-restantes');
-                if (aviso) {
-                    if (data.esgotada) {
-                        aviso.textContent = 'Pré-venda esgotada';
-                    } else if (restantes <= 15) {
-                        aviso.textContent = restantes === 1 ? 'Última camisa disponível!' : `Restam ${restantes} camisas na pré-venda`;
-                        aviso.classList.remove('hidden');
-                    }
-                }
-                aplicarFechamento();
-            }
-        } catch (e) {
-            console.error('Não foi possível checar o limite da pré-venda', e);
-        }
+        document.querySelectorAll('.size-btn').forEach(b => b.disabled = fechada);
     }
 
     function iniciarInfos() {
@@ -613,20 +575,82 @@
         document.querySelectorAll('.js-suporte').forEach(a => a.href = linkSuporte);
     }
 
-    // ---------- Tamanhos + carrinho (mesmo fluxo do Pipico, sem estoque) ----------
-    function tamanhoIndisponivel(s) {
-        return TAMANHOS_INDISPONIVEIS.includes(s);
+    // ---------- Estoque por tamanho (igual ao Pipico) ----------
+    // Se o estoque não carregou (Google fora do ar), NÃO bloqueia a venda:
+    // o servidor confere o estoque de novo na hora de salvar o pedido.
+    function qtdDisponivel(size) {
+        if (!state.estoqueCarregado) return Infinity;
+        return state.estoque[size] || 0;
     }
 
+    async function fetchStockNavio(silent = false) {
+        let ok = false;
+        for (let tentativa = 1; tentativa <= 2 && !ok; tentativa++) {
+            try {
+                const controller = new AbortController();
+                const reqTimer = setTimeout(() => controller.abort(), 8000);
+                const res = await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'getStockNavio' }),
+                    signal: controller.signal
+                });
+                clearTimeout(reqTimer);
+                const data = await res.json();
+                if (data.status === 'sucesso') {
+                    state.estoque = data.estoque;
+                    state.estoqueCarregado = true;
+                    ok = true;
+                    updateSizeButtons();
+                }
+            } catch (e) {
+                console.error('Erro ao puxar estoque do Navio Pirata (tentativa ' + tentativa + ')', e);
+                if (tentativa < 2) await new Promise(r => setTimeout(r, 1500));
+            }
+        }
+        if (!ok && !silent) toast('Não deu pra atualizar o estoque agora. Você pode continuar, a gente confere na hora de finalizar.');
+        return ok;
+    }
+
+    // ---------- Tamanhos + carrinho (mesmo fluxo do Pipico) ----------
     function renderSizes() {
-        $('size-grid').innerHTML = SIZES.map(s => tamanhoIndisponivel(s)
-            ? `<button data-size="${s}" class="size-btn" disabled title="Tamanho indisponível">${s}<span class="block text-[9px] font-normal normal-case opacity-70">Indisponível</span></button>`
-            : `<button onclick="selectSize('${s}', this)" data-size="${s}" class="size-btn">${s}</button>`
-        ).join('');
+        $('size-grid').innerHTML = SIZES.map(s =>
+            `<button onclick="selectSize('${s}', this)" data-size="${s}" class="size-btn">${s}</button>`).join('');
+    }
+
+    function updateSizeButtons() {
+        document.querySelectorAll('.size-btn').forEach(btn => {
+            const size = btn.dataset.size;
+            const inCart = state.cart.filter(i => i.size === size).length;
+            const available = qtdDisponivel(size) - inCart;
+
+            const oldBadge = btn.querySelector('.stock-badge');
+            if (oldBadge) oldBadge.remove();
+
+            if (available <= 0) {
+                btn.classList.add('esgotado');
+                if (state.size === size) state.size = null;
+            } else {
+                btn.classList.remove('esgotado');
+                if (available <= 3) {
+                    const badge = document.createElement('span');
+                    badge.className = 'stock-badge bg-brand-red text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center leading-none shadow border border-white/50';
+                    badge.innerText = available;
+                    btn.style.position = 'relative';
+                    btn.appendChild(badge);
+                }
+            }
+        });
+
+        const hasLow = Object.entries(state.estoque).some(([sz, qty]) => {
+            const inCart = state.cart.filter(i => i.size === sz).length;
+            return (qty - inCart) > 0 && (qty - inCart) <= 3;
+        });
+        const msg = $('low-stock-msg');
+        if (msg) hasLow ? msg.classList.remove('hidden') : msg.classList.add('hidden');
     }
 
     function selectSize(size, btn) {
-        if (tamanhoIndisponivel(size)) return; // segurança extra; o botão já vem desabilitado
+        if (btn.classList.contains('esgotado')) return;
         if (prevendaFechada()) return toast(avisoFechada());
         state.size = size;
         document.querySelectorAll('.size-btn').forEach(b => b.classList.toggle('on', b === btn));
@@ -635,11 +659,15 @@
     function addToCart() {
         if (prevendaFechada()) return toast(avisoFechada());
         if (!state.size) return toast('Selecione um tamanho!');
+
+        const inCart = state.cart.filter(i => i.size === state.size).length;
+        const available = qtdDisponivel(state.size);
+        if (inCart >= available) return toast('Estoque limite atingido para este tamanho!');
         if (state.cart.length >= MAX_ITENS_CARRINHO) return toast(`Máximo de ${MAX_ITENS_CARRINHO} camisas por pedido.`);
 
         state.cart.push({ nome: 'Camisa Navio Pirata', size: state.size, price: PRECO });
         state.size = null;
-        document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('on'));
+        updateSizeButtons();
         renderCart();
         toast('Adicionado ao carrinho!');
     }
@@ -671,6 +699,7 @@
 
     function removeFromCart(index) {
         state.cart.splice(index, 1);
+        updateSizeButtons();
         renderCart();
     }
 
@@ -980,13 +1009,11 @@
                 const msg = `Olá! Acabei de fazer o pedido ${result.orderId} na pré-venda do Navio Pirata do Arruda (${resumoItens().replace(/×/g, 'x')}). Gostaria de acompanhar o andamento.`;
                 $('btn-whats-ok').href = `https://wa.me/${WHATS_LOJA}?text=${encodeURIComponent(msg)}`;
                 navTo(4);
-            } else if (result.status === 'erro_limite') {
-                // O Apps Script recusou por causa do limite de camisas (a trava de verdade).
-                // Atualiza a página com o número certo de vagas restantes.
-                if (typeof result.vendidas === 'number') state.vendidas = result.vendidas;
-                state.statusCarregado = true;
-                aplicarFechamento();
+            } else if (result.status === 'erro_estoque') {
+                // O Apps Script recusou por falta de estoque (a trava de verdade).
+                // Atualiza o estoque na tela pra refletir o que realmente sobrou.
                 toast(result.detalhe);
+                fetchStockNavio(true);
                 btn.innerHTML = 'Finalizar Pedido';
                 btn.disabled = false;
                 return;
@@ -1017,7 +1044,7 @@
     renderSizes();
     iniciarInfos();
     renderCart();
-    carregarStatusPreVenda();
+    fetchStockNavio();
 </script>
 </body>
 </html>
