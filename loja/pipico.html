@@ -293,7 +293,7 @@
                             <div class="h-3 bg-gray-200 rounded animate-pulse w-4/6 mx-auto"></div>
                         </div>
                         <p id="pix-code" class="hidden bg-white border border-gray-200 rounded-lg p-3 text-[10px] break-all font-mono text-gray-600 mb-4 h-16 overflow-hidden relative after:content-[''] after:absolute after:bottom-0 after:left-0 after:w-full after:h-6 after:bg-gradient-to-t after:from-white after:to-transparent"></p>
-                        <button id="btn-copy-pix" onclick="copyToClipboard('pix-code', this)" class="w-full bg-white border-2 border-brand-black text-brand-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-gray-100 transition-all">
+                        <button id="btn-copy-pix" onclick="registrarCliquePagamento('pix'); copyToClipboard('pix-code', this)" class="w-full bg-white border-2 border-brand-black text-brand-black font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:bg-gray-100 transition-all">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
                             Copiar Código
                         </button>
@@ -314,7 +314,7 @@
                             https://link.mercadopago.com.br/shitbotcoral
                         </p>
                         
-                        <button onclick="copyToClipboard('card-link', this); setTimeout(() => window.open('https://link.mercadopago.com.br/shitbotcoral', '_blank'), 500);" class="w-full bg-[#009EE3] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-500/30">
+                        <button onclick="abrirMercadoPago(this)" class="w-full bg-[#009EE3] text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 active:scale-95 transition-all shadow-lg shadow-blue-500/30">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                             Abrir Mercado Pago
                         </button>
@@ -731,10 +731,10 @@
             return id;
         }
 
-        function logIntencaoCompra() {
+        function dadosIntencao() {
             const subtotal = state.cart.reduce((acc, item) => acc + item.price, 0);
-            const payload = {
-                action: "logIntencao",
+            return {
+                produto: "PIPICO",
                 txid: state.txid,
                 nome: state.user.nome,
                 zap: state.user.zap,
@@ -742,11 +742,37 @@
                 endereco: `${state.user.rua}, ${state.user.numero} ${state.user.comp || ''} - ${state.user.bairro}, ${state.user.cidade}-${state.user.estado}${state.user.cep ? ', ' + state.user.cep : ''}`,
                 valor: subtotal
             };
+        }
+
+        function logIntencaoCompra() {
             // Fire-and-forget: não bloqueia o fluxo do cliente nem trava se falhar
             fetch(GOOGLE_SCRIPT_URL, {
                 method: 'POST',
-                body: JSON.stringify(payload)
+                body: JSON.stringify(Object.assign({ action: "logIntencao" }, dadosIntencao()))
             }).catch(e => console.error('Falha ao registrar intenção:', e));
+        }
+
+        // Registra na aba "Intenções" se a pessoa copiou o PIX ou abriu o cartão, com horário.
+        // Silencioso: se o Google falhar ou demorar, a compra segue normalmente.
+        const ultimoCliquePagamento = {};
+        function registrarCliquePagamento(metodo) {
+            try {
+                if (!state.txid || !state.user || !state.user.nome) return;
+                const agora = Date.now();
+                if (ultimoCliquePagamento[metodo] && agora - ultimoCliquePagamento[metodo] < 5000) return;
+                ultimoCliquePagamento[metodo] = agora;
+                fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    keepalive: true,
+                    body: JSON.stringify(Object.assign({ action: "logPagamento", metodo: metodo }, dadosIntencao()))
+                }).catch(e => console.error('Falha ao registrar clique:', e));
+            } catch (e) { console.error(e); }
+        }
+
+        function abrirMercadoPago(btn) {
+            registrarCliquePagamento('card');
+            copyToClipboard('card-link', btn);
+            setTimeout(() => window.open('https://link.mercadopago.com.br/shitbotcoral', '_blank'), 500);
         }
 
         function pixTexto(str, max) {
