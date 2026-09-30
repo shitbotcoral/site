@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SHITBOT CORAL | LINKS</title>
     <link rel="icon" href="sclogo.png" type="image/png">
-    
-    <link rel="preload" as="image" href="btn-shitvloggif.gif">
-    <link rel="preload" as="image" href="btn-camisagif.gif">
-    
+
+    <link rel="preload" as="image" href="shitvlog.webp">
+    <link rel="preload" as="image" href="loja.webp">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <style>
         body {
             background-color: #000000;
-            background-image: url('bg.png'); 
+            background-image: url('bg.jpg');
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -22,66 +22,81 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Efeito de clique e hover nos botões de imagem */
+        /* Efeito de clique e hover nos botões de imagem (mesmo padrão de sempre) */
         .img-btn {
             transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
             display: block;
             width: 100%;
         }
-
+        .img-btn:active { transform: scale(0.98); }
         .img-btn:hover {
             transform: scale(1.03);
-            filter: brightness(1.15); 
+            filter: brightness(1.15);
         }
-        
         .img-btn img {
             width: 100%;
             height: auto;
             display: block;
-            border-radius: 12px; 
+            border-radius: 12px;
+        }
+
+        /* Barra de redes sociais: os ícones vêm soltos (fundo transparente),
+           então a barra escura e o alinhamento são montados aqui. */
+        .social-bar {
+            display: flex;
+            align-items: stretch;
+            background-color: #0d0d0d;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .social-bar a {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 8px;
+            transition: background-color 0.2s ease-in-out, transform 0.15s ease-in-out;
+        }
+        .social-bar a:hover { background-color: #1c1c1c; }
+        .social-bar a:active { transform: scale(0.92); }
+        .social-bar img {
+            height: 34px;
+            width: auto;
+            display: block;
         }
     </style>
-</head> 
+</head>
 <body class="min-h-screen flex flex-col items-center py-10 px-4">
 
     <div class="w-full max-w-md flex flex-col items-center space-y-6">
-        
+
         <div class="flex flex-col items-center text-center w-full px-4 mb-2">
             <img src="shitbotlogo.png" alt="Shitbot Coral" class="w-4/5 h-auto object-contain drop-shadow-2xl">
         </div>
 
         <div class="w-full flex flex-col gap-4">
-            
-            <a href="https://youtu.be/akTtFB0F7p8" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="btn-shitvloggif.gif" alt="Assista ao Shitvlog" decoding="async">
-            </a>
 
-            <a href="https://betdasorte.com/register?affiliate=gdrweqshytyeeapkythrugowjb" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="btn-betdasorte.png" alt="Bet Dá Sorte">
+            <a href="https://youtu.be/sizMkuzECQU" target="_blank" rel="noopener noreferrer" class="img-btn">
+                <img src="shitvlog.webp" alt="Assista ao Shitvlog" decoding="async">
             </a>
 
             <a href="./loja/index.html" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="btn-camisagif.gif" alt="Garanta sua Camisa" decoding="async">
+                <img src="loja.webp" alt="Garanta sua Camisa" decoding="async">
             </a>
 
-            <div class="grid grid-cols-2 gap-4 mt-2">
-                
-                <a href="https://www.instagram.com/shitbotcoral" target="_blank" rel="noopener noreferrer" class="img-btn">
-                    <img src="btn-instagram.png" alt="Instagram">
+            <div class="social-bar mt-2">
+                <a href="https://www.instagram.com/shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+                    <img src="instagram.png" alt="Instagram">
                 </a>
-                
-                <a href="https://www.youtube.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" class="img-btn">
-                    <img src="btn-youtube.png" alt="YouTube">
+                <a href="https://www.youtube.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+                    <img src="youtube.png" alt="YouTube">
                 </a>
-
-                <a href="https://x.com/shitbotcoral" target="_blank" rel="noopener noreferrer" class="img-btn">
-                    <img src="btn-twitter.png" alt="Twitter">
+                <a href="https://x.com/shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
+                    <img src="x.png" alt="X">
                 </a>
-
-                <a href="https://www.tiktok.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" class="img-btn">
-                    <img src="btn-tiktok.png" alt="TikTok">
+                <a href="https://www.tiktok.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+                    <img src="tiktok.png" alt="TikTok">
                 </a>
-
             </div>
 
         </div>
