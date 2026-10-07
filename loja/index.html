@@ -1,125 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>SHITBOT CORAL | LOJA</title>
-    <link rel="icon" href="img/sclogo.png" type="image/png">
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: { brand: { black: '#0a0a0a', red: '#dc2626', gray: '#f4f4f5', darkgray: '#27272a' } },
-                    animation: { 'slide-up': 'slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both' },
-                    keyframes: { slideUp: { '0%': { transform: 'translateY(20px)', opacity: '0' }, '100%': { transform: 'translateY(0)', opacity: '1' } } }
-                }
-            }
-        }
-    </script>
-
-    <style>
-        body {
-            background-color: #f4f4f5;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        #lista { transition: opacity .28s ease, transform .28s ease; }
-        #lista.saindo { opacity: 0; transform: translateY(-6px); }
-        .card-produto { transition: transform .15s ease; }
-        .card-produto:active { transform: scale(0.97); }
-        .card-produto.fechado .cta { opacity: .45; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Loja | Shitbot Coral</title>
+  <meta name="description" content="Loja oficial da Shitbot Coral. Camisas de pronta entrega e pré-venda, com pagamento por PIX ou cartão.">
+  <meta name="theme-color" content="#08080B">
+  <meta name="color-scheme" content="dark light">
+  <meta property="og:title" content="Loja | Shitbot Coral">
+  <meta property="og:description" content="Camisas de pronta entrega e pré-venda. PIX ou cartão.">
+  <meta property="og:image" content="https://shitbotcoral.com.br/loja/produtos/navio-pirata/1.png">
+  <!-- ?v=6.2 nos arquivos abaixo: quando mudar algum, troque o número para o celular não usar a versão velha guardada -->
+  <link rel="icon" href="img/sclogo.png" type="image/png">
+  <link rel="preload" href="fontes/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- adianta a conexão com a planilha (o estoque chega mais rápido) -->
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="stylesheet" href="css/loja.css?v=6.2">
 </head>
-<body class="min-h-screen flex items-center justify-center p-4 sm:p-6 font-sans antialiased text-brand-black">
+<body data-tema="escuro">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-<div class="bg-white w-full max-w-[414px] h-[90vh] max-h-[896px] rounded-[32px] shadow-2xl relative overflow-hidden flex flex-col">
-    <div class="h-full flex flex-col animate-slide-up overflow-y-auto no-scrollbar">
-
-        <header class="pt-8 pb-4 px-6 flex justify-center sticky top-0 bg-white/90 backdrop-blur-md z-10">
-            <img src="img/logo.png" alt="Shitbot Coral" class="h-8 object-contain" onerror="this.src='https://placehold.co/120x40/0a0a0a/FFFFFF?text=SHITBOT'">
-        </header>
-
-        <main id="lista" class="px-6 pt-2 pb-8 flex-1">
-            <div class="grid grid-cols-2 gap-3">
-
-                <!-- ============ PIPICO — PRONTA ENTREGA ============ -->
-                <a href="pipico.html" onclick="return abrir(event, this)" class="card-produto flex flex-col bg-brand-gray rounded-[20px] p-2.5">
-                    <div class="relative bg-white rounded-xl aspect-[3/4] overflow-hidden mb-3">
-                        <img src="img/2.png" alt="Camisa Pipico" class="w-full h-full object-contain p-1" onerror="this.src='https://placehold.co/300x400/ffffff/a1a1aa?text=Pipico'">
-                        <span class="absolute top-2 left-2 bg-brand-black text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-green-400"></span> Pronta entrega
-                        </span>
-                    </div>
-                    <h2 class="text-[15px] font-bold uppercase tracking-wide text-brand-darkgray leading-tight min-h-[2.4em]">Camisa<br>Pipico</h2>
-                    <p class="text-brand-red text-2xl font-black tracking-tight mt-auto pt-2 mb-3">R$ 99,90</p>
-                    <div class="cta w-full bg-brand-black text-white font-bold text-sm text-center py-3 rounded-xl">Comprar agora</div>
-                </a>
-
-                <!-- ============ NAVIO PIRATA — PRÉ-VENDA ============ -->
-                <a id="card-navio" href="navio-pirata.html" onclick="return abrir(event, this)" class="card-produto flex flex-col bg-brand-gray rounded-[20px] p-2.5">
-                    <div class="relative bg-white rounded-xl aspect-[3/4] overflow-hidden mb-3">
-                        <img data-img-base="img/naviopirata 1" alt="Camisa Navio Pirata do Arruda" class="w-full h-full object-contain p-1">
-                        <span id="tag-navio" class="absolute top-2 left-2 bg-brand-red text-white text-[10px] font-bold px-2 py-1 rounded-full">Pré-venda</span>
-                    </div>
-                    <h2 class="text-[15px] font-bold uppercase tracking-wide text-brand-darkgray leading-tight min-h-[2.4em]">Navio Pirata<br>do Arruda</h2>
-                    <p class="text-[11px] text-gray-500 font-medium leading-snug mt-1">Entrega: <span id="prazo-navio" class="font-bold text-gray-700">A definir</span></p>
-                    <p id="preco-navio" class="text-brand-red text-2xl font-black tracking-tight mt-auto pt-2 mb-3">R$ 149,90</p>
-                    <div id="cta-navio" class="cta w-full bg-brand-black text-white font-bold text-sm text-center py-3 rounded-xl">Garantir a minha</div>
-                </a>
-
-            </div>
-
-        </main>
+  <header class="topo" id="topo">
+    <div class="topo-pilula">
+      <a class="marca" href="#/" aria-label="Shitbot Coral, ir para o início da loja">
+        <img class="marca-logo" src="img/logo.png" alt="" width="120" height="36">
+        <span class="marca-txt">Shitbot <b>Coral</b></span>
+      </a>
+      <nav class="topo-nav" aria-label="Principal">
+        <a href="#/" class="topo-link" data-rota="vitrine" data-t="topo.loja">Loja</a>
+        <a href="#/" class="topo-link" data-ir="colecao" data-t="topo.colecao">Coleção</a>
+        <button type="button" class="sacola-btn" id="sacola-btn" aria-haspopup="dialog" aria-controls="sacola" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5.5 8h13l-1.1 11.2a1 1 0 0 1-1 .8H7.6a1 1 0 0 1-1-.8L5.5 8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span class="sacola-rot" data-t="topo.sacola">Sacola</span>
+          <span class="sacola-qtd" id="sacola-qtd" aria-label="0 itens">0</span>
+        </button>
+      </nav>
     </div>
-</div>
+  </header>
 
-<script src="config-prevenda.js"></script>
-<script>
-    const CFG = (typeof PREVENDA !== 'undefined') ? PREVENDA : { preco: 149.90, entregaPrevista: 'A definir', encerraEm: '' };
+  <main id="conteudo" tabindex="-1"></main>
 
-    // Preço, prazo e encerramento vêm de config-prevenda.js
-    document.getElementById('preco-navio').innerText = CFG.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }).replace(/\s/g, ' ');
-    document.getElementById('prazo-navio').innerText = CFG.entregaPrevista;
+  <footer class="rodape">
+    <div class="rodape-in">
+      <div class="rodape-marca" aria-hidden="true">Shitbot<br>Coral</div>
+      <div class="rodape-col">
+        <p data-t="rodape.cidade">Recife, Pernambuco.</p>
+        <p><span data-t="rodape.contato">Pedidos, trocas e dúvidas:</span> <a class="js-whats" href="#" data-t="rodape.whatsapp">WhatsApp da loja</a></p>
+        <p><a class="js-insta" href="#" data-t="rodape.instagram">Instagram</a></p>
+      </div>
+    </div>
+  </footer>
 
-    const t = CFG.encerraEm ? new Date(CFG.encerraEm).getTime() : NaN;
-    if (!isNaN(t) && Date.now() > t) {
-        document.getElementById('tag-navio').innerText = 'Encerrada';
-        document.getElementById('cta-navio').innerText = 'Encerrada';
-        document.getElementById('card-navio').classList.add('fechado');
-    }
+  <!-- Sacola: gaveta lateral no computador, folha de baixo no celular -->
+  <div class="veu" id="veu" hidden></div>
+  <div class="sacola" id="sacola" role="dialog" aria-modal="true" aria-labelledby="sacola-titulo" hidden>
+    <div class="sacola-alca" aria-hidden="true"></div>
+    <div class="sacola-topo">
+      <h2 id="sacola-titulo" data-t="sacola.titulo">Sacola</h2>
+      <button type="button" class="btn-icone" id="sacola-fechar" aria-label="Fechar sacola">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sacola-corpo" id="sacola-corpo"></div>
+    <div class="sacola-pe" id="sacola-pe"></div>
+  </div>
 
-    // Imagens (aceita png/jpg/webp, inclusive nome com espaço)
-    const EXTS = ['png', 'jpg', 'jpeg', 'webp'];
-    function carregarImg(el, base) {
-        let i = 0;
-        el.onerror = () => {
-            i++;
-            if (i < EXTS.length) el.src = encodeURI(`${base}.${EXTS[i]}`);
-            else { el.onerror = null; el.src = 'https://placehold.co/300x400/e4e4e7/71717a?text=Foto'; }
-        };
-        el.src = encodeURI(`${base}.${EXTS[0]}`);
-    }
-    document.querySelectorAll('[data-img-base]').forEach(el => carregarImg(el, el.dataset.imgBase));
+  <!-- Avisos: lidos pelo leitor de tela e mostrados na tela -->
+  <div class="avisos" id="avisos" role="status" aria-live="polite" aria-atomic="true"></div>
 
-    // Saída suave da vitrine (a página do Navio Pirata abre branca e o preto sobe)
-    function abrir(ev, a) {
-        if (ev.metaKey || ev.ctrlKey || ev.shiftKey) return true;
-        ev.preventDefault();
-        document.getElementById('lista').classList.add('saindo');
-        setTimeout(() => { window.location.href = a.href; }, 260);
-        return false;
-    }
-    // Voltando pelo botão "voltar" do navegador, a lista reaparece
-    window.addEventListener('pageshow', e => { if (e.persisted) document.getElementById('lista').classList.remove('saindo'); });
-</script>
+  <noscript><p class="sem-js">A loja precisa do JavaScript ligado para funcionar. Se preferir, chame a gente no WhatsApp: (81) 99446-5372.</p></noscript>
+
+  <script src="js/config.js?v=6.2"></script>
+  <script src="js/textos.js?v=6.2"></script>
+  <script src="js/produtos.js?v=6.2"></script>
+  <script src="js/vendor/qrcode.js?v=6.2"></script>
+  <script src="js/app.js?v=6.2"></script>
 </body>
 </html>

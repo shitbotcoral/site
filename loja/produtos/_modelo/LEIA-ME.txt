@@ -1,0 +1,12 @@
+PASTA MODELO PARA PRODUTO NOVO
+
+1. Copie esta pasta e renomeie com o id do produto (minúsculas, sem espaço,
+   sem acento). Exemplo: produtos/bone-coral/
+2. Coloque as fotos numeradas: 1.jpg, 2.jpg, 3.jpg...
+   - Aceita .jpg, .jpeg, .png e .webp (pode misturar).
+   - A foto 1 é a capa na vitrine; a 2 aparece quando passa o mouse.
+   - Formato em pé, proporção 4:5 (ex.: 1200 x 1500 px), até ~400 KB cada.
+3. Em js/produtos.js, copie um bloco de produto, troque o id para o nome
+   da pasta e liste as fotos em "fotos" com uma descrição de cada uma
+   (a descrição é lida para quem usa leitor de tela).
+4. Na planilha, aba "Produtos", crie a linha com o MESMO id.
