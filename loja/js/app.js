@@ -962,9 +962,9 @@
     const c = st.cliente, zap = String(c.zap || "").replace(/\D/g, "");
     return (c.nome || "").trim().split(/\s+/).length >= 2 && zap.length === 11;
   }
+  // Endereço é obrigatório sempre, até na retirada (o cliente pode mudar para entrega depois)
   function entregaOk() {
-    if (st.entrega === "retirada") return true;
-    if (st.entrega !== "app") return false;
+    if (st.entrega !== "retirada" && st.entrega !== "app") return false;
     const c = st.cliente;
     return !!(c.rua && c.numero && c.bairro && c.cidade && c.estado && c.estado.length === 2);
   }
@@ -1099,7 +1099,8 @@
           ${opc("retirada", E.retiradaTitulo, E.retiradaTexto + (temPreVenda() ? " " + E.retiradaPreVenda : ""), E.retiradaPreco)}
           ${opc("app", E.appTitulo, E.appTexto, E.appPreco)}
         </fieldset>
-        <div class="endereco" id="endereco" ${st.entrega === "app" ? "" : "hidden"}>
+        <div class="endereco" id="endereco">
+          <p class="opcoes-rotulo">${esc(K.enderecoTitulo || "Seu endereço")}</p>
           <div class="linha-2 estreita">
             ${campo({ id: "cep", rotulo: K.cep, valor: c.cep || "", auto: "postal-code", modo: "numeric", dica: K.cepDica, obrig: false, max: 9 })}
             <div class="campo" style="align-content:end"><a class="link-btn" href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener">${esc(K.naoSeiCep)}<span class="so-leitor"> (abre o site dos Correios em nova aba)</span></a></div>
@@ -1123,7 +1124,6 @@
     $$('input[name="entrega"]').forEach(r => r.addEventListener("change", () => {
       st.entrega = r.value;
       guarda.gravar("sc-entrega", st.entrega, ss);
-      $("#endereco").hidden = st.entrega !== "app";
     }));
     const cep = $("#cep");
     cep.addEventListener("input", () => {
@@ -1139,7 +1139,7 @@
       const escolha = $('input[name="entrega"]:checked');
       if (!escolha) erros.push(["grupo-entrega", R.escolhaEntrega]);
       const val = id => $(`#${id}`).value.trim();
-      if (escolha && escolha.value === "app") {
+      {
         const cp = val("cep").replace(/\D/g, "");
         if (cp && cp.length !== 8) erros.push(["cep", R.cep]);
         if (!val("rua")) erros.push(["rua", R.rua]);
@@ -1150,7 +1150,7 @@
       }
       if (!marcarErros(e.target, erros)) return;
       st.entrega = escolha.value;
-      if (st.entrega === "app") Object.assign(st.cliente, { cep: val("cep"), rua: val("rua"), numero: val("numero"), comp: val("comp"), bairro: val("bairro"), cidade: val("cidade"), estado: val("estado").toUpperCase() });
+      Object.assign(st.cliente, { cep: val("cep"), rua: val("rua"), numero: val("numero"), comp: val("comp"), bairro: val("bairro"), cidade: val("cidade"), estado: val("estado").toUpperCase() });
       guarda.gravar("sc-cliente", st.cliente, ss);
       guarda.gravar("sc-entrega", st.entrega, ss);
 
@@ -1200,7 +1200,7 @@
       const p = porId(id);
       return `${p ? p.nome : id} ${st.sacola.filter(i => i.produto === id).map(i => `${i.qtd}x ${i.tamanho}`).join(", ")}`;
     }).join("; ");
-    return { txid: st.txid, produto: ids.join(" + "), nome: c.nome, zap: c.zap, tamanhos, endereco: st.entrega === "app" ? enderecoTexto() : "RETIRADA", valor: subtotal() };
+    return { txid: st.txid, produto: ids.join(" + "), nome: c.nome, zap: c.zap, tamanhos, endereco: enderecoTexto(), valor: subtotal() };
   }
   const enderecoTexto = () => { const c = st.cliente; return `${c.rua}, ${c.numero}${c.comp ? " " + c.comp : ""} - ${c.bairro}, ${c.cidade}-${c.estado}${c.cep ? ", " + c.cep : ""}`; };
   function registrarIntencao() {
@@ -1373,7 +1373,7 @@
     const c = st.cliente;
     const pedido = {
       action: "pedido", txid: st.txid,
-      cliente: st.entrega === "app" ? c : { nome: c.nome, zap: c.zap },
+      cliente: c,
       // tipo e prazo vão junto: a mensagem do WhatsApp segue o que está em produtos.js
       itens: st.sacola.map(i => { const p = porId(i.produto) || {}; return { produto: i.produto, tamanho: i.tamanho, qtd: i.qtd, tipo: p.tipo, prazo: prazo(p) }; }),
       frete: st.entrega, pagamento: st.pagamento, total: total(),
