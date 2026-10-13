@@ -57,10 +57,10 @@ const TEXTOS = {
   /* Fita que corre embaixo da capa (adicione ou tire frases à vontade) */
   fita: [
     "PIX copia e cola",
-    "Aceitamos cartão de crédito",
+    "Aceitamos cartão e PIX",
     "Retirada grátis",
     "Entrega por app em Recife",
-    "É tradição e também é moda!"
+    "É tradição e também é moda"
   ],
 
   /* ----------------------------------------------------------- COLEÇÃO */
@@ -165,6 +165,7 @@ const TEXTOS = {
 
     entregaTitulo: "Entrega",
     entregaPergunta: "Como você quer receber?",
+    enderecoTitulo: "Seu endereço",
     cep: "CEP",
     cepDica: "Preenche rua, bairro e cidade sozinho.",
     naoSeiCep: "Não sei meu CEP",
