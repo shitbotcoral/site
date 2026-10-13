@@ -57,10 +57,10 @@ const TEXTOS = {
   /* Fita que corre embaixo da capa (adicione ou tire frases à vontade) */
   fita: [
     "PIX copia e cola",
-    "Cartão pelo Mercado Pago",
+    "Aceitamos cartão de crédito",
     "Retirada grátis",
     "Entrega por app em Recife",
-    "Feito no Recife"
+    "É tradição e também é moda!"
   ],
 
   /* ----------------------------------------------------------- COLEÇÃO */
