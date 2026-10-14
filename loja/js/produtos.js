@@ -27,7 +27,7 @@ const PRODUTOS = [
     nome: "Navio Pirata",
     categoria: "Camisa",
     tipo: "pre-venda",
-    status: "ativo",
+    status: "encerrado",
     tema: "escuro",
     ajuste: "conter",
     preco: 149.90,
