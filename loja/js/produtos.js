@@ -34,7 +34,10 @@ const PRODUTOS = [
     tamanhos: ["P", "M", "G", "GG", "XG", "XXG"],
     fotos: [
       { arquivo: "1", alt: "Camisa Navio Pirata do Arruda, frente" },
-      { arquivo: "2", alt: "Camisa Navio Pirata do Arruda, costas" }
+      { arquivo: "2", alt: "Camisa Navio Pirata do Arruda, costas" },
+      { arquivo: "3", alt: "foto 1" },
+      { arquivo: "4", alt: "foto 2" },
+      { arquivo: "5", alt: "foto 3" }
     ],
     // Texto curto embaixo do preço. Pode ter um para cada tipo; o site usa o do tipo atual.
     resumo: {
