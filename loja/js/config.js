@@ -13,7 +13,7 @@ const LOJA = {
        destaqueNoSite: "pipico",
      Deixe "" para usar o primeiro produto à venda da lista.
      --------------------------------------------------------------- */
-  destaqueNoSite: "pipico",
+  destaqueNoSite: "navio-pirata",
 
   /* ---------------------------------------------------------------
      TAXA DO CARTÃO (em %)
