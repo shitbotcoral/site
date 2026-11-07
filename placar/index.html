@@ -303,7 +303,12 @@
       if (state.layout === 'split') {
         // --- SOFASCORE ---
         if(state.showLogo && scLogoImg.complete && scLogoImg.naturalWidth > 0) {
-          ctx.drawImage(scLogoImg, baseW/2 - 24, cy - 35, 48, 48);
+          // Calcula a proporção exata para não esticar a imagem
+          const aspect = scLogoImg.naturalWidth / scLogoImg.naturalHeight;
+          let lh = 48, lw = lh * aspect;
+          if (lw > 70) { lw = 70; lh = lw / aspect; } // Proteção caso a logo seja super larga
+          ctx.drawImage(scLogoImg, baseW/2 - lw/2, (cy - 11) - lh/2, lw, lh);
+          
           ctx.fillStyle = t.text; ctx.textAlign = 'center'; ctx.font = '600 13px Inter';
           ctx.fillText(state.status, baseW/2, cy + 28);
           ctx.fillStyle = t.sub; ctx.font = '400 11px Inter';
@@ -332,7 +337,12 @@
         // --- BROADCAST TV ---
         ctx.textAlign = 'center';
         if (state.showLogo && scLogoImg.complete && scLogoImg.naturalWidth > 0) {
-          ctx.drawImage(scLogoImg, baseW/2 - 19, cy - 50, 38, 38);
+          // Calcula a proporção exata para não esticar a imagem
+          const aspect = scLogoImg.naturalWidth / scLogoImg.naturalHeight;
+          let lh = 38, lw = lh * aspect;
+          if (lw > 60) { lw = 60; lh = lw / aspect; } // Proteção caso a logo seja super larga
+          ctx.drawImage(scLogoImg, baseW/2 - lw/2, (cy - 31) - lh/2, lw, lh);
+          
           ctx.fillStyle = t.sub; ctx.font = '600 11px monospace';
           ctx.fillText(state.subtext.toUpperCase(), baseW/2, cy - 8);
         } else {
