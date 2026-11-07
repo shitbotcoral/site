@@ -88,11 +88,7 @@
           </div>
         </div>
 
-        <input type="text" id="team1Name" value="Botafogo-PB" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
-        
-        <select id="team1Select" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-base font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
-          <!-- Dinâmico -->
-        </select>
+        <input type="text" id="team1Name" list="teamsList" value="Botafogo-PB" placeholder="Digite o nome do time..." class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
       </div>
 
       <!-- VISITANTE -->
@@ -107,11 +103,7 @@
           </div>
         </div>
 
-        <input type="text" id="team2Name" value="Santa Cruz" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
-        
-        <select id="team2Select" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-base font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
-          <!-- Dinâmico -->
-        </select>
+        <input type="text" id="team2Name" list="teamsList" value="Santa Cruz" placeholder="Digite o nome do time..." class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
       </div>
     </section>
 
@@ -188,6 +180,9 @@
 
     </section>
 
+    <!-- Lista de Dados para Autocompletar -->
+    <datalist id="clubsDataList"></datalist>
+
   </main>
 
   <!-- RODAPÉ FIXO DE AÇÕES -->
@@ -197,7 +192,7 @@
         <i class="fa-regular fa-copy text-xl"></i> COPIAR
       </button>
       <button id="btnDownload" class="flex-1 py-4 rounded-xl bg-black text-white text-base font-black flex items-center justify-center gap-2 active:scale-95 transition shadow-lg">
-        <i class="fa-solid fa-download text-xl"></i> BAIXAR PNG
+        <i class="fa-solid fa-share-nodes text-xl"></i> SALVAR / COMPARTILHAR
       </button>
     </div>
   </div>
@@ -218,12 +213,18 @@
       team2: { name: 'Santa Cruz', key: 'santacruz', score: 0, img: null }
     };
 
-    // Lista rápida para popular o Select
+    // Lista super expandida para popular o Auto-Completar
     const KNOWN_CLUBS = [
       'Santa Cruz', 'Botafogo-PB', 'Maringá', 'Náutico', 'Sport', 'Retrô', 
-      'Ceará', 'Fortaleza', 'Bahia', 'Vitória', 'ABC', 'América-RN', 
+      'Ceará', 'Fortaleza', 'Bahia', 'Vitória', 'ABC', 'América-RN', 'América-MG', 'América-PE',
       'Campinense', 'Treze', 'Afogados', 'Salgueiro', 'Flamengo', 'Palmeiras',
-      'Corinthians', 'São Paulo', 'Vasco', 'Fluminense', 'Grêmio', 'Internacional'
+      'Corinthians', 'São Paulo', 'Vasco', 'Fluminense', 'Grêmio', 'Internacional',
+      'Águia de Marabá', 'Altos', 'Amazonas', 'Anápolis', 'Aparecidense',
+      'Araripina', 'Athletico', 'Avaí', 'Atlético-MG', 'Atlético-GO', 'Botafogo',
+      'Cruzeiro', 'Juventude', 'Criciúma', 'Bragantino', 'Cuiabá', 'Goiás', 'Coritiba',
+      'Santos', 'Vila Nova', 'Novorizontino', 'Mirassol', 'CRB', 'CSA', 'Operário',
+      'Paysandu', 'Remo', 'Tombense', 'Volta Redonda', 'Ypiranga-PE', 'Ypiranga-RS', 'Figueirense',
+      'Confiança', 'Ferroviário', 'Sampaio Corrêa', 'Chapecoense', 'Guarani', 'Ponte Preta'
     ].sort();
 
     // Remove acentos, espaços e deixa tudo minúsculo para buscar a imagem exata
@@ -384,20 +385,19 @@
       render();
     }
 
-    function populateSelects() {
-      ['team1Select', 'team2Select'].forEach((id, idx) => {
-        const sel = document.getElementById(id);
-        const currName = idx === 0 ? state.team1.name : state.team2.name;
-        sel.innerHTML = '';
-        KNOWN_CLUBS.forEach(name => {
-          const key = normalizeKey(name);
-          sel.options.add(new Option(name, key, false, name === currName));
-        });
+    function populateDatalist() {
+      const datalist = document.createElement('datalist');
+      datalist.id = 'teamsList';
+      KNOWN_CLUBS.forEach(name => {
+        const option = document.createElement('option');
+        option.value = name;
+        datalist.appendChild(option);
       });
+      document.body.appendChild(datalist);
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-      populateSelects();
+      populateDatalist();
       updateImages(); // Carrega Botafogo-PB e Santa Cruz logo de início
       
       // Lógica das Abas
@@ -420,16 +420,6 @@
         document.getElementById(`${t}Name`).addEventListener('input', e => { 
           state[t].name = e.target.value; 
           state[t].key = normalizeKey(e.target.value); // ex: "América RN" vira "americarn"
-          loadImage(state[t].key, state[t]);
-          render(); 
-        });
-        
-        // Se selecionar no Select, atualiza a caixa de texto e a imagem
-        document.getElementById(`${t}Select`).addEventListener('change', e => { 
-          const name = e.target.options[e.target.selectedIndex].text;
-          state[t].key = e.target.value;
-          state[t].name = name;
-          document.getElementById(`${t}Name`).value = name;
           loadImage(state[t].key, state[t]);
           render(); 
         });
@@ -494,11 +484,34 @@
       const getFileName = () => `placar_${state.team1.name}_vs_${state.team2.name}.png`.toLowerCase().replace(/ /g, '_');
       
       document.getElementById('btnDownload').addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = getFileName();
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showToast('Download concluído!');
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const fileName = getFileName();
+          const file = new File([blob], fileName, { type: 'image/png' });
+
+          // Tenta usar a API de Compartilhamento Nativa (Mobile: iOS/Android)
+          // Isso abre o menu para enviar pro WhatsApp, Instagram ou "Salvar Imagem" (Fototeca)
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            try {
+              await navigator.share({
+                files: [file],
+                title: 'Placar',
+              });
+              return; // Sucesso no mobile
+            } catch (error) {
+              // Se o usuário apenas cancelou o menu, não faz nada
+              if (error.name === 'AbortError') return; 
+            }
+          }
+
+          // Fallback: Se estiver no PC ou se a API falhar, faz o download normal
+          const link = document.createElement('a');
+          link.download = fileName;
+          link.href = URL.createObjectURL(blob);
+          link.click();
+          URL.revokeObjectURL(link.href);
+          showToast('Download concluído!');
+        });
       });
 
       document.getElementById('btnCopy').addEventListener('click', () => {
