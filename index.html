@@ -1,111 +1,515 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHITBOT CORAL | LINKS</title>
-    <link rel="icon" href="sclogo.png" type="image/png">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Gerador de Placares - Minimalista</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-    <link rel="preload" as="image" href="shitvlog.webp">
-    <link rel="preload" as="image" href="loja.webp">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f3f4f6; /* Cinza super claro e minimalista */
+      color: #111827;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .transparent-pattern {
+      background-color: #e5e7eb;
+      background-image: 
+        linear-gradient(45deg, #d1d5db 25%, transparent 25%), 
+        linear-gradient(-45deg, #d1d5db 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #d1d5db 75%), 
+        linear-gradient(-45deg, transparent 75%, #d1d5db 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+    
+    /* Esconder abas inativas */
+    .tab-content { display: none; }
+    .tab-content.active { display: block; animation: fadeIn 0.2s ease-in-out; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        body {
-            background-color: #000000;
-            background-image: url('bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Efeito de clique e hover nos botões de imagem (mesmo padrão de sempre) */
-        .img-btn {
-            transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
-            display: block;
-            width: 100%;
-        }
-        .img-btn:active { transform: scale(0.98); }
-        .img-btn:hover {
-            transform: scale(1.03);
-            filter: brightness(1.15);
-        }
-        .img-btn img {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 12px;
-        }
-
-        /* Barra de redes sociais: os ícones vêm soltos (fundo transparente),
-           então a barra escura e o alinhamento são montados aqui. */
-        .social-bar {
-            display: flex;
-            align-items: stretch;
-            background-color: #0d0d0d;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .social-bar a {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 8px;
-            transition: background-color 0.2s ease-in-out, transform 0.15s ease-in-out;
-        }
-        .social-bar a:hover { background-color: #1c1c1c; }
-        .social-bar a:active { transform: scale(0.92); }
-        .social-bar img {
-            height: 34px;
-            width: auto;
-            display: block;
-        }
-    </style>
+    input[type="number"]::-webkit-inner-spin-button, 
+    input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  </style>
 </head>
-<body class="min-h-screen flex flex-col items-center py-10 px-4">
+<body class="min-h-screen flex flex-col pb-24">
 
-    <div class="w-full max-w-md flex flex-col items-center space-y-6">
+  <!-- Toast -->
+  <div id="toastContainer" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-        <div class="flex flex-col items-center text-center w-full px-4 mb-2">
-            <img src="shitbotlogo.png" alt="Shitbot Coral" class="w-4/5 h-auto object-contain drop-shadow-2xl">
-        </div>
+  <!-- Area de Pré-visualização Fixa no Topo -->
+  <div class="bg-white border-b border-gray-200 shadow-sm sticky top-0 z-30">
+    <div class="max-w-3xl mx-auto p-4 flex flex-col gap-3">
+      <div class="transparent-pattern w-full rounded-2xl p-4 sm:p-8 flex items-center justify-center border border-gray-300 shadow-inner">
+        <canvas id="scoreCanvas" class="max-w-full h-auto drop-shadow-xl"></canvas>
+      </div>
+    </div>
+  </div>
 
-        <div class="w-full flex flex-col gap-4">
-
-            <a href="https://youtu.be/383Sqfasy_U" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="shitvlog.webp" alt="Assista ao Shitvlog" decoding="async">
-            </a>
-
-            <a href="./loja/index.html" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="loja.webp" alt="Garanta sua Camisa" decoding="async">
-            </a>
-
-            <div class="social-bar mt-2">
-                <a href="https://www.instagram.com/shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                    <img src="instagram.png" alt="Instagram">
-                </a>
-                <a href="https://www.youtube.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                    <img src="youtube.png" alt="YouTube">
-                </a>
-                <a href="https://x.com/shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
-                    <img src="x.png" alt="X">
-                </a>
-                <a href="https://www.tiktok.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                    <img src="tiktok.png" alt="TikTok">
-                </a>
-            </div>
-
-        </div>
-
-        <div class="mt-8 flex flex-col items-center w-full px-12">
-            <img src="shitbotltda.png" alt="Shitbot LTDA 2026 - Todos os direitos reservados" class="w-full h-auto object-contain opacity-70">
-        </div>
-
+  <!-- Container Principal -->
+  <main class="flex-1 max-w-3xl w-full mx-auto p-4 flex flex-col gap-4">
+    
+    <!-- Navegação de Abas -->
+    <div class="flex bg-white rounded-2xl p-1.5 shadow-sm border border-gray-200">
+      <button class="tab-btn flex-1 py-3 text-sm sm:text-base font-bold rounded-xl text-gray-900 bg-gray-100 shadow-sm transition-all" data-target="tab-times">
+        1. Times
+      </button>
+      <button class="tab-btn flex-1 py-3 text-sm sm:text-base font-bold rounded-xl text-gray-500 hover:text-gray-900 transition-all" data-target="tab-aparencia">
+        2. Estilo
+      </button>
+      <button class="tab-btn flex-1 py-3 text-sm sm:text-base font-bold rounded-xl text-gray-500 hover:text-gray-900 transition-all" data-target="tab-opcoes">
+        3. Opções
+      </button>
     </div>
 
+    <!-- CONTEÚDO DAS ABAS -->
+
+    <!-- ABA 1: TIMES -->
+    <section id="tab-times" class="tab-content active bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-6">
+      
+      <!-- MANDANTE -->
+      <div class="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Mandante</h2>
+          
+          <!-- Controle de Placar Gigante -->
+          <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-xl shadow-sm border border-gray-200">
+            <button onclick="adjustScore('team1', -1)" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-xl active:scale-95 text-gray-900">-</button>
+            <span id="labelScore1" class="font-black text-2xl w-8 text-center text-gray-900">1</span>
+            <button onclick="adjustScore('team1', 1)" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-xl active:scale-95 text-gray-900">+</button>
+          </div>
+        </div>
+
+        <input type="text" id="team1Name" value="Botafogo-PB" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
+        
+        <select id="team1Select" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-base font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
+          <!-- Dinâmico -->
+        </select>
+      </div>
+
+      <!-- VISITANTE -->
+      <div class="space-y-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+        <div class="flex items-center justify-between">
+          <h2 class="text-lg font-black text-gray-900 uppercase tracking-tight">Visitante</h2>
+          
+          <div class="flex items-center gap-2 bg-white px-2 py-1 rounded-xl shadow-sm border border-gray-200">
+            <button onclick="adjustScore('team2', -1)" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-xl active:scale-95 text-gray-900">-</button>
+            <span id="labelScore2" class="font-black text-2xl w-8 text-center text-gray-900">0</span>
+            <button onclick="adjustScore('team2', 1)" class="w-10 h-10 rounded-lg bg-gray-100 hover:bg-gray-200 font-bold text-xl active:scale-95 text-gray-900">+</button>
+          </div>
+        </div>
+
+        <input type="text" id="team2Name" value="Santa Cruz" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-lg font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
+        
+        <select id="team2Select" class="w-full bg-white border border-gray-300 rounded-xl px-4 py-3 text-base font-semibold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
+          <!-- Dinâmico -->
+        </select>
+      </div>
+    </section>
+
+    <!-- ABA 2: ESTILO (Aparência) -->
+    <section id="tab-aparencia" class="tab-content bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-6">
+      
+      <div>
+        <label class="block text-base font-bold text-gray-900 mb-3">Layout do Placar</label>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btnLayoutSofa" class="py-4 px-2 rounded-xl border-2 border-black bg-gray-50 font-bold text-black transition active:scale-95 flex flex-col items-center gap-1">
+            <span class="text-base">SofaScore</span>
+            <span class="text-xs text-gray-500 font-normal">Escudos nas pontas</span>
+          </button>
+          <button id="btnLayoutBroadcast" class="py-4 px-2 rounded-xl border-2 border-gray-200 bg-white font-bold text-gray-500 transition active:scale-95 flex flex-col items-center gap-1">
+            <span class="text-base">TV Digital</span>
+            <span class="text-xs text-gray-500 font-normal">Placar no centro (1 - 1)</span>
+          </button>
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-base font-bold text-gray-900 mb-3">Tema de Cor</label>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <button class="theme-btn py-3 rounded-xl border-2 border-black bg-[#23262d] font-bold text-white text-sm" data-theme="dark-sofa">Sofa Cinza</button>
+          <button class="theme-btn py-3 rounded-xl border-2 border-gray-200 bg-[#061821] font-bold text-white text-sm" data-theme="dark-broadcast">Azul TV</button>
+          <button class="theme-btn py-3 rounded-xl border-2 border-gray-200 bg-[#000000] font-bold text-white text-sm" data-theme="pure-black">Preto Puro</button>
+          <button class="theme-btn py-3 rounded-xl border-2 border-gray-200 bg-white font-bold text-black text-sm" data-theme="light-mode">Modo Claro</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="flex justify-between items-center mb-3">
+          <label class="block text-base font-bold text-gray-900">Arredondamento</label>
+          <span id="labelRadius" class="font-mono text-gray-500 font-bold">30px</span>
+        </div>
+        <input type="range" id="radiusSlider" min="0" max="60" value="30" class="w-full accent-black h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer">
+      </div>
+
+      <div>
+        <label class="block text-base font-bold text-gray-900 mb-3">Resolução de Exportação</label>
+        <div class="flex bg-gray-100 rounded-xl p-1 border border-gray-200">
+          <button class="scale-btn flex-1 py-2 rounded-lg text-sm font-bold text-gray-500" data-scale="1">1x Normal</button>
+          <button class="scale-btn flex-1 py-2 rounded-lg text-sm font-bold bg-white text-black shadow-sm" data-scale="2">2x HD</button>
+          <button class="scale-btn flex-1 py-2 rounded-lg text-sm font-bold text-gray-500" data-scale="3">3x 4K</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 3: OPÇÕES (Configurações e Sincronização) -->
+    <section id="tab-opcoes" class="tab-content bg-white rounded-2xl p-5 shadow-sm border border-gray-200 space-y-6">
+      
+      <!-- TEXTOS DO JOGO -->
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Status Principal</label>
+          <input type="text" id="inputStatus" value="Encerrado" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-base font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-2">Data / Info</label>
+          <input type="text" id="inputSubtext" value="Hoje" class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-3 text-base font-bold text-gray-900 focus:outline-none focus:ring-2 focus:ring-black">
+        </div>
+      </div>
+
+      <!-- LOGO CENTRAL -->
+      <div class="border-t border-gray-200 pt-5">
+        <div class="flex items-center justify-between mb-3">
+          <label class="text-base font-bold text-gray-900 flex items-center gap-2">
+            <i class="fa-solid fa-image"></i> Exibir Logo Central
+          </label>
+          <input type="checkbox" id="logoToggle" checked class="w-6 h-6 accent-black rounded cursor-pointer">
+        </div>
+        <p class="text-xs text-gray-500">O sistema carrega automaticamente o arquivo <b>logo.png</b> da pasta raiz.</p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- RODAPÉ FIXO DE AÇÕES -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 z-40 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+    <div class="max-w-3xl mx-auto flex gap-3">
+      <button id="btnCopy" class="flex-1 py-4 rounded-xl border-2 border-gray-300 bg-gray-50 text-gray-900 text-base font-black flex items-center justify-center gap-2 active:scale-95 transition">
+        <i class="fa-regular fa-copy text-xl"></i> COPIAR
+      </button>
+      <button id="btnDownload" class="flex-1 py-4 rounded-xl bg-black text-white text-base font-black flex items-center justify-center gap-2 active:scale-95 transition shadow-lg">
+        <i class="fa-solid fa-download text-xl"></i> BAIXAR PNG
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* =========================================
+       1. ESTADO E DADOS (Direto para Web)
+    ========================================= */
+    const state = {
+      layout: 'split',
+      theme: 'dark-sofa',
+      borderRadius: 30,
+      exportScale: 2,
+      status: 'Encerrado',
+      subtext: 'Hoje',
+      showLogo: true,
+      team1: { name: 'Botafogo-PB', key: 'botafogopb', score: 1, img: null },
+      team2: { name: 'Santa Cruz', key: 'santacruz', score: 0, img: null }
+    };
+
+    // Lista rápida para popular o Select
+    const KNOWN_CLUBS = [
+      'Santa Cruz', 'Botafogo-PB', 'Maringá', 'Náutico', 'Sport', 'Retrô', 
+      'Ceará', 'Fortaleza', 'Bahia', 'Vitória', 'ABC', 'América-RN', 
+      'Campinense', 'Treze', 'Afogados', 'Salgueiro', 'Flamengo', 'Palmeiras',
+      'Corinthians', 'São Paulo', 'Vasco', 'Fluminense', 'Grêmio', 'Internacional'
+    ].sort();
+
+    // Remove acentos, espaços e deixa tudo minúsculo para buscar a imagem exata
+    function normalizeKey(str) {
+      return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, "");
+    }
+
+    /* =========================================
+       2. CARREGAMENTO DE IMAGENS (Via Servidor)
+    ========================================= */
+    const scLogoImg = new Image();
+    scLogoImg.crossOrigin = "anonymous";
+    scLogoImg.onload = () => render();
+    scLogoImg.src = "logo.png"; // Puxa direto da mesma pasta do index.html
+
+    function loadImage(key, objToSet) {
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+      img.onload = () => { objToSet.img = img; render(); };
+      img.onerror = () => { objToSet.img = null; render(); }; // Se falhar, fica sem imagem no canvas
+      img.src = `escudos/${key}.png`; // Puxa direto da pasta escudos/
+    }
+
+    function updateImages() {
+      loadImage(state.team1.key, state.team1);
+      loadImage(state.team2.key, state.team2);
+    }
+
+    /* =========================================
+       3. LÓGICA E RENDERIZAÇÃO NO CANVAS
+    ========================================= */
+    const themes = {
+      'dark-sofa': { bg: '#23262d', border: 'rgba(255,255,255,0.1)', text: '#fff', sub: '#8e96a4', accent: '#f87171' },
+      'dark-broadcast': { bg: '#061821', border: 'rgba(56,189,248,0.2)', text: '#fff', sub: '#64748b', accent: '#38bdf8' },
+      'pure-black': { bg: '#090a0f', border: 'rgba(255,255,255,0.1)', text: '#fff', sub: '#71717a', accent: '#fbbf24' },
+      'light-mode': { bg: '#f8fafc', border: 'rgba(0,0,0,0.1)', text: '#0f172a', sub: '#64748b', accent: '#dc2626' }
+    };
+
+    const canvas = document.getElementById('scoreCanvas');
+    const ctx = canvas.getContext('2d');
+
+    function drawRoundRect(c, x, y, w, h, r) {
+      c.beginPath();
+      c.moveTo(x+r, y); c.lineTo(x+w-r, y); c.quadraticCurveTo(x+w, y, x+w, y+r);
+      c.lineTo(x+w, y+h-r); c.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+      c.lineTo(x+r, y+h); c.quadraticCurveTo(x, y+h, x, y+h-r);
+      c.lineTo(x, y+r); c.quadraticCurveTo(x, y, x+r, y);
+      c.closePath();
+    }
+
+    function render() {
+      const scale = state.exportScale;
+      const baseW = 540, baseH = 170;
+      canvas.width = baseW * scale; canvas.height = baseH * scale;
+      
+      ctx.clearRect(0,0, canvas.width, canvas.height);
+      ctx.save(); ctx.scale(scale, scale);
+
+      const r = Math.min(state.borderRadius, baseH/2);
+      const t = themes[state.theme];
+
+      // Fundo e Máscara
+      ctx.save();
+      drawRoundRect(ctx, 0, 0, baseW, baseH, r);
+      ctx.clip();
+      ctx.fillStyle = t.bg;
+      ctx.fillRect(0,0, baseW, baseH);
+      ctx.strokeStyle = t.border;
+      ctx.lineWidth = 1.5;
+      drawRoundRect(ctx, 0.75, 0.75, baseW-1.5, baseH-1.5, r);
+      ctx.stroke();
+      ctx.restore();
+
+      const cy = baseH / 2;
+
+      if (state.layout === 'split') {
+        // --- SOFASCORE ---
+        if(state.showLogo && scLogoImg.complete && scLogoImg.naturalWidth > 0) {
+          ctx.drawImage(scLogoImg, baseW/2 - 24, cy - 35, 48, 48);
+          ctx.fillStyle = t.text; ctx.textAlign = 'center'; ctx.font = '600 13px Inter';
+          ctx.fillText(state.status, baseW/2, cy + 28);
+          ctx.fillStyle = t.sub; ctx.font = '400 11px Inter';
+          ctx.fillText(state.subtext, baseW/2, cy + 42);
+        } else {
+          ctx.fillStyle = t.sub; ctx.textAlign = 'center'; 
+          ctx.font = '500 15px Inter'; ctx.fillText(state.status, baseW/2, cy - 6);
+          ctx.font = '400 13px Inter'; ctx.fillText(state.subtext, baseW/2, cy + 14);
+        }
+
+        // Times
+        [ {d: state.team1, x: 96, sx: 185}, {d: state.team2, x: baseW-96, sx: baseW-185} ].forEach(tInfo => {
+          if (tInfo.d.img && tInfo.d.img.complete) {
+            const aspect = tInfo.d.img.width / (tInfo.d.img.height||1);
+            let dw = 56, dh = 56;
+            if(aspect > 1) dh = 56/aspect; else dw = 56*aspect;
+            ctx.drawImage(tInfo.d.img, tInfo.x - dw/2, (cy-14) - dh/2, dw, dh);
+          }
+          ctx.fillStyle = t.text; ctx.font = '600 14px Inter'; ctx.textAlign = 'center';
+          ctx.fillText(tInfo.d.name, tInfo.x, cy + 46);
+          
+          ctx.fillStyle = t.text; ctx.font = '700 48px "Chakra Petch"';
+          ctx.fillText(tInfo.d.score, tInfo.sx, cy + 12);
+        });
+      } else {
+        // --- BROADCAST TV ---
+        ctx.textAlign = 'center';
+        if (state.showLogo && scLogoImg.complete && scLogoImg.naturalWidth > 0) {
+          ctx.drawImage(scLogoImg, baseW/2 - 19, cy - 50, 38, 38);
+          ctx.fillStyle = t.sub; ctx.font = '600 11px monospace';
+          ctx.fillText(state.subtext.toUpperCase(), baseW/2, cy - 8);
+        } else {
+          ctx.fillStyle = t.sub; ctx.font = '600 12px monospace';
+          ctx.fillText(state.subtext.toUpperCase(), baseW/2, cy - 32);
+        }
+
+        ctx.fillStyle = t.text; ctx.font = '700 44px "Chakra Petch"';
+        ctx.fillText(`${state.team1.score}  -  ${state.team2.score}`, baseW/2, cy + 22);
+        
+        ctx.fillStyle = t.accent; ctx.font = '700 12px Inter';
+        ctx.fillText(state.status.toUpperCase(), baseW/2, cy + 48);
+
+        // Times
+        [ {d: state.team1, x: 86}, {d: state.team2, x: baseW-86} ].forEach(tInfo => {
+          // Fundo branco pros escudos no modo Broadcast
+          ctx.fillStyle = '#fff';
+          drawRoundRect(ctx, tInfo.x - 34, cy - 48, 68, 68, 12);
+          ctx.fill();
+          
+          if (tInfo.d.img && tInfo.d.img.complete) {
+            ctx.drawImage(tInfo.d.img, tInfo.x - 29, cy - 43, 58, 58);
+          }
+          ctx.fillStyle = t.text; ctx.font = '600 13px Inter'; ctx.textAlign = 'center';
+          ctx.fillText(tInfo.d.name, tInfo.x, cy + 46);
+        });
+      }
+      ctx.restore();
+    }
+
+    /* =========================================
+       4. INTERFACE E EVENTOS
+    ========================================= */
+    function showToast(msg) {
+      const container = document.getElementById('toastContainer');
+      const div = document.createElement('div');
+      div.className = 'bg-black text-white px-5 py-3 rounded-xl shadow-2xl text-sm font-bold opacity-0 transition-opacity duration-300';
+      div.textContent = msg;
+      container.appendChild(div);
+      requestAnimationFrame(() => div.classList.remove('opacity-0'));
+      setTimeout(() => {
+        div.classList.add('opacity-0');
+        setTimeout(() => div.remove(), 300);
+      }, 3000);
+    }
+
+    window.adjustScore = function(team, d) {
+      state[team].score = Math.max(0, state[team].score + d);
+      document.getElementById(`labelScore${team==='team1'?1:2}`).textContent = state[team].score;
+      render();
+    }
+
+    function populateSelects() {
+      ['team1Select', 'team2Select'].forEach((id, idx) => {
+        const sel = document.getElementById(id);
+        const currName = idx === 0 ? state.team1.name : state.team2.name;
+        sel.innerHTML = '';
+        KNOWN_CLUBS.forEach(name => {
+          const key = normalizeKey(name);
+          sel.options.add(new Option(name, key, false, name === currName));
+        });
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      populateSelects();
+      updateImages(); // Carrega Botafogo-PB e Santa Cruz logo de início
+      
+      // Lógica das Abas
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => {
+            b.classList.remove('bg-gray-100', 'text-gray-900', 'shadow-sm');
+            b.classList.add('text-gray-500');
+          });
+          btn.classList.add('bg-gray-100', 'text-gray-900', 'shadow-sm');
+          btn.classList.remove('text-gray-500');
+          
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          document.getElementById(btn.dataset.target).classList.add('active');
+        });
+      });
+
+      // Se digitar o nome na caixa, ele tenta puxar a foto direto da pasta escudos/
+      ['team1', 'team2'].forEach((t) => {
+        document.getElementById(`${t}Name`).addEventListener('input', e => { 
+          state[t].name = e.target.value; 
+          state[t].key = normalizeKey(e.target.value); // ex: "América RN" vira "americarn"
+          loadImage(state[t].key, state[t]);
+          render(); 
+        });
+        
+        // Se selecionar no Select, atualiza a caixa de texto e a imagem
+        document.getElementById(`${t}Select`).addEventListener('change', e => { 
+          const name = e.target.options[e.target.selectedIndex].text;
+          state[t].key = e.target.value;
+          state[t].name = name;
+          document.getElementById(`${t}Name`).value = name;
+          loadImage(state[t].key, state[t]);
+          render(); 
+        });
+      });
+
+      // Botões de Layout
+      document.getElementById('btnLayoutSofa').addEventListener('click', e => {
+        state.layout = 'split';
+        e.currentTarget.classList.add('border-black', 'bg-gray-50', 'text-black');
+        e.currentTarget.classList.remove('border-gray-200', 'bg-white', 'text-gray-500');
+        document.getElementById('btnLayoutBroadcast').classList.remove('border-black', 'bg-gray-50', 'text-black');
+        document.getElementById('btnLayoutBroadcast').classList.add('border-gray-200', 'bg-white', 'text-gray-500');
+        render();
+      });
+      
+      document.getElementById('btnLayoutBroadcast').addEventListener('click', e => {
+        state.layout = 'broadcast';
+        e.currentTarget.classList.add('border-black', 'bg-gray-50', 'text-black');
+        e.currentTarget.classList.remove('border-gray-200', 'bg-white', 'text-gray-500');
+        document.getElementById('btnLayoutSofa').classList.remove('border-black', 'bg-gray-50', 'text-black');
+        document.getElementById('btnLayoutSofa').classList.add('border-gray-200', 'bg-white', 'text-gray-500');
+        render();
+      });
+
+      // Seleção de Temas
+      document.querySelectorAll('.theme-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.theme-btn').forEach(b => {
+            b.classList.remove('border-black'); b.classList.add('border-gray-200');
+          });
+          btn.classList.add('border-black'); btn.classList.remove('border-gray-200');
+          state.theme = btn.dataset.theme;
+          render();
+        });
+      });
+
+      // Bordas Arredondadas
+      document.getElementById('radiusSlider').addEventListener('input', e => {
+        state.borderRadius = parseInt(e.target.value);
+        document.getElementById('labelRadius').textContent = `${state.borderRadius}px`;
+        render();
+      });
+
+      // Resolução (1x, 2x, 3x)
+      document.querySelectorAll('.scale-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.scale-btn').forEach(b => {
+            b.classList.remove('bg-white', 'text-black', 'shadow-sm'); b.classList.add('text-gray-500');
+          });
+          btn.classList.add('bg-white', 'text-black', 'shadow-sm'); btn.classList.remove('text-gray-500');
+          state.exportScale = parseInt(btn.dataset.scale);
+          render();
+        });
+      });
+
+      // Opções Finais
+      document.getElementById('inputStatus').addEventListener('input', e => { state.status = e.target.value; render(); });
+      document.getElementById('inputSubtext').addEventListener('input', e => { state.subtext = e.target.value; render(); });
+      document.getElementById('logoToggle').addEventListener('change', e => { state.showLogo = e.target.checked; render(); });
+
+      // Botões de Exportação
+      const getFileName = () => `placar_${state.team1.name}_vs_${state.team2.name}.png`.toLowerCase().replace(/ /g, '_');
+      
+      document.getElementById('btnDownload').addEventListener('click', () => {
+        const link = document.createElement('a');
+        link.download = getFileName();
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('Download concluído!');
+      });
+
+      document.getElementById('btnCopy').addEventListener('click', () => {
+        canvas.toBlob(blob => {
+          if(!blob) return;
+          try {
+            navigator.clipboard.write([new ClipboardItem({'image/png': blob})]).then(() => showToast('Copiado! Cole onde quiser.'));
+          } catch(e) { showToast('Erro ao copiar. Seu navegador pode não suportar isso.'); }
+        });
+      });
+    });
+  </script>
 </body>
 </html>
