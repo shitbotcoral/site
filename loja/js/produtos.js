@@ -42,12 +42,12 @@ const PRODUTOS = [
     // Texto curto embaixo do preço. Pode ter um para cada tipo; o site usa o do tipo atual.
     resumo: {
       "pre-venda": "A camisa ainda vai ser produzida. Você garante a sua agora e recebe quando a produção ficar pronta.",
-      "pronta-entrega": "Pronta entrega. Retire grátis ou receba por app no seu endereço."
+      "pronta-entrega": "Pronta entrega. Motoqueiro Fantasma (R$ 10 na Grande Recife) ou Correios para todo o Brasil."
     },
     entregaPrevista: "16 de outubro",   // só aparece na pré-venda
     encerraEm: "",                      // ex.: "2026-10-10T23:59:00-03:00" mostra contagem regressiva
     detalhes: [
-      "Retirada grátis ou entrega por app, combinadas pelo WhatsApp",
+      "Entrega via Motoqueiro Fantasma (R$ 10 na Grande Recife) ou Correios para todo o Brasil",
       "A gente avisa cada etapa do pedido pelo WhatsApp"
     ],
     medidas: null                       // modelo no fim do arquivo
@@ -66,10 +66,34 @@ const PRODUTOS = [
       { arquivo: "1", alt: "Camisa Pipico, frente" },
       { arquivo: "2", alt: "Camisa Pipico, costas" }
     ],
-    resumo: "Pronta entrega. Retire grátis ou receba por app no seu endereço.",
+    resumo: "Pronta entrega. Motoqueiro Fantasma (R$ 10 na Grande Recife) ou Correios para todo o Brasil.",
     detalhes: [
       "Pronta entrega",
-      "Retirada grátis ou entrega por app, combinadas pelo WhatsApp"
+      "Entrega via Motoqueiro Fantasma (R$ 10 na Grande Recife) ou Correios para todo o Brasil"
+    ],
+    medidas: null
+  },
+{
+    id: "arruda",
+    nome: "Arruda minha casa",
+    categoria: "Camisa",
+    tipo: "pre-venda",
+    status: "ativo",
+    tema: "claro",
+    ajuste: "conter",
+    preco: 139.90,
+    tamanhos: ["P", "M", "G", "GG", "XG", "XXG"],
+    fotos: [
+      { arquivo: "1", alt: "Camisa Arruda, frente" },
+      { arquivo: "2", alt: "Camisa Arruda, costas" }
+    ],
+    resumo: "A camisa ainda vai ser produzida. Você garante a sua agora e recebe quando a produção ficar pronta.",
+    entregaPrevista: "26 de novembro",
+    encerraEm: "2026-11-24T23:59:00-03:00", // Se 26/11 for o encerramento das vendas, coloque: "2026-11-26T23:59:00-03:00"
+    detalhes: [
+      "Pré-venda: produção iniciada após o fechamento",
+      "Entrega via Motoqueiro Fantasma (R$ 10 na Grande Recife) ou Correios para todo o Brasil",
+      "A gente avisa cada etapa do pedido pelo WhatsApp"
     ],
     medidas: null
   },

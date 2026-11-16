@@ -5,23 +5,23 @@
    as aspas, as vírgulas do fim das linhas nem o que estiver entre { }.
 
    O que está entre { } é preenchido sozinho pela loja:
-     {nome}  nome do produto        {preco}  preço        {taxa}  taxa do cartão
-     {tam}   tamanho                {n}      quantidade   {prazo} entrega prevista
-     {valor} valor em reais         {numero} número do pedido
+     {nome}   nome do produto        {preco}  preço        {taxa}  taxa do cartão
+     {tam}    tamanho                {n}      quantidade   {prazo} entrega prevista
+     {valor}  valor em reais         {numero} número do pedido
+     {regiao} Capital ou Interior    {uf}     sigla do estado
+     {modo}   modalidade do frete
    ========================================================================== */
 
 const TEXTOS = {
 
   /* ----------------------------------------------------------- ENTREGA
-     Mudou o lugar da retirada? É só aqui. */
+     Textos exibidos automaticamente conforme o CEP do cliente. */
   entrega: {
-    retiradaTitulo: "Retirada",
-    retiradaPreco: "Grátis",
-    retiradaTexto: "Combinada pelo WhatsApp depois da compra.",
-    retiradaPreVenda: "Itens de pré-venda: quando a produção ficar pronta.",
-    appTitulo: "Entrega por app",
-    appPreco: "Pago no app",
-    appTexto: "Uber Flash ou 99 Entrega no seu endereço. O frete é pago no app."
+    motoqueiroTitulo: "Motoqueiro Fantasma",
+    motoqueiroTexto: "Rota única na Grande Recife. É necessário ter alguém no endereço para receber (nova tentativa gera nova taxa).",
+    correiosTitulo: "Correios ({regiao} - {uf})",
+    correiosTexto: "Prazo estimado de {prazo} (já inclui organização e postagem). O CPF é obrigatório para emissão da etiqueta.",
+    placeholder: "Preencha o CEP ou Cidade/UF acima para calcular a entrega automaticamente."
   },
 
   /* ----------------------------------------------------------- TOPO E RODAPÉ */
@@ -58,8 +58,8 @@ const TEXTOS = {
   fita: [
     "PIX copia e cola",
     "Aceitamos cartão e PIX",
-    "Retirada grátis",
-    "Entrega por app em Recife",
+    "Motoqueiro Fantasma na Grande Recife",
+    "Enviamos para todo o Brasil via Correios",
     "É tradição e também é moda"
   ],
 
@@ -86,8 +86,8 @@ const TEXTOS = {
 
   /* Os três quadrinhos de "como funciona" no fim da página inicial */
   garantias: [
-    { icone: "pix", titulo: "PIX copia e cola", texto: "Valor já preenchido, ou cartão pelo Mercado Pago." },
-    { icone: "local", titulo: "Retirada grátis", texto: "Combinada pelo WhatsApp. Ou entrega por app." },
+    { icone: "pix", titulo: "PIX copia e cola", texto: "Valor já preenchido (com frete), ou cartão pelo Mercado Pago." },
+    { icone: "caminhao", titulo: "Entrega garantida", texto: "Motoqueiro Fantasma na Grande Recife ou Correios para todo o Brasil." },
     { icone: "zap", titulo: "Atendimento no WhatsApp", texto: "A gente confirma o pedido e avisa cada etapa." }
   ],
 
@@ -148,6 +148,7 @@ const TEXTOS = {
     resumo: "Seu pedido",
     editar: "Editar",
     subtotal: "Subtotal",
+    frete: "Frete ({modo})",
     taxaCartao: "Taxa do cartão ({taxa})",
     total: "Total",
     avisoPreVenda: "Itens de pré-venda são entregues depois da produção.",
@@ -164,10 +165,10 @@ const TEXTOS = {
     continuar: "Continuar",
 
     entregaTitulo: "Entrega",
-    entregaPergunta: "Como você quer receber?",
-    enderecoTitulo: "Seu endereço",
+    entregaPergunta: "Modalidade de entrega calculada",
+    enderecoTitulo: "Endereço de entrega",
     cep: "CEP",
-    cepDica: "Preenche rua, bairro e cidade sozinho.",
+    cepDica: "Preenche rua, bairro, cidade e calcula o frete sozinho.",
     naoSeiCep: "Não sei meu CEP",
     rua: "Rua",
     numero: "Número",
@@ -176,22 +177,24 @@ const TEXTOS = {
     cidade: "Cidade",
     uf: "UF",
     ufDica: "Sigla, ex.: PE",
+    cpf: "CPF do destinatário",
+    cpfDica: "Obrigatório para emissão da etiqueta dos Correios.",
     opcional: "(opcional)",
     irPagamento: "Ir para o pagamento",
 
     pagamentoTitulo: "Pagamento",
     pagamentoPergunta: "Como você quer pagar?",
     pix: "PIX",
-    pixDescricao: "Copia e cola ou QR Code, com o valor já preenchido.",
+    pixDescricao: "Copia e cola ou QR Code, com o valor total (camisas + frete) já preenchido.",
     cartao: "Cartão ou saldo Mercado Pago",
     cartaoDescricao: "Taxa de {taxa}. Você digita o valor no link.",
     pixIndisponivel: "O PIX está indisponível no momento. Pague pelo cartão ou fale com a gente no WhatsApp.",
-    valorPix: "Valor do PIX",
+    valorPix: "Valor do PIX (com frete)",
     instrucaoPix: "No celular, copie o código e cole na área PIX copia e cola do seu banco. No computador, aponte a câmera do celular para o QR Code.",
     copiarPix: "Copiar código PIX",
     pixCopiado: "Código copiado",
     valorCartao: "Valor para digitar no Mercado Pago",
-    instrucaoCartao: "Já inclui a taxa de {taxa} do cartão. O link abre em nova aba; depois volte aqui para anexar o comprovante.",
+    instrucaoCartao: "Já inclui o frete e a taxa de {taxa} do cartão. O link abre em nova aba; depois volte aqui para anexar o comprovante.",
     abrirMercadoPago: "Copiar valor e abrir o Mercado Pago",
     avisoCartao: "O envio acontece depois da compensação no Mercado Pago (pode levar até 7 dias).",
     avisoCartaoPreVenda: "Pedidos no cartão entram na produção depois da compensação no Mercado Pago (pode levar até 7 dias).",
@@ -210,13 +213,14 @@ const TEXTOS = {
     tituloN: "Faltam corrigir {n} itens",
     nome: "Escreva nome e sobrenome.",
     whatsapp: "Digite um celular com DDD, 11 números. Exemplo: (81) 99999-0000.",
-    escolhaEntrega: "Escolha retirada ou entrega por app.",
+    escolhaEntrega: "Preencha a cidade e a UF para calcular a entrega.",
     cep: "O CEP tem 8 números. Corrija ou deixe em branco.",
     rua: "Preencha a rua.",
     numero: "Preencha o número (ou escreva S/N).",
     bairro: "Preencha o bairro.",
     cidade: "Preencha a cidade.",
     uf: "Escreva a UF com 2 letras, ex.: PE.",
+    cpf: "Informe um CPF válido com 11 números para o envio pelos Correios.",
     comprovante: "Anexe o comprovante do pagamento.",
     vendasFechadas: "As vendas de {nome} foram fechadas. Tire da sacola para continuar.",
     acabouEstoque: "Acabou o {tam} da {nome} enquanto você comprava. A sacola foi ajustada: confira e finalize de novo. Se já pagou, chame a gente no WhatsApp com o comprovante.",
@@ -233,10 +237,10 @@ const TEXTOS = {
     numero: "Número do pedido",
     itens: "Itens:",
     total: "Total:",
-    recebimento: "Recebimento:",
+    recebimento: "Entrega:",
     preVenda: "Pré-venda:",
-    preVendaTexto: "entrega depois da produção",
-    texto: "A gente confere o pagamento e chama você no WhatsApp para combinar a entrega. Guarde o número do pedido.",
+    preVendaTexto: "envio depois da produção",
+    texto: "A gente confere o pagamento e chama você no WhatsApp com os detalhes da entrega. Guarde o número do pedido.",
     whatsapp: "Falar com a loja no WhatsApp",
     voltar: "Voltar para a loja",
     mensagemWhats: "Olá! Acabei de fazer o pedido {numero} na loja. Quero acompanhar o andamento."
@@ -254,8 +258,8 @@ const TEXTOS = {
     fechado: "As vendas deste produto estão fechadas.",
     estoqueFora: "Não deu pra conferir o estoque agora. Pode seguir: a gente confere na hora de finalizar.",
     estoqueMudou: "O estoque mudou e a sua sacola foi ajustada. Confira as quantidades.",
-    buscandoCep: "Buscando o endereço pelo CEP…",
-    cepOk: "Endereço preenchido. Falta o número.",
+    buscandoCep: "Buscando o endereço e calculando o frete…",
+    cepOk: "Endereço e frete preenchidos. Falta o número.",
     cepErro: "Não achamos esse CEP. Preencha o endereço à mão.",
     pixCopiado: "Código PIX copiado. Cole no app do seu banco.",
     pixNaoCopiou: "Não deu pra copiar sozinho. Selecione o código e copie.",
