@@ -36,12 +36,18 @@
   const PIX_OK = !!(LOJA.pix && LOJA.pix.chave && !String(LOJA.pix.chave).startsWith("COLE"));
   const resumoDe = p => (p.resumo && typeof p.resumo === "object") ? (p.resumo[p.tipo] || "") : (p.resumo || "");
 
+  // Limpa qualquer "CPF: ..." que tenha sobrado salvo no sessionStorage de testes anteriores
+  const clienteSalvo = guarda.ler("sc-cliente", ss) || {};
+  if (clienteSalvo.comp) clienteSalvo.comp = String(clienteSalvo.comp).replace(/\s*\|?\s*CPF:\s*[\d.-]+/gi, "").trim();
+  if (clienteSalvo.cep) clienteSalvo.cep = String(clienteSalvo.cep).replace(/\s*\|?\s*CPF:\s*[\d.-]+/gi, "").trim();
+  guarda.gravar("sc-cliente", clienteSalvo, ss);
+
   // ================================================================ estado
   const st = {
     servidor: { status: "carregando", produtos: {}, taxa: Number(LOJA.taxaCartaoPercentual) || 0 },
     sacola: guarda.ler("sc-sacola") || [],
-    cliente: guarda.ler("sc-cliente", ss) || {},
-    entrega: guarda.ler("sc-entrega", ss) || null, // { tipo: 'motoqueiro'|'correios', valor, titulo, desc, exigeCpf, planilha }
+    cliente: clienteSalvo,
+    entrega: guarda.ler("sc-entrega", ss) || null,
     pagamento: PIX_OK ? "pix" : "card",
     txid: guarda.ler("sc-txid", ss),
     comprovante: null,
@@ -108,7 +114,7 @@
   const prazo = p => (p.tipo === "pre-venda" ? (p.entregaPrevista || (st.servidor.produtos[p.id] || {}).prazo || "") : "");
   function estoque(id, tam) {
     if (st.servidor.status === "carregando") return 0;
-    if (st.servidor.status === "falhou") return Infinity;   // o servidor confere ao finalizar
+    if (st.servidor.status === "falhou") return Infinity;
     const sv = st.servidor.produtos[id];
     if (!sv) return 0;
     return Math.max(0, Number(sv.estoque[tam] || 0));
@@ -119,10 +125,9 @@
   const subtotal = () => r2(st.sacola.reduce((a, i) => a + i.qtd * preco(porId(i.produto) || { preco: 0 }), 0));
   const freteValor = () => (st.entrega && typeof st.entrega === "object") ? r2(st.entrega.valor || 0) : 0;
   const baseComFrete = () => r2(subtotal() + freteValor());
-  // Taxa do cartão em % sobre camisas + frete
   const taxaPct = () => st.servidor.taxa;
   const taxaTexto = () => `${String(taxaPct()).replace(".", ",")}%`;
-  const taxaDe = v => Math.round(v * taxaPct()) / 100;   // mesma conta do Apps Script
+  const taxaDe = v => Math.round(v * taxaPct()) / 100;
   const comTaxa = v => r2(v + taxaDe(v));
   const taxa = () => st.pagamento === "card" ? taxaDe(baseComFrete()) : 0;
   const total = () => r2(baseComFrete() + taxa());
@@ -134,10 +139,9 @@
   // ================================================================ imagens
   const EXTS = ["png", "webp", "jpg", "jpeg"];
   const FOTO_VAZIA = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
-    '<svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" viewBox="0 0 400 460"><path d="M140 70l-70 40 25 60 30-14v234h150V156l30 14 25-60-70-40c-10 22-30 34-60 34s-50-12-60-34z" fill="none" stroke="#8a8b93" stroke-width="5" stroke-linejoin="round" stroke-dasharray="12 10"/></svg>');
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460"><path d="M140 70l-70 40 25 60 30-14v234h150V156l30 14 25-60-70-40c-10 22-30 34-60 34s-50-12-60-34z" fill="none" stroke="#8a8b93" stroke-width="5" stroke-linejoin="round" stroke-dasharray="12 10"/></svg>');
   const caminhoFoto = (p, f) => `produtos/${p.id}/${typeof f === "string" ? f : f.arquivo}`;
   const altFoto = (p, f, i) => (typeof f === "object" && f.alt) || `${p.categoria || ""} ${p.nome}, foto ${i + 1}`.trim();
-  // decorativa = true quando a foto só repete o texto ao lado (alt vazio para o leitor de tela)
   function imgTag(p, i, extra = "", decorativa = false) {
     const f = (p.fotos || [])[i];
     const ajuste = p.ajuste === "cobrir" ? "cobrir" : "";
@@ -159,7 +163,6 @@
     });
   }
 
-  // Logo: usa img/logo.png se existir; se não, fica o nome escrito
   (() => {
     const logo = $(".marca-logo"), marca = $(".marca");
     if (!logo) return;
@@ -169,7 +172,6 @@
     if (logo.complete) ok();
   })();
 
-  // Textos fixos do HTML (topo, rodapé): data-t="rodape.cidade"
   $$("[data-t]").forEach(el => {
     const v = el.dataset.t.split(".").reduce((o, k) => (o ? o[k] : undefined), T);
     if (typeof v === "string") el.textContent = v;
@@ -188,7 +190,7 @@
         clearTimeout(timer);
         const texto = await res.text();
         try { return JSON.parse(texto); }
-        catch (e) { throw new Error("A planilha não devolveu JSON (implantação sem acesso para 'Qualquer pessoa' ou código com erro): " + texto.slice(0, 120)); }
+        catch (e) { throw new Error("A planilha não devolveu JSON: " + texto.slice(0, 120)); }
       } catch (e) {
         ultimo = e;
         if (n < tentativas) await espera(1500);
@@ -197,7 +199,6 @@
     throw ultimo || new Error("sem resposta");
   }
 
-  // devolve { ok: conseguiu falar com a planilha, mudou: a sacola teve que ser ajustada }
   async function buscarEstoque(silencioso = false) {
     let ok = false, mudou = false;
     try {
@@ -253,7 +254,7 @@
     if (pular && !calmo()) { el.classList.remove("pulo"); void el.offsetWidth; el.classList.add("pulo"); }
   }
 
-  // ================================================================ efeitos (rolagem, parallax, inclinação, revelar)
+  // ================================================================ efeitos
   let rafRolagem = 0;
   window.addEventListener("scroll", () => {
     if (rafRolagem) return;
@@ -312,7 +313,7 @@
   // ================================================================ rotas + transições
   let primeiraVez = true;
   let rotaAtual = "";
-  let relogio = 0;   // contagem regressiva da pré-venda
+  let relogio = 0;
   function rota() {
     const h = location.hash.replace(/^#\/?/, "");
     const [a, b] = h.split("/");
@@ -329,7 +330,6 @@
     return $(cands[0]) || $(cands[1]);
   };
 
-  // A foto do card "voa" até a página do produto (e volta) com View Transitions
   async function navegar() {
     const r = rota();
     const chave = r.nome + ":" + (r.id || r.etapa || "");
@@ -398,7 +398,7 @@
     atualizarContador();
   }
 
-  // ================================================================ INÍCIO (capa + coleção)
+  // ================================================================ INÍCIO
   const ICONES = {
     pix: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 21 12l-9 9-9-9 9-9Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
     local: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="9.5" r="2.5" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>',
@@ -409,7 +409,6 @@
     ok: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
   };
 
-  // Produto da abertura: config.js > destaqueNoSite
   function produtoDestaque() {
     const vendaveis = CATALOGO.filter(p => p.status !== "em-breve");
     return porId(String(LOJA.destaqueNoSite || "").trim().toLowerCase()) || vendaveis.find(p => p.status === "ativo") || vendaveis[0];
@@ -484,7 +483,6 @@
     atualizarCapa();
   }
 
-  // Card pequeno da faixa "Mais da loja"
   function miniCardHTML(p, i) {
     const breve = p.status === "em-breve";
     const corpo = `
@@ -790,7 +788,6 @@
     atualizarProduto();
   }
 
-  // Põe na sacola (página do produto e compra rápida)
   function colocarNaSacola(p, x) {
     const A = T.avisos;
     if (!p || situacao(p) !== "ativo") { avisar(A.fechado); return false; }
@@ -977,7 +974,6 @@
     else if (!e.shiftKey && document.activeElement === ult) { e.preventDefault(); pri.focus(); }
   });
 
-  // Arrastar a folha para baixo fecha (celular)
   (() => {
     const s = $("#sacola");
     let y0 = null, dy = 0;
@@ -1142,6 +1138,7 @@
 
   function etapaEntrega(box) {
     const K = T.checkout, E = T.entrega, c = st.cliente;
+    const compLimpo = String(c.comp || "").replace(/\s*\|?\s*CPF:\s*[\d.-]+/gi, "").trim();
     box.innerHTML = `
       <form class="form" id="form-entrega" novalidate>
         <h2>${esc(K.entregaTitulo)}</h2>
@@ -1149,12 +1146,12 @@
           <p class="opcoes-rotulo">${esc(K.enderecoTitulo)}</p>
           <div class="linha-2 estreita">
             ${campo({ id: "cep", rotulo: K.cep, valor: c.cep || "", auto: "postal-code", modo: "numeric", dica: K.cepDica, obrig: false, max: 9 })}
-            <div class="campo" style="align-content:end"><a class="link-btn" href="[https://buscacepinter.correios.com.br/app/endereco/index.php](https://buscacepinter.correios.com.br/app/endereco/index.php)" target="_blank" rel="noopener">${esc(K.naoSeiCep)}<span class="so-leitor"> (abre o site dos Correios em nova aba)</span></a></div>
+            <div class="campo" style="align-content:end"><a class="link-btn" href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener">${esc(K.naoSeiCep)}<span class="so-leitor"> (abre o site dos Correios em nova aba)</span></a></div>
           </div>
           ${campo({ id: "rua", rotulo: K.rua, valor: c.rua || "", auto: "address-line1" })}
           <div class="linha-2">
             ${campo({ id: "numero", rotulo: K.numero, valor: c.numero || "", modo: "numeric" })}
-            ${campo({ id: "comp", rotulo: K.complemento, valor: c.comp || "", auto: "address-line2", obrig: false })}
+            ${campo({ id: "comp", rotulo: K.complemento, valor: compLimpo, auto: "address-line2", obrig: false })}
           </div>
           ${campo({ id: "bairro", rotulo: K.bairro, valor: c.bairro || "" })}
           <div class="linha-2 estreita">
@@ -1245,7 +1242,7 @@
         cep: val("cep"),
         rua: val("rua"),
         numero: val("numero"),
-        comp: val("comp"),
+        comp: val("comp").replace(/\s*\|?\s*CPF:\s*[\d.-]+/gi, "").trim(),
         bairro: val("bairro"),
         cidade: val("cidade"),
         estado: val("estado").toUpperCase(),
@@ -1254,7 +1251,6 @@
       guarda.gravar("sc-cliente", st.cliente, ss);
       guarda.gravar("sc-entrega", st.entrega, ss);
 
-      // Confere o estoque ANTES de mostrar o PIX: ninguém paga por uma peça que já acabou
       const btn = $('button[type="submit"]', form);
       const rotulo = btn.innerHTML;
       form.dataset.ocupado = "1"; btn.disabled = true; btn.classList.add("ocupado"); btn.textContent = T.produto.conferindo.replace(/[.…\s]+$/, "");
@@ -1270,15 +1266,38 @@
     });
   }
 
+  // Busca dupla de CEP: ViaCEP + BrasilAPI (fallback automático)
   async function buscarCep(cep, callback) {
     avisar(T.avisos.buscandoCep);
     try {
-      const r = await (await fetch(`[https://viacep.com.br/ws/$](https://viacep.com.br/ws/$){cep}/json/`)).json();
-      if (r.erro) throw new Error("não achou");
-      $("#rua").value = r.logradouro || $("#rua").value;
-      $("#bairro").value = r.bairro || $("#bairro").value;
-      $("#cidade").value = r.localidade || $("#cidade").value;
-      $("#estado").value = r.uf || $("#estado").value;
+      let dados = null;
+
+      try {
+        const resVia = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        if (resVia.ok) {
+          const r = await resVia.json();
+          if (r && !r.erro && r.localidade) {
+            dados = { rua: r.logradouro || "", bairro: r.bairro || "", cidade: r.localidade || "", uf: r.uf || "" };
+          }
+        }
+      } catch (e1) {}
+
+      if (!dados) {
+        const resBr = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+        if (resBr.ok) {
+          const b = await resBr.json();
+          if (b && b.city) {
+            dados = { rua: b.street || "", bairro: b.neighborhood || "", cidade: b.city || "", uf: b.state || "" };
+          }
+        }
+      }
+
+      if (!dados) throw new Error("não achou");
+
+      $("#rua").value = dados.rua;
+      $("#bairro").value = dados.bairro;
+      $("#cidade").value = dados.cidade;
+      $("#estado").value = dados.uf;
       if (typeof callback === "function") callback();
       avisar(T.avisos.cepOk);
       $("#numero").focus();
@@ -1294,9 +1313,11 @@
     return "LJ" + Array.from(rnd, n => ch[n % ch.length]).join("");
   }
 
-  // Envia os dados limpos: o CPF vai separado no campo c.cpf (para a coluna CPF da planilha)
   function clienteParaPlanilha() {
-    return Object.assign({}, st.cliente);
+    const c = Object.assign({}, st.cliente);
+    c.comp = String(c.comp || "").replace(/\s*\|?\s*CPF:\s*[\d.-]+/gi, "").trim();
+    c.cep = String(c.cep || "").replace(/\s*\|?\s*CPF:\s*[\d.-]+/gi, "").trim();
+    return c;
   }
 
   function dadosIntencao() {
@@ -1417,7 +1438,7 @@
       const ta = document.createElement("textarea");
       ta.value = texto; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
       document.body.appendChild(ta); ta.select();
-      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) { /* */ }
+      let ok = false; try { ok = document.execCommand("copy"); } catch (e2) {}
       ta.remove();
       return ok;
     }
@@ -1485,7 +1506,6 @@
       action: "pedido",
       txid: st.txid,
       cliente: c,
-      // tipo e prazo vão junto: a mensagem do WhatsApp segue o que está em produtos.js
       itens: st.sacola.map(i => { const p = porId(i.produto) || {}; return { produto: i.produto, tamanho: i.tamanho, qtd: i.qtd, tipo: p.tipo, prazo: prazo(p) }; }),
       frete: freteStr,
       freteTipo: st.entrega ? st.entrega.tipo : "motoqueiro",
@@ -1548,14 +1568,13 @@
         </div>` : ""}
         <p class="nota">${esc(O.texto)}</p>
         <div style="display:flex;flex-wrap:wrap;gap:10px">
-          <a class="btn btn-whats" href="[https://wa.me/$](https://wa.me/$){LOJA.whatsapp}?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener">${esc(O.whatsapp)}<span class="so-leitor"> (abre em nova aba)</span></a>
+          <a class="btn btn-whats" href="https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener">${esc(O.whatsapp)}<span class="so-leitor"> (abre em nova aba)</span></a>
           <a class="btn btn-vidro" href="#/">${esc(O.voltar)}</a>
         </div>
       </section>`;
     if (meu && !calmo()) setTimeout(confete, 350);
   }
 
-  // Confete branco com detalhes no vermelho da marca
   function confete() {
     const cv = document.createElement("canvas");
     cv.className = "confete"; cv.setAttribute("aria-hidden", "true");
@@ -1638,7 +1657,6 @@
     }
   });
 
-  // "Coleção" no topo: rola até a grade (ou volta ao início e rola)
   let irDepois = false;
   $$(".topo-link[data-ir]").forEach(a => a.addEventListener("click", e => {
     if (rota().nome === "vitrine") { e.preventDefault(); irColecao(); } else irDepois = true;
@@ -1652,15 +1670,14 @@
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && st.servidor.status !== "carregando") buscarEstoque(true); });
   window.addEventListener("storage", e => { if (e.key === "sc-sacola") { st.sacola = guarda.ler("sc-sacola") || []; atualizarAoVivo(); } });
 
-  const zapLoja = `[https://wa.me/$](https://wa.me/$){LOJA.whatsapp}?text=${encodeURIComponent(T.rodape.mensagemWhats)}`;
+  const zapLoja = `https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(T.rodape.mensagemWhats)}`;
   $$(".js-whats").forEach(a => { a.href = zapLoja; a.target = "_blank"; a.rel = "noopener"; });
   $$(".js-insta").forEach(a => { a.href = LOJA.instagram; a.target = "_blank"; a.rel = "noopener"; });
 
-  // Estoque sempre fresco: confere de novo a cada 45 s com a página aberta e ao abrir um produto
   setInterval(() => { if (document.visibilityState === "visible" && st.servidor.status !== "carregando") buscarEstoque(true); }, 45000);
   window.addEventListener("hashchange", () => { if (rota().nome === "produto" && st.servidor.status !== "carregando") buscarEstoque(true); });
 
-  buscarEstoque();      // começa a buscar o estoque já, em segundo plano
+  buscarEstoque();
   atualizarContador();
   navegar();
 })();
