@@ -1,9 +1,9 @@
 /* ==========================================================================
    SHITBOT CORAL — Loja (uma página para todos os produtos)
    Não precisa mexer aqui para trocar textos, produtos ou destaque:
-     textos   → js/textos.js
-     produtos → js/produtos.js
-     destaque, taxa, contatos, PIX → js/config.js
+     textos          → js/textos.js
+     produtos        → js/produtos.js
+     destaque, taxa, contatos, PIX, frete → js/config.js
    Rotas:  #/  início · #/p/<id> produto · #/finalizar/<etapa> · #/pedido/<número>
    ========================================================================== */
 (() => {
@@ -13,7 +13,7 @@
   const $ = (s, el = document) => el.querySelector(s);
   const $$ = (s, el = document) => Array.from(el.querySelectorAll(s));
   const brl = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" });
-  const dinheiro = v => brl.format(v || 0).replace(/ /g, " ");
+  const dinheiro = v => brl.format(v || 0).replace(/\u00A0/g, " ");
   const r2 = v => Math.round(v * 100) / 100;
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const calmo = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,13 +41,52 @@
     servidor: { status: "carregando", produtos: {}, taxa: Number(LOJA.taxaCartaoPercentual) || 0 },
     sacola: guarda.ler("sc-sacola") || [],
     cliente: guarda.ler("sc-cliente", ss) || {},
-    entrega: guarda.ler("sc-entrega", ss) || null,
+    entrega: guarda.ler("sc-entrega", ss) || null, // { tipo: 'motoqueiro'|'correios', valor, titulo, desc, exigeCpf, planilha }
     pagamento: PIX_OK ? "pix" : "card",
     txid: guarda.ler("sc-txid", ss),
     comprovante: null,
     tamSel: null
   };
   const salvarSacola = () => guarda.gravar("sc-sacola", st.sacola);
+
+  // ================================================================ frete automático
+  function calcularFrete(cidade, uf, qtd = qtdSacola()) {
+    const F = LOJA.frete || {};
+    const norm = s => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    const cid = norm(cidade);
+    const est = String(uf || "").toUpperCase().trim();
+    if (!cid || est.length !== 2) return null;
+
+    // 1. Grande Recife -> Motoqueiro Fantasma (taxa fixa)
+    if (est === "PE" && (F.cidadesRMR || []).includes(cid)) {
+      const valMoto = r2(Number(F.taxaMotoqueiro) || 10);
+      return {
+        tipo: "motoqueiro",
+        exigeCpf: false,
+        valor: valMoto,
+        titulo: T.entrega.motoqueiroTitulo,
+        desc: T.entrega.motoqueiroTexto,
+        planilha: `MOTOQUEIRO FANTASMA (${dinheiro(valMoto)})`
+      };
+    }
+
+    // 2. Resto do Brasil -> Correios (Capital vs. Interior) + Exige CPF
+    const tab = (F.tabelaEstados || {})[est] || { capital: 45.90, interior: 64.90, prazo: "10 a 18 dias úteis" };
+    const ehCapital = (F.capitais || []).includes(cid);
+    let val = ehCapital ? tab.capital : tab.interior;
+    if (qtd > 2) val += (qtd - 2) * (Number(F.adicionalPorCamisaExtra) || 5.20);
+    val = r2(val);
+
+    const regiao = ehCapital ? "Capital" : "Interior";
+    return {
+      tipo: "correios",
+      exigeCpf: true,
+      valor: val,
+      titulo: t(T.entrega.correiosTitulo, { regiao, uf: est }),
+      desc: t(T.entrega.correiosTexto, { prazo: tab.prazo }),
+      planilha: `CORREIOS (${dinheiro(val)})`
+    };
+  }
 
   // ================================================================ produto, preço, estoque
   function encerradoPorData(p) {
@@ -78,13 +117,15 @@
   const livre = (id, tam) => estoque(id, tam) - naSacola(id, tam);
   const qtdSacola = () => st.sacola.reduce((a, i) => a + i.qtd, 0);
   const subtotal = () => r2(st.sacola.reduce((a, i) => a + i.qtd * preco(porId(i.produto) || { preco: 0 }), 0));
-  // Taxa do cartão em %: 5 → 5% do valor das camisas
+  const freteValor = () => (st.entrega && typeof st.entrega === "object") ? r2(st.entrega.valor || 0) : 0;
+  const baseComFrete = () => r2(subtotal() + freteValor());
+  // Taxa do cartão em % sobre camisas + frete
   const taxaPct = () => st.servidor.taxa;
   const taxaTexto = () => `${String(taxaPct()).replace(".", ",")}%`;
   const taxaDe = v => Math.round(v * taxaPct()) / 100;   // mesma conta do Apps Script
   const comTaxa = v => r2(v + taxaDe(v));
-  const taxa = () => st.pagamento === "card" ? taxaDe(subtotal()) : 0;
-  const total = () => r2(subtotal() + taxa());
+  const taxa = () => st.pagamento === "card" ? taxaDe(baseComFrete()) : 0;
+  const total = () => r2(baseComFrete() + taxa());
   const temPreVenda = () => st.sacola.some(i => (porId(i.produto) || {}).tipo === "pre-venda");
   const estoqueTotalLivre = p => (p.tamanhos || []).reduce((a, x) => a + Math.max(0, livre(p.id, x)), 0);
   const prazosNaSacola = () => [...new Set(st.sacola.map(i => porId(i.produto)).filter(p => p && p.tipo === "pre-venda").map(prazo).filter(Boolean))];
@@ -284,7 +325,6 @@
   const fotoDoProduto = () => $("#trilho figure:first-child img");
   const fotoDoCard = id => {
     const cands = [`.card[data-id="${CSS.escape(id)}"] .card-palco img:not(.alt)`, `.capa[data-id="${CSS.escape(id)}"] .capa-foto img`, `.mini-link[href="#/p/${encodeURIComponent(id)}"] img`];
-    // usa a foto que estiver visível na tela (a da faixa, a da capa ou a da coleção)
     for (const s of cands) { const el = $(s); if (el) { const r = el.getBoundingClientRect(); if (r.bottom > 0 && r.top < innerHeight) return el; } }
     return $(cands[0]) || $(cands[1]);
   };
@@ -386,9 +426,7 @@
     const fita = [destaque ? (destaque.tipo === "pre-venda" ? `${C.seloPreVenda}: ${destaque.nome}` : `${destaque.nome}: ${C.seloProntaEntrega.toLowerCase()}`) : null].concat(T.fita || []).filter(Boolean);
     const fitaHTML = fita.map(x => `<span>${esc(x)}</span>`).join("");
     const pre = destaque && destaque.tipo === "pre-venda";
-    // a ordem da grade: destaque primeiro
     const ordem = destaque ? [destaque].concat(CATALOGO.filter(p => p !== destaque)) : CATALOGO;
-    // faixa "Mais da loja": todos os outros (à venda primeiro, lançamentos no fim)
     const outros = CATALOGO.filter(p => p !== destaque).sort((a, b) => (a.status === "em-breve") - (b.status === "em-breve"));
 
     main.innerHTML = `
@@ -542,8 +580,6 @@
     $$(".card[data-id]").forEach(atualizarCard);
   }
 
-  // Botões de tamanho: brilho enquanto o estoque carrega em segundo plano,
-  // e entrada animada (um de cada vez) quando ele chega
   function estadoCarga(el, carregando) {
     if (!el) return;
     const antes = el.dataset.carga;
@@ -622,8 +658,8 @@
             ${p.detalhes && p.detalhes.length ? `<details open><summary>${esc(P.detalhes)}</summary><div class="conteudo"><ul>${p.detalhes.map(d => `<li>${esc(d)}</li>`).join("")}</ul></div></details>` : ""}
             ${p.medidas ? `<details id="det-medidas"><summary>${esc(P.guiaMedidas)}</summary><div class="conteudo">${tabelaMedidas(p)}</div></details>` : ""}
             <details><summary>${esc(P.entregaPagamento)}</summary><div class="conteudo"><ul>
-              <li>${esc(T.entrega.retiradaTitulo)}: ${esc(T.entrega.retiradaTexto)}</li>
-              <li>${esc(T.entrega.appTitulo)}: ${esc(T.entrega.appTexto)}</li>
+              <li>${esc(T.entrega.motoqueiroTitulo)} (${dinheiro(LOJA.frete.taxaMotoqueiro)}): ${esc(T.entrega.motoqueiroTexto)}</li>
+              <li>Correios para todo o Brasil: frete calculado automaticamente pelo CEP na entrega.</li>
               <li class="js-info-pag">${esc(t(P.infoPagamento, { taxa: taxaTexto() }))}</li>
               <li>${esc(P.infoComprovante)}</li>
             </ul></div></details>
@@ -646,7 +682,6 @@
       e.preventDefault();
       trilho.scrollBy({ left: (e.key === "ArrowRight" ? 1 : -1) * trilho.clientWidth, behavior: calmo() ? "auto" : "smooth" });
     });
-    // Zoom na foto (computador)
     if (ponteiroFino()) {
       $$("figure", trilho).forEach(fig => {
         const img = $("img", fig);
@@ -660,7 +695,6 @@
       });
     }
 
-    // Contagem regressiva da pré-venda
     if (dataFim) {
       const fim = $("#p-fim");
       const tic = () => {
@@ -727,7 +761,7 @@
     const nota = $("#tam-nota");
     nota.classList.remove("alerta");
     if (sit === "encerrado") { nota.textContent = p.tipo === "pre-venda" ? P.preVendaEncerrada : P.vendasEncerradas; nota.classList.add("alerta"); }
-    else if (carregando) nota.textContent = P.conferindo.replace(/[.…\s]+$/, "");   // as reticências são animadas
+    else if (carregando) nota.textContent = P.conferindo.replace(/[.…\s]+$/, "");
     else if (st.servidor.status === "ok" && estoqueTotalLivre(p) <= 0 && naSacola(p.id) > 0) nota.textContent = P.tudoNaSacola;
     else if (st.servidor.status === "ok" && estoqueTotalLivre(p) <= 0) { nota.textContent = P.esgotado; nota.classList.add("alerta"); }
     else if (baixo) { nota.textContent = P.ultimasUnidades; nota.classList.add("alerta"); }
@@ -891,6 +925,10 @@
     i.qtd += delta;
     if (i.qtd <= 0) return remover(idx);
     salvarSacola();
+    if (st.cliente.cidade && st.cliente.estado) {
+      st.entrega = calcularFrete(st.cliente.cidade, st.cliente.estado);
+      guarda.gravar("sc-entrega", st.entrega, ss);
+    }
     desenharSacola();
     $$(".item").forEach(e => { e.style.animation = "none"; });
     $(`.item[data-idx="${idx}"] [data-acao="${delta > 0 ? "mais" : "menos"}"]`)?.focus();
@@ -904,6 +942,10 @@
     const fim = () => {
       st.sacola.splice(idx, 1);
       salvarSacola();
+      if (st.cliente.cidade && st.cliente.estado) {
+        st.entrega = calcularFrete(st.cliente.cidade, st.cliente.estado);
+        guarda.gravar("sc-entrega", st.entrega, ss);
+      }
       desenharSacola();
       $$(".item").forEach(e => { e.style.animation = "none"; });
       atualizarContador();
@@ -962,11 +1004,13 @@
     const c = st.cliente, zap = String(c.zap || "").replace(/\D/g, "");
     return (c.nome || "").trim().split(/\s+/).length >= 2 && zap.length === 11;
   }
-  // Endereço é obrigatório sempre, até na retirada (o cliente pode mudar para entrega depois)
   function entregaOk() {
-    if (st.entrega !== "retirada" && st.entrega !== "app") return false;
     const c = st.cliente;
-    return !!(c.rua && c.numero && c.bairro && c.cidade && c.estado && c.estado.length === 2);
+    if (!c.rua || !c.numero || !c.bairro || !c.cidade || !c.estado || c.estado.length !== 2) return false;
+    const fr = calcularFrete(c.cidade, c.estado);
+    if (!fr) return false;
+    if (fr.exigeCpf && String(c.cpf || "").replace(/\D/g, "").length !== 11) return false;
+    return true;
   }
 
   function telaFinalizar(main, etapa) {
@@ -1004,13 +1048,15 @@
     if (!el) return;
     const K = T.checkout;
     const naPag = rota().etapa === "pagamento";
+    const temFrete = st.entrega && typeof st.entrega === "object";
     el.innerHTML = `
       <div class="resumo-cab"><h2 id="titulo-resumo">${esc(K.resumo)}</h2><button type="button" class="link-btn" data-acao="abrir-sacola">${esc(K.editar)}</button></div>
       <ul class="resumo-lista">${st.sacola.map((i, k) => linhaItemHTML(i, k, true)).join("")}</ul>
       <div class="resumo-tot">
         <div><span>${esc(K.subtotal)}</span><span>${dinheiro(subtotal())}</span></div>
+        ${temFrete ? `<div><span>${esc(t(K.frete, { modo: st.entrega.titulo }))}</span><span>${dinheiro(freteValor())}</span></div>` : ""}
         ${st.pagamento === "card" && naPag ? `<div><span>${esc(t(K.taxaCartao, { taxa: taxaTexto() }))}</span><span>+ ${dinheiro(taxa())}</span></div>` : ""}
-        <div class="grande"><span>${esc(K.total)}</span><span>${dinheiro(naPag ? total() : subtotal())}</span></div>
+        <div class="grande"><span>${esc(K.total)}</span><span>${dinheiro(naPag ? total() : baseComFrete())}</span></div>
       </div>
       ${temPreVenda() ? `<p class="resumo-aviso">${esc(comPrazos(K.avisoPreVenda, prazosNaSacola()))}</p>` : ""}`;
     carregarImagens(el);
@@ -1018,7 +1064,7 @@
 
   // ---------- campos e validação ----------
   function campo({ id, rotulo, tipo = "text", valor = "", auto = "", modo = "", dica = "", obrig = true, max = "" }) {
-    return `<div class="campo">
+    return `<div class="campo" id="campo-${id}">
       <label for="${id}">${esc(rotulo)}${obrig ? "" : " " + esc(T.checkout.opcional)}</label>
       ${dica ? `<p class="dica" id="${id}-dica">${esc(dica)}</p>` : ""}
       <input id="${id}" name="${id}" type="${tipo}" value="${esc(valor)}" ${auto ? `autocomplete="${auto}"` : ""} ${modo ? `inputmode="${modo}"` : ""} ${max ? `maxlength="${max}"` : ""} ${obrig ? 'required aria-required="true"' : ""} ${dica ? `aria-describedby="${id}-dica"` : ""}>
@@ -1057,6 +1103,13 @@
     return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
   }
   const mascaraCep = v => { const d = v.replace(/\D/g, "").slice(0, 8); return d.length > 5 ? `${d.slice(0, 5)}-${d.slice(5)}` : d; };
+  function mascaraCpf(v) {
+    const d = v.replace(/\D/g, "").slice(0, 11);
+    if (d.length <= 3) return d;
+    if (d.length <= 6) return `${d.slice(0, 3)}.${d.slice(3)}`;
+    if (d.length <= 9) return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6)}`;
+    return `${d.slice(0, 3)}.${d.slice(3, 6)}.${d.slice(6, 9)}-${d.slice(9)}`;
+  }
 
   function etapaDados(box) {
     const K = T.checkout, c = st.cliente;
@@ -1089,18 +1142,11 @@
 
   function etapaEntrega(box) {
     const K = T.checkout, E = T.entrega, c = st.cliente;
-    const opc = (v, tit, d, pr) => `<label class="opcao"><input type="radio" name="entrega" value="${v}" ${st.entrega === v ? "checked" : ""}>
-      <span class="opcao-caixa"><span class="opcao-titulo">${esc(tit)}</span><span class="opcao-preco">${esc(pr)}</span><span class="opcao-desc">${esc(d)}</span></span></label>`;
     box.innerHTML = `
       <form class="form" id="form-entrega" novalidate>
         <h2>${esc(K.entregaTitulo)}</h2>
-        <fieldset class="opcoes" id="grupo-entrega">
-          <legend>${esc(K.entregaPergunta)}</legend>
-          ${opc("retirada", E.retiradaTitulo, E.retiradaTexto + (temPreVenda() ? " " + E.retiradaPreVenda : ""), E.retiradaPreco)}
-          ${opc("app", E.appTitulo, E.appTexto, E.appPreco)}
-        </fieldset>
         <div class="endereco" id="endereco">
-          <p class="opcoes-rotulo">${esc(K.enderecoTitulo || "Seu endereço")}</p>
+          <p class="opcoes-rotulo">${esc(K.enderecoTitulo)}</p>
           <div class="linha-2 estreita">
             ${campo({ id: "cep", rotulo: K.cep, valor: c.cep || "", auto: "postal-code", modo: "numeric", dica: K.cepDica, obrig: false, max: 9 })}
             <div class="campo" style="align-content:end"><a class="link-btn" href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener">${esc(K.naoSeiCep)}<span class="so-leitor"> (abre o site dos Correios em nova aba)</span></a></div>
@@ -1115,42 +1161,96 @@
             ${campo({ id: "cidade", rotulo: K.cidade, valor: c.cidade || "", auto: "address-level2" })}
             ${campo({ id: "estado", rotulo: K.uf, valor: c.estado || "", auto: "address-level1", max: 2, dica: K.ufDica })}
           </div>
+          <div id="wrap-cpf" hidden>
+            ${campo({ id: "cpf", rotulo: K.cpf, tipo: "tel", valor: c.cpf || "", modo: "numeric", dica: K.cpfDica, max: 14 })}
+          </div>
         </div>
+
+        <div class="campo" id="grupo-entrega">
+          <span class="rotulo">${esc(K.entregaPergunta)}</span>
+          <div id="frete-status-box"></div>
+        </div>
+
         <div class="navega">
           <a class="link-btn" href="#/finalizar/dados">${esc(K.voltar)}</a>
           <button type="submit" class="btn btn-principal">${esc(K.irPagamento)}${ICONES.seta}</button>
         </div>
       </form>`;
-    $$('input[name="entrega"]').forEach(r => r.addEventListener("change", () => {
-      st.entrega = r.value;
-      guarda.gravar("sc-entrega", st.entrega, ss);
-    }));
+
+    const atualizarBlocoFrete = () => {
+      const fr = calcularFrete($("#cidade").value, $("#estado").value);
+      st.entrega = fr;
+      guarda.gravar("sc-entrega", fr, ss);
+      desenharResumo();
+
+      const wrapCpf = $("#wrap-cpf");
+      const boxStatus = $("#frete-status-box");
+      if (!fr) {
+        wrapCpf.hidden = true;
+        boxStatus.innerHTML = `<p class="nota" style="padding:14px;border-radius:14px;background:var(--sup-2)">${esc(E.placeholder)}</p>`;
+        return;
+      }
+
+      wrapCpf.hidden = !fr.exigeCpf;
+      boxStatus.innerHTML = `
+        <div class="opcao-caixa" style="border-color:var(--texto);background:var(--sup-2);grid-template-columns:1fr auto">
+          <span class="opcao-titulo">${fr.tipo === "motoqueiro" ? "🏍️🔥 " : "📦 "}${esc(fr.titulo)}</span>
+          <span class="opcao-preco">${dinheiro(fr.valor)}</span>
+          <span class="opcao-desc" style="grid-column:1 / 3">${esc(fr.desc)}</span>
+        </div>`;
+    };
+
     const cep = $("#cep");
     cep.addEventListener("input", () => {
       cep.value = mascaraCep(cep.value);
-      if (cep.value.replace(/\D/g, "").length === 8) buscarCep(cep.value.replace(/\D/g, ""));
+      if (cep.value.replace(/\D/g, "").length === 8) buscarCep(cep.value.replace(/\D/g, ""), atualizarBlocoFrete);
     });
-    $("#estado").addEventListener("input", e => { e.target.value = e.target.value.replace(/[^a-z]/gi, "").toUpperCase(); });
+    $("#cidade").addEventListener("input", atualizarBlocoFrete);
+    $("#estado").addEventListener("input", e => {
+      e.target.value = e.target.value.replace(/[^a-z]/gi, "").toUpperCase();
+      atualizarBlocoFrete();
+    });
+    const cpfInput = $("#cpf");
+    if (cpfInput) cpfInput.addEventListener("input", () => { cpfInput.value = mascaraCpf(cpfInput.value); });
+
+    atualizarBlocoFrete();
+
     $("#form-entrega").addEventListener("submit", async e => {
       e.preventDefault();
       const form = e.target;
       if (form.dataset.ocupado) return;
       const R = T.erros, erros = [];
-      const escolha = $('input[name="entrega"]:checked');
-      if (!escolha) erros.push(["grupo-entrega", R.escolhaEntrega]);
-      const val = id => $(`#${id}`).value.trim();
-      {
-        const cp = val("cep").replace(/\D/g, "");
-        if (cp && cp.length !== 8) erros.push(["cep", R.cep]);
-        if (!val("rua")) erros.push(["rua", R.rua]);
-        if (!val("numero")) erros.push(["numero", R.numero]);
-        if (!val("bairro")) erros.push(["bairro", R.bairro]);
-        if (!val("cidade")) erros.push(["cidade", R.cidade]);
-        if (val("estado").length !== 2) erros.push(["estado", R.uf]);
+      const val = id => $(`#${id}`) ? $(`#${id}`).value.trim() : "";
+
+      const cp = val("cep").replace(/\D/g, "");
+      if (cp && cp.length !== 8) erros.push(["cep", R.cep]);
+      if (!val("rua")) erros.push(["rua", R.rua]);
+      if (!val("numero")) erros.push(["numero", R.numero]);
+      if (!val("bairro")) erros.push(["bairro", R.bairro]);
+      if (!val("cidade")) erros.push(["cidade", R.cidade]);
+      if (val("estado").length !== 2) erros.push(["estado", R.uf]);
+
+      const fr = calcularFrete(val("cidade"), val("estado"));
+      if (!fr) {
+        erros.push(["cidade", R.escolhaEntrega]);
+      } else if (fr.exigeCpf) {
+        const cpfDigitos = val("cpf").replace(/\D/g, "");
+        if (cpfDigitos.length !== 11) erros.push(["cpf", R.cpf]);
       }
+
       if (!marcarErros(e.target, erros)) return;
-      st.entrega = escolha.value;
-      Object.assign(st.cliente, { cep: val("cep"), rua: val("rua"), numero: val("numero"), comp: val("comp"), bairro: val("bairro"), cidade: val("cidade"), estado: val("estado").toUpperCase() });
+
+      st.entrega = fr;
+      Object.assign(st.cliente, {
+        cep: val("cep"),
+        rua: val("rua"),
+        numero: val("numero"),
+        comp: val("comp"),
+        bairro: val("bairro"),
+        cidade: val("cidade"),
+        estado: val("estado").toUpperCase(),
+        cpf: fr.exigeCpf ? mascaraCpf(val("cpf")) : ""
+      });
       guarda.gravar("sc-cliente", st.cliente, ss);
       guarda.gravar("sc-entrega", st.entrega, ss);
 
@@ -1170,7 +1270,7 @@
     });
   }
 
-  async function buscarCep(cep) {
+  async function buscarCep(cep, callback) {
     avisar(T.avisos.buscandoCep);
     try {
       const r = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
@@ -1179,6 +1279,7 @@
       $("#bairro").value = r.bairro || $("#bairro").value;
       $("#cidade").value = r.localidade || $("#cidade").value;
       $("#estado").value = r.uf || $("#estado").value;
+      if (typeof callback === "function") callback();
       avisar(T.avisos.cepOk);
       $("#numero").focus();
     } catch (e) {
@@ -1193,16 +1294,24 @@
     return "LJ" + Array.from(rnd, n => ch[n % ch.length]).join("");
   }
 
+  function clienteParaPlanilha() {
+    const c = Object.assign({}, st.cliente);
+    if (c.cpf) {
+      c.comp = c.comp ? `${c.comp} | CPF: ${c.cpf}` : `CPF: ${c.cpf}`;
+    }
+    return c;
+  }
+
   function dadosIntencao() {
-    const c = st.cliente;
+    const c = clienteParaPlanilha();
     const ids = [...new Set(st.sacola.map(i => i.produto))];
     const tamanhos = ids.map(id => {
       const p = porId(id);
       return `${p ? p.nome : id} ${st.sacola.filter(i => i.produto === id).map(i => `${i.qtd}x ${i.tamanho}`).join(", ")}`;
     }).join("; ");
-    return { txid: st.txid, produto: ids.join(" + "), nome: c.nome, zap: c.zap, tamanhos, endereco: enderecoTexto(), valor: subtotal() };
+    const end = `${c.rua}, ${c.numero}${c.comp ? " (" + c.comp + ")" : ""} - ${c.bairro}, ${c.cidade}-${c.estado}${c.cep ? ", " + c.cep : ""}`;
+    return { txid: st.txid, produto: ids.join(" + "), nome: c.nome, zap: c.zap, tamanhos, endereco: end, valor: baseComFrete() };
   }
-  const enderecoTexto = () => { const c = st.cliente; return `${c.rua}, ${c.numero}${c.comp ? " " + c.comp : ""} - ${c.bairro}, ${c.cidade}-${c.estado}${c.cep ? ", " + c.cep : ""}`; };
   function registrarIntencao() {
     chamar(Object.assign({ action: "intencao" }, dadosIntencao()), { tentativas: 1, tempo: 15000 }).catch(e => console.warn("Intenção:", e));
   }
@@ -1214,7 +1323,7 @@
   }
 
   // ---------- PIX (BR Code do Banco Central) ----------
-  const pixTexto = (s, max) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^\x20-\x7E]/g, "").trim().substring(0, max);
+  const pixTexto = (s, max) => String(s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^\x20-\x7E]/g, "").trim().substring(0, max);
   const campoPix = (id, v) => id + String(v.length).padStart(2, "0") + v;
   function payloadPix(valor) {
     const chave = String(LOJA.pix.chave).replace(/\s/g, "");
@@ -1280,13 +1389,14 @@
     if (!el) return;
     const K = T.checkout;
     if (st.pagamento === "pix" && PIX_OK) {
-      const codigo = payloadPix(subtotal());
+      const valorPix = baseComFrete();
+      const codigo = payloadPix(valorPix);
       el.innerHTML = `<div class="pag-caixa">
         <div class="pix-grade">
-          <div class="qr" role="img" aria-label="QR Code do PIX de ${dinheiro(subtotal())}">${qrSvg(codigo)}</div>
+          <div class="qr" role="img" aria-label="QR Code do PIX de ${dinheiro(valorPix)}">${qrSvg(codigo)}</div>
           <div style="display:grid;gap:6px">
             <p class="nota">${esc(K.valorPix)}</p>
-            <p class="valor-grande">${dinheiro(subtotal())}</p>
+            <p class="valor-grande">${dinheiro(valorPix)}</p>
             <p class="nota">${esc(K.instrucaoPix)}</p>
           </div>
         </div>
@@ -1370,21 +1480,31 @@
     const btn = $("#btn-finalizar");
     btn.disabled = true; btn.classList.add("ocupado");
     $(".btn-txt", btn).textContent = K.enviando;
-    const c = st.cliente;
+
+    const c = clienteParaPlanilha();
+    const freteStr = st.entrega ? st.entrega.planilha : "MOTOQUEIRO FANTASMA (R$ 10,00)";
+
     const pedido = {
-      action: "pedido", txid: st.txid,
+      action: "pedido",
+      txid: st.txid,
       cliente: c,
       // tipo e prazo vão junto: a mensagem do WhatsApp segue o que está em produtos.js
       itens: st.sacola.map(i => { const p = porId(i.produto) || {}; return { produto: i.produto, tamanho: i.tamanho, qtd: i.qtd, tipo: p.tipo, prazo: prazo(p) }; }),
-      frete: st.entrega, pagamento: st.pagamento, total: total(),
-      fileBase64: st.comprovante.base64, fileMime: st.comprovante.mime, fileName: st.comprovante.nome
+      frete: freteStr,
+      freteTipo: st.entrega ? st.entrega.tipo : "motoqueiro",
+      freteValor: freteValor(),
+      pagamento: st.pagamento,
+      total: total(),
+      fileBase64: st.comprovante.base64,
+      fileMime: st.comprovante.mime,
+      fileName: st.comprovante.nome
     };
     const destravar = () => { finalizando = false; btn.disabled = false; btn.classList.remove("ocupado"); $(".btn-txt", btn).textContent = K.finalizar; };
     try {
       const r = await chamar(pedido, { tempo: 45000, tentativas: 2 });
       if (r.status === "sucesso") {
         const resumo = st.sacola.map(i => { const p = porId(i.produto); return `${i.qtd}x ${p ? p.nome : i.produto} (${i.tamanho})`; });
-        guarda.gravar("sc-ultimo", { id: r.orderId, itens: resumo, total: r.total ?? total(), pagamento: st.pagamento, entrega: st.entrega, pre: temPreVenda(), prazos: prazosNaSacola() }, ss);
+        guarda.gravar("sc-ultimo", { id: r.orderId, itens: resumo, total: r.total ?? total(), pagamento: st.pagamento, entrega: freteStr, pre: temPreVenda(), prazos: prazosNaSacola() }, ss);
         st.sacola = []; salvarSacola();
         st.txid = null; guarda.apagar("sc-txid", ss);
         st.comprovante = null;
@@ -1426,7 +1546,7 @@
         ${meu ? `<div class="painel">
           <p><strong>${esc(O.itens)}</strong> ${esc(meu.itens.join(", "))}</p>
           <p><strong>${esc(O.total)}</strong> ${dinheiro(meu.total)} (${meu.pagamento === "pix" ? "PIX" : "cartão"})</p>
-          <p><strong>${esc(O.recebimento)}</strong> ${esc(meu.entrega === "app" ? T.entrega.appTitulo : T.entrega.retiradaTitulo)}</p>
+          <p><strong>${esc(O.recebimento)}</strong> ${esc(meu.entrega)}</p>
           ${meu.pre ? `<p><strong>${esc(O.preVenda)}</strong> ${esc(O.preVendaTexto)}${meu.prazos.length ? `, ${esc(meu.prazos.join(", "))}` : ""}.</p>` : ""}
         </div>` : ""}
         <p class="nota">${esc(O.texto)}</p>
