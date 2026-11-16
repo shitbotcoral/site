@@ -134,7 +134,7 @@
   // ================================================================ imagens
   const EXTS = ["png", "webp", "jpg", "jpeg"];
   const FOTO_VAZIA = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460"><path d="M140 70l-70 40 25 60 30-14v234h150V156l30 14 25-60-70-40c-10 22-30 34-60 34s-50-12-60-34z" fill="none" stroke="#8a8b93" stroke-width="5" stroke-linejoin="round" stroke-dasharray="12 10"/></svg>');
+    '<svg xmlns="[http://www.w3.org/2000/svg](http://www.w3.org/2000/svg)" viewBox="0 0 400 460"><path d="M140 70l-70 40 25 60 30-14v234h150V156l30 14 25-60-70-40c-10 22-30 34-60 34s-50-12-60-34z" fill="none" stroke="#8a8b93" stroke-width="5" stroke-linejoin="round" stroke-dasharray="12 10"/></svg>');
   const caminhoFoto = (p, f) => `produtos/${p.id}/${typeof f === "string" ? f : f.arquivo}`;
   const altFoto = (p, f, i) => (typeof f === "object" && f.alt) || `${p.categoria || ""} ${p.nome}, foto ${i + 1}`.trim();
   // decorativa = true quando a foto só repete o texto ao lado (alt vazio para o leitor de tela)
@@ -1149,7 +1149,7 @@
           <p class="opcoes-rotulo">${esc(K.enderecoTitulo)}</p>
           <div class="linha-2 estreita">
             ${campo({ id: "cep", rotulo: K.cep, valor: c.cep || "", auto: "postal-code", modo: "numeric", dica: K.cepDica, obrig: false, max: 9 })}
-            <div class="campo" style="align-content:end"><a class="link-btn" href="https://buscacepinter.correios.com.br/app/endereco/index.php" target="_blank" rel="noopener">${esc(K.naoSeiCep)}<span class="so-leitor"> (abre o site dos Correios em nova aba)</span></a></div>
+            <div class="campo" style="align-content:end"><a class="link-btn" href="[https://buscacepinter.correios.com.br/app/endereco/index.php](https://buscacepinter.correios.com.br/app/endereco/index.php)" target="_blank" rel="noopener">${esc(K.naoSeiCep)}<span class="so-leitor"> (abre o site dos Correios em nova aba)</span></a></div>
           </div>
           ${campo({ id: "rua", rotulo: K.rua, valor: c.rua || "", auto: "address-line1" })}
           <div class="linha-2">
@@ -1273,7 +1273,7 @@
   async function buscarCep(cep, callback) {
     avisar(T.avisos.buscandoCep);
     try {
-      const r = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
+      const r = await (await fetch(`[https://viacep.com.br/ws/$](https://viacep.com.br/ws/$){cep}/json/`)).json();
       if (r.erro) throw new Error("não achou");
       $("#rua").value = r.logradouro || $("#rua").value;
       $("#bairro").value = r.bairro || $("#bairro").value;
@@ -1294,12 +1294,9 @@
     return "LJ" + Array.from(rnd, n => ch[n % ch.length]).join("");
   }
 
+  // Envia os dados limpos: o CPF vai separado no campo c.cpf (para a coluna CPF da planilha)
   function clienteParaPlanilha() {
-    const c = Object.assign({}, st.cliente);
-    if (c.cpf) {
-      c.comp = c.comp ? `${c.comp} | CPF: ${c.cpf}` : `CPF: ${c.cpf}`;
-    }
-    return c;
+    return Object.assign({}, st.cliente);
   }
 
   function dadosIntencao() {
@@ -1309,7 +1306,7 @@
       const p = porId(id);
       return `${p ? p.nome : id} ${st.sacola.filter(i => i.produto === id).map(i => `${i.qtd}x ${i.tamanho}`).join(", ")}`;
     }).join("; ");
-    const end = `${c.rua}, ${c.numero}${c.comp ? " (" + c.comp + ")" : ""} - ${c.bairro}, ${c.cidade}-${c.estado}${c.cep ? ", " + c.cep : ""}`;
+    const end = `${c.rua}, ${c.numero}${c.comp ? " (" + c.comp + ")" : ""} - ${c.bairro}, ${c.cidade}-${c.estado}${c.cep ? ", " + c.cep : ""}${c.cpf ? " | CPF: " + c.cpf : ""}`;
     return { txid: st.txid, produto: ids.join(" + "), nome: c.nome, zap: c.zap, tamanhos, endereco: end, valor: baseComFrete() };
   }
   function registrarIntencao() {
@@ -1551,7 +1548,7 @@
         </div>` : ""}
         <p class="nota">${esc(O.texto)}</p>
         <div style="display:flex;flex-wrap:wrap;gap:10px">
-          <a class="btn btn-whats" href="https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener">${esc(O.whatsapp)}<span class="so-leitor"> (abre em nova aba)</span></a>
+          <a class="btn btn-whats" href="[https://wa.me/$](https://wa.me/$){LOJA.whatsapp}?text=${encodeURIComponent(texto)}" target="_blank" rel="noopener">${esc(O.whatsapp)}<span class="so-leitor"> (abre em nova aba)</span></a>
           <a class="btn btn-vidro" href="#/">${esc(O.voltar)}</a>
         </div>
       </section>`;
@@ -1655,7 +1652,7 @@
   document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && st.servidor.status !== "carregando") buscarEstoque(true); });
   window.addEventListener("storage", e => { if (e.key === "sc-sacola") { st.sacola = guarda.ler("sc-sacola") || []; atualizarAoVivo(); } });
 
-  const zapLoja = `https://wa.me/${LOJA.whatsapp}?text=${encodeURIComponent(T.rodape.mensagemWhats)}`;
+  const zapLoja = `[https://wa.me/$](https://wa.me/$){LOJA.whatsapp}?text=${encodeURIComponent(T.rodape.mensagemWhats)}`;
   $$(".js-whats").forEach(a => { a.href = zapLoja; a.target = "_blank"; a.rel = "noopener"; });
   $$(".js-insta").forEach(a => { a.href = LOJA.instagram; a.target = "_blank"; a.rel = "noopener"; });
 

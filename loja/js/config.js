@@ -10,10 +10,11 @@ const LOJA = {
      O id do produto que aparece grande na abertura da loja.
      Use o mesmo id de js/produtos.js. Exemplos:
        destaqueNoSite: "navio-pirata",
+       destaqueNoSite: "arruda",
        destaqueNoSite: "pipico",
      Deixe "" para usar o primeiro produto à venda da lista.
      --------------------------------------------------------------- */
-  destaqueNoSite: "arruda",
+  destaqueNoSite: "navio-pirata",
 
   /* ---------------------------------------------------------------
      TAXA DO CARTÃO (em %)
