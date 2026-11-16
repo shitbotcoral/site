@@ -1,111 +1,80 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SHITBOT CORAL | LINKS</title>
-    <link rel="icon" href="sclogo.png" type="image/png">
-
-    <link rel="preload" as="image" href="shitvlog.webp">
-    <link rel="preload" as="image" href="loja.webp">
-
-    <script src="https://cdn.tailwindcss.com"></script>
-
-    <style>
-        body {
-            background-color: #000000;
-            background-image: url('bg.jpg');
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* Efeito de clique e hover nos botões de imagem (mesmo padrão de sempre) */
-        .img-btn {
-            transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
-            display: block;
-            width: 100%;
-        }
-        .img-btn:active { transform: scale(0.98); }
-        .img-btn:hover {
-            transform: scale(1.03);
-            filter: brightness(1.15);
-        }
-        .img-btn img {
-            width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 12px;
-        }
-
-        /* Barra de redes sociais: os ícones vêm soltos (fundo transparente),
-           então a barra escura e o alinhamento são montados aqui. */
-        .social-bar {
-            display: flex;
-            align-items: stretch;
-            background-color: #0d0d0d;
-            border-radius: 12px;
-            overflow: hidden;
-        }
-        .social-bar a {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px 8px;
-            transition: background-color 0.2s ease-in-out, transform 0.15s ease-in-out;
-        }
-        .social-bar a:hover { background-color: #1c1c1c; }
-        .social-bar a:active { transform: scale(0.92); }
-        .social-bar img {
-            height: 34px;
-            width: auto;
-            display: block;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Loja | Shitbot Coral</title>
+  <meta name="description" content="Loja oficial da Shitbot Coral. Camisas de pronta entrega e pré-venda, com pagamento por PIX ou cartão.">
+  <meta name="theme-color" content="#08080B">
+  <meta name="color-scheme" content="dark light">
+  <meta property="og:title" content="Loja | Shitbot Coral">
+  <meta property="og:description" content="Camisas de pronta entrega e pré-venda. PIX ou cartão.">
+  <meta property="og:image" content="https://shitbotcoral.com.br/loja/produtos/navio-pirata/1.png">
+  <!-- ?v=6.5 nos arquivos abaixo: quando mudar algum, troque o número para o celular não usar a versão velha guardada -->
+  <link rel="icon" href="img/sclogo.png" type="image/png">
+  <link rel="preload" href="fontes/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- adianta a conexão com a planilha (o estoque chega mais rápido) -->
+  <link rel="preconnect" href="https://script.google.com">
+  <link rel="preconnect" href="https://script.googleusercontent.com" crossorigin>
+  <link rel="stylesheet" href="css/loja.css?v=6.5">
 </head>
-<body class="min-h-screen flex flex-col items-center py-10 px-4">
+<body data-tema="escuro">
+  <a class="pular" href="#conteudo">Pular para o conteúdo</a>
 
-    <div class="w-full max-w-md flex flex-col items-center space-y-6">
-
-        <div class="flex flex-col items-center text-center w-full px-4 mb-2">
-            <img src="shitbotlogo.png" alt="Shitbot Coral" class="w-4/5 h-auto object-contain drop-shadow-2xl">
-        </div>
-
-        <div class="w-full flex flex-col gap-4">
-
-            <a href="https://youtu.be/383Sqfasy_U" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="shitvlog.webp" alt="Assista ao Shitvlog" decoding="async">
-            </a>
-
-            <a href="./loja/index.html" target="_blank" rel="noopener noreferrer" class="img-btn">
-                <img src="loja.webp" alt="Garanta sua Camisa" decoding="async">
-            </a>
-
-            <div class="social-bar mt-2">
-                <a href="https://www.instagram.com/shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                    <img src="instagram.png" alt="Instagram">
-                </a>
-                <a href="https://www.youtube.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
-                    <img src="youtube.png" alt="YouTube">
-                </a>
-                <a href="https://x.com/shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="X (Twitter)">
-                    <img src="x.png" alt="X">
-                </a>
-                <a href="https://www.tiktok.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
-                    <img src="tiktok.png" alt="TikTok">
-                </a>
-            </div>
-
-        </div>
-
-        <div class="mt-8 flex flex-col items-center w-full px-12">
-            <img src="shitbotltda.png" alt="Shitbot LTDA 2026 - Todos os direitos reservados" class="w-full h-auto object-contain opacity-70">
-        </div>
-
+  <header class="topo" id="topo">
+    <div class="topo-pilula">
+      <a class="marca" href="#/" aria-label="Shitbot Coral, ir para o início da loja">
+        <img class="marca-logo" src="img/logo.png" alt="" width="120" height="36">
+        <span class="marca-txt">Shitbot <b>Coral</b></span>
+      </a>
+      <nav class="topo-nav" aria-label="Principal">
+        <a href="#/" class="topo-link" data-rota="vitrine" data-t="topo.loja">Loja</a>
+        <a href="#/" class="topo-link" data-ir="colecao" data-t="topo.colecao">Coleção</a>
+        <button type="button" class="sacola-btn" id="sacola-btn" aria-haspopup="dialog" aria-controls="sacola" aria-expanded="false">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M5.5 8h13l-1.1 11.2a1 1 0 0 1-1 .8H7.6a1 1 0 0 1-1-.8L5.5 8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8" fill="none" stroke="currentColor" stroke-width="1.8"/></svg>
+          <span class="sacola-rot" data-t="topo.sacola">Sacola</span>
+          <span class="sacola-qtd" id="sacola-qtd" aria-label="0 itens">0</span>
+        </button>
+      </nav>
     </div>
+  </header>
 
+  <main id="conteudo" tabindex="-1"></main>
+
+  <footer class="rodape">
+    <div class="rodape-in">
+      <div class="rodape-marca" aria-hidden="true">Shitbot<br>Coral</div>
+      <div class="rodape-col">
+        <p data-t="rodape.cidade">Recife, Pernambuco.</p>
+        <p><span data-t="rodape.contato">Pedidos, trocas e dúvidas:</span> <a class="js-whats" href="#" data-t="rodape.whatsapp">WhatsApp da loja</a></p>
+        <p><a class="js-insta" href="#" data-t="rodape.instagram">Instagram</a></p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Sacola: gaveta lateral no computador, folha de baixo no celular -->
+  <div class="veu" id="veu" hidden></div>
+  <div class="sacola" id="sacola" role="dialog" aria-modal="true" aria-labelledby="sacola-titulo" hidden>
+    <div class="sacola-alca" aria-hidden="true"></div>
+    <div class="sacola-topo">
+      <h2 id="sacola-titulo" data-t="sacola.titulo">Sacola</h2>
+      <button type="button" class="btn-icone" id="sacola-fechar" aria-label="Fechar sacola">
+        <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6 6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="sacola-corpo" id="sacola-corpo"></div>
+    <div class="sacola-pe" id="sacola-pe"></div>
+  </div>
+
+  <!-- Avisos: lidos pelo leitor de tela e mostrados na tela -->
+  <div class="avisos" id="avisos" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <noscript><p class="sem-js">A loja precisa do JavaScript ligado para funcionar. Se preferir, chame a gente no WhatsApp: (81) 99446-5372.</p></noscript>
+
+  <script src="js/config.js?v=6.5"></script>
+  <script src="js/textos.js?v=6.5"></script>
+  <script src="js/produtos.js?v=6.5"></script>
+  <script src="js/vendor/qrcode.js?v=6.5"></script>
+  <script src="js/app.js?v=6.5"></script>
 </body>
 </html>
