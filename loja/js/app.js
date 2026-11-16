@@ -1266,14 +1266,16 @@
     });
   }
 
-  // Busca dupla de CEP: ViaCEP + BrasilAPI (fallback automático)
+  // Busca dupla de CEP: ViaCEP + BrasilAPI (URLs montadas com + para não quebrar ao copiar)
   async function buscarCep(cep, callback) {
     avisar(T.avisos.buscandoCep);
+    const urlVia = "https://" + "viacep.com.br/ws/" + cep + "/json/";
+    const urlBr = "https://" + "brasilapi.com.br/api/cep/v1/" + cep;
     try {
       let dados = null;
 
       try {
-        const resVia = await fetch(`https://viacep.com.br/ws/${cep}/json/`);
+        const resVia = await fetch(urlVia);
         if (resVia.ok) {
           const r = await resVia.json();
           if (r && !r.erro && r.localidade) {
@@ -1283,7 +1285,7 @@
       } catch (e1) {}
 
       if (!dados) {
-        const resBr = await fetch(`https://brasilapi.com.br/api/cep/v1/${cep}`);
+        const resBr = await fetch(urlBr);
         if (resBr.ok) {
           const b = await resBr.json();
           if (b && b.city) {
