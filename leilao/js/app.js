@@ -1,12 +1,12 @@
 /* ==========================================================================
-   CONFIGURAÇÃO DO BACKEND COMPARTILHADO (GOOGLE SHEETS / APPS SCRIPT)
+   SHITBOT CORAL v2.0 — Preloader Real, Fullscreen 100dvh, Modais & PES 1200x400
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
-const CHAVE_STORAGE = "shitbot_patrocinadores_v5";
+const CHAVE_STORAGE = "shitbot_patrocinadores_v6";
 const TETO_MAXIMO = 2000;
 
-/* Limpa caches antigos utilizados em testes anteriores */
-["shitbot_patrocinadores_v1", "shitbot_patrocinadores_v2", "shitbot_patrocinadores_v3", "shitbot_patrocinadores_v4"].forEach(k => {
+/* Remove caches antigos */
+["shitbot_patrocinadores_v1", "shitbot_patrocinadores_v2", "shitbot_patrocinadores_v3", "shitbot_patrocinadores_v4", "shitbot_patrocinadores_v5"].forEach(k => {
   try { localStorage.removeItem(k); } catch {}
 });
 
@@ -20,39 +20,56 @@ const POSICOES_CAMISA = [
   { id: "pos-7", x: 64.5, y: 54.6, w: 8.5,  h: 4.0,  rot: 66 }
 ];
 
+/* Preloader Elements */
+const preloaderEl = document.getElementById("preloader");
+const preloaderBarra = document.getElementById("preloader-barra");
+const preloaderPct = document.getElementById("preloader-pct");
+const preloaderStatus = document.getElementById("preloader-status");
+
+/* Palco & Ranking Elements */
 const palcoFoto = document.getElementById("palco-foto");
 const palcoCamera = document.getElementById("palco-camera");
 const camadaCamisa = document.getElementById("camada-camisa");
 const fotoJogador = document.getElementById("foto-jogador");
-const logoSiteEl = document.getElementById("logo-site");
-const inputLogo = document.getElementById("input-logo");
-const previewLogo = document.getElementById("preview-logo");
-const nomeArquivo = document.getElementById("nome-arquivo");
-const inputEmpresa = document.getElementById("nome-empresa");
-const inputDoadorNovo = document.getElementById("nome-doador-novo");
-const inputValor = document.getElementById("valor-lance");
 const areaRanking = document.getElementById("area-ranking");
 const contadorEl = document.getElementById("contador-patrocinadores");
 const toastEl = document.getElementById("toast");
 
-/* Elementos do Modal */
-const modalVeu = document.getElementById("modal-veu");
-const modalTitulo = document.getElementById("modal-titulo");
-const modalFechar = document.getElementById("modal-fechar");
+/* Modais */
+const modalImpulsoVeu = document.getElementById("modal-impulso-veu");
+const modalCadastroVeu = document.getElementById("modal-cadastro-veu");
+const modalCotasVeu = document.getElementById("modal-cotas-veu");
+
+/* Modal 1: Impulso */
 const modalMarcaInfo = document.getElementById("modal-marca-info");
 const formImpulsionar = document.getElementById("form-impulsionar");
 const inputDoadorImpulso = document.getElementById("nome-doador-impulso");
 const atalhosValor = document.getElementById("atalhos-valor");
 const inputAporte = document.getElementById("valor-aporte");
 const modalPrevisao = document.getElementById("modal-previsao");
+const etapaPixImpulso = document.getElementById("etapa-pix-impulso");
+const pixQrImpulso = document.getElementById("pix-qr-impulso");
+const pixValorImpulso = document.getElementById("pix-valor-impulso");
+const pixCodeImpulso = document.getElementById("pix-code-impulso");
+const btnCopiarImpulso = document.getElementById("btn-copiar-impulso");
+const btnPagoImpulso = document.getElementById("btn-pago-impulso");
 
-/* Etapa PIX no Modal */
-const etapaPix = document.getElementById("etapa-pix");
-const pixQrImg = document.getElementById("pix-qr-img");
-const pixValorLabel = document.getElementById("pix-valor-label");
-const pixCopiaCola = document.getElementById("pix-copia-cola");
-const btnCopiarPix = document.getElementById("btn-copiar-pix");
-const btnJaPaguei = document.getElementById("btn-ja-paguei");
+/* Modal 2: Cadastro Novo */
+const cadastroDicaTopo = document.getElementById("cadastro-dica-topo");
+const formPatrocinio = document.getElementById("form-patrocinio");
+const inputEmpresa = document.getElementById("nome-empresa");
+const inputSocial = document.getElementById("social-empresa");
+const inputDoadorNovo = document.getElementById("nome-doador-novo");
+const inputLogo = document.getElementById("input-logo");
+const previewLogo = document.getElementById("preview-logo");
+const nomeArquivo = document.getElementById("nome-arquivo");
+const inputValor = document.getElementById("valor-lance");
+const etapaPixNovo = document.getElementById("etapa-pix-novo");
+const pixQrNovo = document.getElementById("pix-qr-novo");
+const pixValorNovo = document.getElementById("pix-valor-novo");
+const pixCodeNovo = document.getElementById("pix-code-novo");
+const btnCopiarNovo = document.getElementById("btn-copiar-novo");
+const btnPagoNovo = document.getElementById("btn-pago-novo");
 
 let patrocinadores = [];
 let logoHorizontalBase64 = null;
@@ -60,28 +77,151 @@ let patrocinadorSelecionadoModal = null;
 let transacaoPendenteAtual = null;
 let timerBotaoPaguei = null;
 let enviandoDados = false;
+let preloaderFinalizado = false;
 
-/* Busca automática para "apresentacao" e "logo" */
-const formatosFoto = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp"];
-let idxFoto = 0;
-fotoJogador.addEventListener("error", () => {
-  idxFoto++;
-  if (idxFoto < formatosFoto.length) fotoJogador.src = formatosFoto[idxFoto];
-});
+/* ==========================================================================
+   UTILITÁRIOS DE SANITIZAÇÃO & CONVERSÃO DE @INSTAGRAM / SITE
+   ========================================================================== */
+function sanitizarTexto(txt, max = 50) {
+  return String(txt || "")
+    .replace(/[<>{}[\]]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
 
-const formatosLogoSite = ["logo.png", "logo.webp", "logo.jpg"];
-let idxLogoSite = 0;
-if (logoSiteEl) {
-  logoSiteEl.addEventListener("error", () => {
-    idxLogoSite++;
-    if (idxLogoSite < formatosLogoSite.length) {
-      logoSiteEl.src = formatosLogoSite[idxLogoSite];
-    }
-  });
+function normalizarChaveMarca(nome) {
+  return String(nome || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function formatarLinkSocial(valor) {
+  const limpo = sanitizarTexto(valor, 80);
+  if (!limpo) return null;
+
+  if (limpo.startsWith("@")) {
+    const user = limpo.replace(/^@+/, "").replace(/[^a-zA-Z0-9._]/g, "");
+    return user ? { label: `@${user}`, url: `https://instagram.com/${user}` } : null;
+  }
+
+  if (/^https?:\/\//i.test(limpo)) {
+    return { label: limpo.replace(/^https?:\/\/(www\.)?/i, ""), url: limpo };
+  }
+
+  if (limpo.includes(".")) {
+    return { label: limpo.replace(/^www\./i, ""), url: `https://${limpo}` };
+  }
+
+  const user = limpo.replace(/[^a-zA-Z0-9._]/g, "");
+  return user ? { label: `@${user}`, url: `https://instagram.com/${user}` } : null;
+}
+
+function mostrarToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("on");
+  clearTimeout(toastEl._timer);
+  toastEl._timer = setTimeout(() => toastEl.classList.remove("on"), 3500);
 }
 
 /* ==========================================================================
-   MOVIMENTO DE CÂMERA AGRUPADO (FOTO + PATROCINADORES TRAVADOS JUNTOS)
+   PRELOADER v2.0 COM BARRA DE PROGRESSO REAL (0% -> 100%)
+   ========================================================================== */
+function atualizarProgresso(pct, texto) {
+  const val = Math.min(100, Math.max(0, Math.round(pct)));
+  preloaderBarra.style.width = val + "%";
+  preloaderPct.textContent = val + "%";
+  if (texto) preloaderStatus.textContent = texto;
+}
+
+function finalizarPreloader() {
+  if (preloaderFinalizado) return;
+  preloaderFinalizado = true;
+  atualizarProgresso(100, "Manto pronto!");
+  sincronizarEnquadramentoCamisa();
+  setTimeout(() => {
+    preloaderEl.classList.add("oculto");
+  }, 240);
+}
+
+function aguardarFotoJogador() {
+  return new Promise((resolve) => {
+    const formatos = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp"];
+    let idx = 0;
+
+    if (fotoJogador.complete && fotoJogador.naturalWidth > 0) {
+      resolve();
+      return;
+    }
+
+    const onLoad = () => {
+      fotoJogador.removeEventListener("load", onLoad);
+      fotoJogador.removeEventListener("error", onError);
+      resolve();
+    };
+
+    const onError = () => {
+      idx++;
+      if (idx < formatos.length) {
+        fotoJogador.src = formatos[idx];
+      } else {
+        fotoJogador.removeEventListener("load", onLoad);
+        fotoJogador.removeEventListener("error", onError);
+        resolve();
+      }
+    };
+
+    fotoJogador.addEventListener("load", onLoad);
+    fotoJogador.addEventListener("error", onError);
+  });
+}
+
+async function precarregarLogosTop10(lista) {
+  const top10 = lista.slice(0, 10).filter(p => p.logo);
+  if (top10.length === 0) return;
+
+  await Promise.all(top10.map(pat => new Promise((resolve) => {
+    const img = new Image();
+    img.onload = async () => {
+      if (img.decode) {
+        try { await img.decode(); } catch {}
+      }
+      resolve();
+    };
+    img.onerror = resolve;
+    img.src = pat.logo;
+  })));
+}
+
+async function iniciarAplicacao() {
+  montarCamadasCamisa();
+  atualizarProgresso(15, "Carregando uniforme oficial...");
+
+  /* Trava de segurança de 4.5s para redes móveis lentas */
+  const travaSeguranca = setTimeout(() => {
+    renderizarTudo();
+    finalizarPreloader();
+  }, 4500);
+
+  await aguardarFotoJogador();
+  atualizarProgresso(45, "Sincronizando ranking ao vivo...");
+
+  await carregarPatrocinadores(true);
+  atualizarProgresso(78, "Estampando marcas no manto...");
+
+  await precarregarLogosTop10(patrocinadores);
+  renderizarTudo();
+
+  clearTimeout(travaSeguranca);
+  finalizarPreloader();
+
+  setInterval(() => carregarPatrocinadores(false), 12000);
+}
+
+/* ==========================================================================
+   MOVIMENTO DE CÂMERA AGRUPADO & ENQUADRAMENTO DA CAMISA
    ========================================================================== */
 palcoCamera.classList.add("modo-idle");
 
@@ -91,10 +231,10 @@ function aplicarMovimentoCamera(clientX, clientY) {
   const normY = ((clientY - rect.top) / rect.height) - 0.5;
 
   palcoCamera.classList.remove("modo-idle");
-  palcoCamera.style.setProperty("--cam-x", (-normX * 26).toFixed(2) + "px");
-  palcoCamera.style.setProperty("--cam-y", (-normY * 18).toFixed(2) + "px");
-  palcoCamera.style.setProperty("--cam-rx", (-normY * 2.5).toFixed(2) + "deg");
-  palcoCamera.style.setProperty("--cam-ry", (normX * 2.8).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-x", (-normX * 24).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-y", (-normY * 16).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-rx", (-normY * 2.2).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-ry", (normX * 2.6).toFixed(2) + "deg");
 }
 
 function resetarMovimentoCamera() {
@@ -115,14 +255,6 @@ palcoFoto.addEventListener("touchmove", (e) => {
 }, { passive: true });
 palcoFoto.addEventListener("touchend", resetarMovimentoCamera);
 
-window.addEventListener("scroll", () => {
-  const scrollY = window.scrollY;
-  if (scrollY < 700) {
-    palcoCamera.style.setProperty("--cam-y", (scrollY * 0.05).toFixed(1) + "px");
-  }
-}, { passive: true });
-
-/* Sincroniza a camada das estampas exatamente com o enquadramento real da foto */
 function sincronizarEnquadramentoCamisa() {
   if (!fotoJogador.naturalWidth || !fotoJogador.naturalHeight) return;
   const boxW = palcoCamera.clientWidth;
@@ -135,11 +267,12 @@ function sincronizarEnquadramentoCamisa() {
     renderW = boxW;
     renderH = boxW / imgRatio;
     offsetX = 0;
-    offsetY = (boxH - renderH) * 0.5;
+    const alignY = window.innerWidth >= 1024 ? 0.5 : 0.18;
+    offsetY = (boxH - renderH) * alignY;
   } else {
     renderH = boxH;
     renderW = boxH * imgRatio;
-    const alignX = window.innerWidth >= 1024 ? 0.36 : 0.5;
+    const alignX = window.innerWidth >= 1024 ? 0.35 : 0.5;
     offsetX = (boxW - renderW) * alignX;
     offsetY = 0;
   }
@@ -150,27 +283,10 @@ function sincronizarEnquadramentoCamisa() {
   camadaCamisa.style.top = offsetY + "px";
 }
 
-fotoJogador.addEventListener("load", sincronizarEnquadramentoCamisa);
 window.addEventListener("resize", sincronizarEnquadramentoCamisa);
 
-function mostrarToast(msg) {
-  toastEl.textContent = msg;
-  toastEl.classList.add("on");
-  clearTimeout(toastEl._timer);
-  toastEl._timer = setTimeout(() => toastEl.classList.remove("on"), 3600);
-}
-
-function obterInfoPosicao(pos) {
-  if (pos === 1) return { classeTier: "tier-t1", descricao: "Barriga Master + Costas Sup. + Chamadas VIP na transmissão" };
-  if (pos === 2 || pos === 3) return { classeTier: "tier-t2", descricao: "Barriga Abaixo + Costas Inf. + Chamadas na transmissão" };
-  if (pos === 4 || pos === 5) return { classeTier: "tier-t3", descricao: "Ombros + Calção + Inserções leves na transmissão" };
-  if (pos === 6 || pos === 7) return { classeTier: "tier-t4", descricao: "Mangas + Calção + Inserção conjunta na transmissão" };
-  if (pos >= 8 && pos <= 10) return { classeTier: "tier-t5", descricao: "Calção + Inserção conjunta na transmissão" };
-  return { classeTier: "tier-out fora-top10", descricao: "Fora do uniforme (Impulsione para voltar ao Top 10)" };
-}
-
 /* ==========================================================================
-   ALTA RESOLUÇÃO PES 2020: RECORTA BORDAS E GERA PNG PURO 1200x400 (3:1)
+   CONVERSÃO ALTA RESOLUÇÃO 1200x400 PNG (FIEL À LOGO ORIGINAL)
    ========================================================================== */
 function converterParaHorizontalAltaRes(file) {
   return new Promise((resolve, reject) => {
@@ -242,12 +358,15 @@ inputLogo.addEventListener("change", async (e) => {
   nomeArquivo.textContent = file.name;
   try {
     logoHorizontalBase64 = await converterParaHorizontalAltaRes(file);
-    previewLogo.innerHTML = `<img src="${logoHorizontalBase64}" alt="Prévia horizontal">`;
+    previewLogo.innerHTML = `<img src="${logoHorizontalBase64}" alt="Prévia">`;
   } catch {
     mostrarToast("Não foi possível ler essa imagem. Tente PNG ou JPG.");
   }
 });
 
+/* ==========================================================================
+   RENDERIZAÇÃO DA CAMISA & MINI-TABELA GLASS (VALORES OCULTOS NA HOME)
+   ========================================================================== */
 function montarCamadasCamisa() {
   POSICOES_CAMISA.forEach((pos) => {
     const div = document.createElement("div");
@@ -262,10 +381,25 @@ function montarCamadasCamisa() {
   });
 }
 
+function obterClasseTier(pos) {
+  if (pos === 1) return "tier-t1";
+  if (pos === 2 || pos === 3) return "tier-t2";
+  if (pos === 4 || pos === 5) return "tier-t3";
+  if (pos === 6 || pos === 7) return "tier-t4";
+  if (pos >= 8 && pos <= 10) return "tier-t5";
+  return "tier-out fora-top10";
+}
+
+function destacarEstampaCamisa(posIdx, ativo) {
+  if (posIdx < 0 || posIdx >= POSICOES_CAMISA.length) return;
+  const el = document.getElementById(POSICOES_CAMISA[posIdx].id);
+  if (el) el.classList.toggle("destaque-camisa", ativo);
+}
+
 function renderizarTudo() {
   patrocinadores.sort((a, b) => Number(b.valor) - Number(a.valor));
   const ativosTop10 = Math.min(patrocinadores.length, 10);
-  contadorEl.textContent = `${ativosTop10}/10 no manto`;
+  contadorEl.textContent = `${ativosTop10}/10 no kit`;
 
   POSICOES_CAMISA.forEach((pos, idx) => {
     const el = document.getElementById(pos.id);
@@ -274,45 +408,37 @@ function renderizarTudo() {
   });
 
   if (patrocinadores.length === 0) {
-    areaRanking.innerHTML = `<div class="lista-vazia">Nenhum patrocinador cadastrado ainda.<br>Crie o primeiro abaixo a partir de R$ 20,00!</div>`;
+    areaRanking.innerHTML = `<div class="lista-vazia">Nenhuma marca estampada ainda.<br>Toque em <b>Estampe sua Marca</b> abaixo!</div>`;
     return;
   }
 
   areaRanking.innerHTML = "";
-  const maiorValor = Number(patrocinadores[0].valor);
 
   patrocinadores.forEach((pat, idx) => {
     const pos = idx + 1;
-    const info = obterInfoPosicao(pos);
-    const qtdAportes = pat.aportes || 1;
-    const diferencaParaLider = Number((maiorValor - Number(pat.valor)).toFixed(2));
-    const valorParaPassar = Math.min(TETO_MAXIMO, Number((diferencaParaLider + 1).toFixed(2)));
+
+    if (pos === 11) {
+      const div = document.createElement("div");
+      div.className = "divisor-top10";
+      div.textContent = "▲ Entram no Uniforme · ▼ Fora do Kit";
+      areaRanking.appendChild(div);
+    }
 
     const item = document.createElement("div");
-    item.className = `rank-item ${info.classeTier}`;
+    item.className = `mini-item ${obterClasseTier(pos)}`;
     item.innerHTML = `
-      <div class="rank-pos">${pos}º</div>
-      <div class="rank-logo"><img src="${pat.logo}" alt="${pat.nome}"></div>
-      <div class="rank-corpo">
-        <div class="rank-linha-topo">
-          <strong>${pat.nome}</strong>
-          <span class="rank-valor-total">R$ ${Number(pat.valor).toFixed(2).replace(".", ",")}</span>
-        </div>
-        <span class="rank-cota-desc">${info.descricao}</span>
-        <div class="rank-rodape-acoes">
-          <span class="rank-lances-qtd">${qtdAportes} ${qtdAportes === 1 ? "aporte" : "aportes"}</span>
-          <div class="rank-botoes">
-            <button type="button" class="btn-acao-rank" data-acao="impulsionar">+ Impulsionar</button>
-            ${pos > 1 && diferencaParaLider < TETO_MAXIMO ? `<button type="button" class="btn-acao-rank cobrir">Passar 1º (+R$ ${valorParaPassar.toFixed(0)})</button>` : ""}
-          </div>
-        </div>
-      </div>
+      <div class="mini-pos">${pos}º</div>
+      <div class="mini-logo"><img src="${pat.logo}" alt="${pat.nome}"></div>
+      <div class="mini-nome">${pat.nome}</div>
+      <button type="button" class="btn-mais" aria-label="Impulsionar ${pat.nome}">+</button>
     `;
 
-    item.querySelector('[data-acao="impulsionar"]').addEventListener("click", () => abrirModalImpulso(pat, 1));
-    const btnCobrir = item.querySelector(".cobrir");
-    if (btnCobrir) btnCobrir.addEventListener("click", () => abrirModalImpulso(pat, valorParaPassar));
+    item.addEventListener("mouseenter", () => destacarEstampaCamisa(idx, true));
+    item.addEventListener("mouseleave", () => destacarEstampaCamisa(idx, false));
+    item.addEventListener("touchstart", () => destacarEstampaCamisa(idx, true), { passive: true });
+    item.addEventListener("touchend", () => destacarEstampaCamisa(idx, false));
 
+    item.querySelector(".btn-mais").addEventListener("click", () => abrirModalImpulso(pat));
     areaRanking.appendChild(item);
   });
 
@@ -320,27 +446,84 @@ function renderizarTudo() {
 }
 
 /* ==========================================================================
-   FLUXO DE IMPULSÃO & PIX COPIA E COLA
+   GESTÃO DOS MODAIS & CHECKOUT PIX
    ========================================================================== */
-function abrirModalImpulso(pat, valorSugerido = 1) {
-  patrocinadorSelecionadoModal = pat;
-  transacaoPendenteAtual = null;
+function fecharTodosModais() {
   clearTimeout(timerBotaoPaguei);
+  modalImpulsoVeu.hidden = true;
+  modalCadastroVeu.hidden = true;
+  modalCotasVeu.hidden = true;
+  transacaoPendenteAtual = null;
+}
 
-  modalTitulo.textContent = "Impulsionar Marca";
+document.querySelectorAll("[data-fechar-modal]").forEach(btn => {
+  btn.addEventListener("click", fecharTodosModais);
+});
+
+[modalImpulsoVeu, modalCadastroVeu, modalCotasVeu].forEach(veu => {
+  veu.addEventListener("click", (e) => {
+    if (e.target === veu) fecharTodosModais();
+  });
+});
+
+document.getElementById("btn-abrir-cotas").addEventListener("click", () => {
+  fecharTodosModais();
+  modalCotasVeu.hidden = false;
+});
+
+document.getElementById("btn-abrir-cadastro").addEventListener("click", () => {
+  fecharTodosModais();
+  formPatrocinio.hidden = false;
+  etapaPixNovo.hidden = true;
+  btnPagoNovo.hidden = true;
+
+  if (patrocinadores.length >= 10) {
+    const decimoValor = Number(patrocinadores[9].valor);
+    const pisoTop10 = Math.max(20, Number((decimoValor + 1).toFixed(2)));
+    cadastroDicaTopo.innerHTML = `Já existem 10 marcas no manto. Para entrar direto no uniforme agora, o valor mínimo sugerido é <b>R$ ${pisoTop10.toFixed(2).replace(".", ",")}</b> (lance inicial geral a partir de R$ 20,00).`;
+  } else {
+    cadastroDicaTopo.innerHTML = `Lance inicial a partir de <b>R$ 20,00</b>. Após criada, qualquer pessoa pode impulsionar sua marca a partir de R$ 1,00.`;
+  }
+
+  modalCadastroVeu.hidden = false;
+});
+
+/* Modal 1: Impulsionar (+) */
+function abrirModalImpulso(pat) {
+  fecharTodosModais();
+  patrocinadorSelecionadoModal = pat;
+
   formImpulsionar.hidden = false;
-  etapaPix.hidden = true;
-  btnJaPaguei.hidden = true;
+  etapaPixImpulso.hidden = true;
+  btnPagoImpulso.hidden = true;
 
+  const idxAtual = patrocinadores.findIndex(p => p.id === pat.id);
+  const valorAtual = Number(pat.valor);
   const maiorValor = Number(patrocinadores[0].valor);
-  const diffLider = Math.max(0, maiorValor - Number(pat.valor));
-  const valorParaPassar = Math.min(TETO_MAXIMO, Number((diffLider + 1).toFixed(2)));
+
+  const diffLider = Math.max(0, maiorValor - valorAtual);
+  const paraVirar1 = Math.min(TETO_MAXIMO, Number((diffLider + 1).toFixed(2)));
+
+  let paraSubir1 = 0;
+  if (idxAtual > 0) {
+    const acima = Number(patrocinadores[idxAtual - 1].valor);
+    paraSubir1 = Math.min(TETO_MAXIMO, Number((Math.max(0, acima - valorAtual) + 1).toFixed(2)));
+  }
+
+  let paraEntrarTop10 = 0;
+  if (idxAtual >= 10 && patrocinadores[9]) {
+    const decimo = Number(patrocinadores[9].valor);
+    paraEntrarTop10 = Math.min(TETO_MAXIMO, Number((Math.max(0, decimo - valorAtual) + 1).toFixed(2)));
+  }
+
+  const linkSocial = formatarLinkSocial(pat.social);
 
   modalMarcaInfo.innerHTML = `
     <img src="${pat.logo}" alt="${pat.nome}">
-    <div>
-      <strong style="display:block; font-size:.95rem;">${pat.nome}</strong>
-      <span style="font-size:.78rem; color:var(--texto-2);">Acumulado atual: <b style="color:#fff;">R$ ${Number(pat.valor).toFixed(2).replace(".", ",")}</b></span>
+    <div style="min-width:0;">
+      <strong style="display:block; font-size:.95rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${pat.nome}</strong>
+      <span style="display:block; font-size:.78rem; color:var(--texto-2);">Acumulado atual: <b style="color:#fff;">R$ ${valorAtual.toFixed(2).replace(".", ",")}</b> (${idxAtual + 1}º lugar)</span>
+      ${linkSocial ? `<a href="${linkSocial.url}" target="_blank" rel="noopener noreferrer" class="link-social-marca">Visitar ${linkSocial.label} ↗</a>` : ""}
     </div>
   `;
 
@@ -348,24 +531,24 @@ function abrirModalImpulso(pat, valorSugerido = 1) {
     <button type="button" class="chip-atalho" data-soma="1">+ R$ 1</button>
     <button type="button" class="chip-atalho" data-soma="5">+ R$ 5</button>
     <button type="button" class="chip-atalho" data-soma="10">+ R$ 10</button>
-    <button type="button" class="chip-atalho" data-soma="20">+ R$ 20</button>
-    ${diffLider > 0 && diffLider < TETO_MAXIMO ? `<button type="button" class="chip-atalho destaque" data-soma="${valorParaPassar}">Virar 1º (+R$ ${valorParaPassar.toFixed(2).replace(".", ",")})</button>` : ""}
+    ${paraEntrarTop10 > 0 && paraEntrarTop10 < TETO_MAXIMO ? `<button type="button" class="chip-atalho destaque" data-soma="${paraEntrarTop10}">Entrar no Top 10 (+R$ ${paraEntrarTop10.toFixed(0)})</button>` : ""}
+    ${paraSubir1 > 0 && paraSubir1 !== paraVirar1 && paraSubir1 < TETO_MAXIMO ? `<button type="button" class="chip-atalho" data-soma="${paraSubir1}">Subir 1 pos. (+R$ ${paraSubir1.toFixed(0)})</button>` : ""}
+    ${diffLider > 0 && diffLider < TETO_MAXIMO ? `<button type="button" class="chip-atalho destaque" data-soma="${paraVirar1}">Assumir 1º Master (+R$ ${paraVirar1.toFixed(0)})</button>` : ""}
   `;
 
   atalhosValor.querySelectorAll("button").forEach(btn => {
     btn.addEventListener("click", () => {
       inputAporte.value = Number(btn.dataset.soma);
-      atualizarPrevisaoModal();
+      atualizarPrevisaoImpulso();
     });
   });
 
-  inputAporte.value = valorSugerido;
-  atualizarPrevisaoModal();
-  modalVeu.hidden = false;
-  inputDoadorImpulso.focus();
+  inputAporte.value = 1;
+  atualizarPrevisaoImpulso();
+  modalImpulsoVeu.hidden = false;
 }
 
-function atualizarPrevisaoModal() {
+function atualizarPrevisaoImpulso() {
   if (!patrocinadorSelecionadoModal) return;
   const soma = Math.max(0, Number(inputAporte.value) || 0);
   const novoTotal = Number((Number(patrocinadorSelecionadoModal.valor) + soma).toFixed(2));
@@ -376,149 +559,138 @@ function atualizarPrevisaoModal() {
   modalPrevisao.innerHTML = `Novo acumulado: <b>R$ ${novoTotal.toFixed(2).replace(".", ",")}</b> · Assume o <b>${novaPos}º lugar</b>`;
 }
 
-inputAporte.addEventListener("input", atualizarPrevisaoModal);
-modalFechar.addEventListener("click", () => {
-  clearTimeout(timerBotaoPaguei);
-  modalVeu.hidden = true;
-});
-modalVeu.addEventListener("click", (e) => {
-  if (e.target === modalVeu) {
-    clearTimeout(timerBotaoPaguei);
-    modalVeu.hidden = true;
-  }
-});
+inputAporte.addEventListener("input", atualizarPrevisaoImpulso);
 
-async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
-  transacaoPendenteAtual = { empresa, doador, tipo, valor, logo };
+/* Geração e Cópia de PIX (Compartilhado entre os 2 modais) */
+async function iniciarCheckoutPix(transacao, refs) {
+  transacaoPendenteAtual = transacao;
   clearTimeout(timerBotaoPaguei);
 
-  modalTitulo.textContent = "Pagamento PIX";
-  formImpulsionar.hidden = true;
-  etapaPix.hidden = false;
-  btnJaPaguei.hidden = true;
-  modalVeu.hidden = false;
+  refs.formEl.hidden = true;
+  refs.etapaPixEl.hidden = false;
+  refs.btnPagoEl.hidden = true;
 
-  modalMarcaInfo.innerHTML = `
-    ${logo ? `<img src="${logo}" alt="${empresa}">` : ""}
-    <div>
-      <strong style="display:block; font-size:.95rem;">${empresa}</strong>
-      <span style="font-size:.78rem; color:var(--texto-2);">${doador} · R$ ${valor.toFixed(2).replace(".", ",")}</span>
-    </div>
-  `;
-
-  pixValorLabel.textContent = `R$ ${valor.toFixed(2).replace(".", ",")}`;
-  pixCopiaCola.value = "Gerando código PIX...";
-  pixQrImg.src = "";
+  refs.valorLabelEl.textContent = `R$ ${transacao.valor.toFixed(2).replace(".", ",")}`;
+  refs.codeInputEl.value = "Gerando código PIX...";
+  refs.qrImgEl.src = "";
 
   try {
-    const resp = await fetch(`${URL_SHEETS}?acao=gerar_pix&valor=${valor}`);
+    const resp = await fetch(`${URL_SHEETS}?acao=gerar_pix&valor=${transacao.valor}`);
     const dados = await resp.json();
     if (dados.ok && dados.payload) {
-      pixCopiaCola.value = dados.payload;
-      pixQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dados.payload)}`;
+      refs.codeInputEl.value = dados.payload;
+      refs.qrImgEl.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dados.payload)}`;
     } else {
-      pixCopiaCola.value = "Erro ao gerar código PIX.";
+      refs.codeInputEl.value = "Erro ao gerar código PIX.";
     }
   } catch {
-    pixCopiaCola.value = "Erro de conexão ao gerar PIX.";
+    refs.codeInputEl.value = "Erro de conexão ao gerar PIX.";
   }
 }
 
-/* Libera o botão "Já paguei" 3 segundos após copiar o código PIX */
-btnCopiarPix.addEventListener("click", async () => {
-  try {
-    await navigator.clipboard.writeText(pixCopiaCola.value);
-  } catch {
-    pixCopiaCola.select();
-    document.execCommand("copy");
-  }
-
-  mostrarToast("Código PIX copiado! Abra o app do seu banco para pagar.");
-
-  clearTimeout(timerBotaoPaguei);
-  timerBotaoPaguei = setTimeout(() => {
-    btnJaPaguei.hidden = false;
-  }, 3000);
-});
-
-/* Envia via POST quando tem logo PNG de alta resolução, ou via GET leve na impulsão */
-btnJaPaguei.addEventListener("click", async () => {
-  if (!transacaoPendenteAtual) return;
-
-  btnJaPaguei.disabled = true;
-  btnJaPaguei.textContent = "Confirmando...";
-  enviandoDados = true;
-
-  try {
-    const temImagemAltaRes = Boolean(transacaoPendenteAtual.logo && transacaoPendenteAtual.logo.startsWith("data:image"));
-
-    if (temImagemAltaRes) {
-      await fetch(URL_SHEETS, {
-        method: "POST",
-        mode: "no-cors",
-        body: JSON.stringify(transacaoPendenteAtual)
-      });
-
-      const existente = patrocinadores.find(p => p.nome.toLowerCase() === transacaoPendenteAtual.empresa.toLowerCase());
-      if (existente) {
-        existente.valor = Number((Number(existente.valor) + transacaoPendenteAtual.valor).toFixed(2));
-        existente.aportes = (existente.aportes || 1) + 1;
-        existente.logo = transacaoPendenteAtual.logo;
-      } else {
-        patrocinadores.push({
-          id: Date.now(),
-          nome: transacaoPendenteAtual.empresa,
-          valor: transacaoPendenteAtual.valor,
-          aportes: 1,
-          logo: transacaoPendenteAtual.logo
-        });
-      }
-      renderizarTudo();
-      mostrarToast(`${transacaoPendenteAtual.empresa} registrado com sucesso!`);
-
-      setTimeout(() => {
-        enviandoDados = false;
-        carregarPatrocinadores();
-      }, 3500);
-    } else {
-      const params = new URLSearchParams({
-        acao: "registrar",
-        empresa: transacaoPendenteAtual.empresa,
-        doador: transacaoPendenteAtual.doador,
-        tipo: transacaoPendenteAtual.tipo,
-        valor: String(transacaoPendenteAtual.valor),
-        logo: ""
-      });
-
-      const resp = await fetch(`${URL_SHEETS}?${params.toString()}`);
-      const res = await resp.json();
-
-      if (res.ok && Array.isArray(res.ranking)) {
-        patrocinadores = res.ranking;
-        try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
-        renderizarTudo();
-        mostrarToast(`${transacaoPendenteAtual.empresa} atualizado no ranking!`);
-      } else {
-        mostrarToast(res.erro || "Não foi possível confirmar agora.");
-      }
-      enviandoDados = false;
+function configurarBotoesPix(btnCopiar, codeInput, btnPago) {
+  btnCopiar.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(codeInput.value);
+    } catch {
+      codeInput.select();
+      document.execCommand("copy");
     }
-  } catch {
-    enviandoDados = false;
-    mostrarToast("Erro de rede ao confirmar.");
+    mostrarToast("Código PIX copiado! Pague no app do seu banco.");
+    clearTimeout(timerBotaoPaguei);
+    timerBotaoPaguei = setTimeout(() => {
+      btnPago.hidden = false;
+    }, 3000);
+  });
+
+  btnPago.addEventListener("click", async () => {
+    if (!transacaoPendenteAtual || enviandoDados) return;
+    enviandoDados = true;
+    btnPago.disabled = true;
+    btnPago.textContent = "Confirmando...";
+
+    try {
+      const temImagemBase64 = Boolean(transacaoPendenteAtual.logo && transacaoPendenteAtual.logo.startsWith("data:image"));
+
+      if (temImagemBase64) {
+        await fetch(URL_SHEETS, {
+          method: "POST",
+          mode: "no-cors",
+          body: JSON.stringify(transacaoPendenteAtual)
+        });
+
+        aplicarAtualizacaoOtimista(transacaoPendenteAtual);
+        mostrarToast(`${transacaoPendenteAtual.empresa} registrado no ranking!`);
+        setTimeout(() => {
+          enviandoDados = false;
+          carregarPatrocinadores(false);
+        }, 3500);
+      } else {
+        const params = new URLSearchParams({
+          acao: "registrar",
+          empresa: transacaoPendenteAtual.empresa,
+          social: transacaoPendenteAtual.social || "",
+          doador: transacaoPendenteAtual.doador,
+          tipo: transacaoPendenteAtual.tipo,
+          valor: String(transacaoPendenteAtual.valor),
+          logo: ""
+        });
+
+        const resp = await fetch(`${URL_SHEETS}?${params.toString()}`);
+        const res = await resp.json();
+
+        if (res.ok && Array.isArray(res.ranking)) {
+          patrocinadores = res.ranking;
+          try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
+          renderizarTudo();
+          mostrarToast(`${transacaoPendenteAtual.empresa} atualizado!`);
+        } else {
+          mostrarToast(res.erro || "Não foi possível confirmar agora.");
+        }
+        enviandoDados = false;
+      }
+    } catch {
+      enviandoDados = false;
+      mostrarToast("Erro de rede ao confirmar.");
+    }
+
+    btnPago.disabled = false;
+    btnPago.textContent = "Já paguei";
+    fecharTodosModais();
+  });
+}
+
+function aplicarAtualizacaoOtimista(tx) {
+  const chave = normalizarChaveMarca(tx.empresa);
+  const existente = patrocinadores.find(p => normalizarChaveMarca(p.nome) === chave);
+  if (existente) {
+    existente.valor = Number((Number(existente.valor) + tx.valor).toFixed(2));
+    existente.aportes = (existente.aportes || 1) + 1;
+    if (tx.logo) existente.logo = tx.logo;
+    if (tx.social) existente.social = tx.social;
+  } else {
+    patrocinadores.push({
+      id: chave || String(Date.now()),
+      nome: tx.empresa,
+      social: tx.social || "",
+      valor: tx.valor,
+      aportes: 1,
+      logo: tx.logo
+    });
   }
+  try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
+  renderizarTudo();
+}
 
-  btnJaPaguei.disabled = false;
-  btnJaPaguei.textContent = "Já paguei";
-  modalVeu.hidden = true;
-  transacaoPendenteAtual = null;
-});
+configurarBotoesPix(btnCopiarImpulso, pixCodeImpulso, btnPagoImpulso);
+configurarBotoesPix(btnCopiarNovo, pixCodeNovo, btnPagoNovo);
 
+/* Submit Modal 1 (Impulsão) */
 formImpulsionar.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!patrocinadorSelecionadoModal) return;
 
-  const doador = inputDoadorImpulso.value.trim();
+  const doador = sanitizarTexto(inputDoadorImpulso.value, 50);
   const aporte = Number(inputAporte.value);
 
   if (!doador) {
@@ -532,20 +704,33 @@ formImpulsionar.addEventListener("submit", async (e) => {
     return;
   }
 
-  await abrirTelaPagamentoPix({
-    empresa: patrocinadorSelecionadoModal.nome,
-    doador,
-    tipo: "IMPULSÃO",
-    valor: aporte,
-    logo: patrocinadorSelecionadoModal.logo
-  });
+  await iniciarCheckoutPix(
+    {
+      empresa: patrocinadorSelecionadoModal.nome,
+      social: patrocinadorSelecionadoModal.social || "",
+      doador,
+      tipo: "IMPULSÃO",
+      valor: aporte,
+      logo: ""
+    },
+    {
+      formEl: formImpulsionar,
+      etapaPixEl: etapaPixImpulso,
+      valorLabelEl: pixValorImpulso,
+      codeInputEl: pixCodeImpulso,
+      qrImgEl: pixQrImpulso,
+      btnPagoEl: btnPagoImpulso
+    }
+  );
 });
 
-document.getElementById("form-patrocinio").addEventListener("submit", async (e) => {
+/* Submit Modal 2 (Novo Patrocínio) */
+formPatrocinio.addEventListener("submit", async (e) => {
   e.preventDefault();
 
-  const empresa = inputEmpresa.value.trim();
-  const doador = inputDoadorNovo.value.trim();
+  const empresa = sanitizarTexto(inputEmpresa.value, 45);
+  const social = sanitizarTexto(inputSocial.value, 80);
+  const doador = sanitizarTexto(inputDoadorNovo.value, 50);
   const valor = Number(inputValor.value);
 
   if (!empresa || !doador) {
@@ -565,31 +750,46 @@ document.getElementById("form-patrocinio").addEventListener("submit", async (e) 
   const logoEnviar = logoHorizontalBase64;
 
   inputEmpresa.value = "";
+  inputSocial.value = "";
   inputDoadorNovo.value = "";
   inputLogo.value = "";
   logoHorizontalBase64 = null;
   nomeArquivo.textContent = "Anexar";
-  previewLogo.innerHTML = `<span class="placeholder-logo">LOGO 3:1</span>`;
+  previewLogo.innerHTML = `<span class="placeholder-logo">LOGO</span>`;
   inputValor.value = 20;
 
-  await abrirTelaPagamentoPix({
-    empresa,
-    doador,
-    tipo: "NOVO PATROCÍNIO",
-    valor,
-    logo: logoEnviar
-  });
+  await iniciarCheckoutPix(
+    {
+      empresa,
+      social,
+      doador,
+      tipo: "NOVO PATROCÍNIO",
+      valor,
+      logo: logoEnviar
+    },
+    {
+      formEl: formPatrocinio,
+      etapaPixEl: etapaPixNovo,
+      valorLabelEl: pixValorNovo,
+      codeInputEl: pixCodeNovo,
+      qrImgEl: pixQrNovo,
+      btnPagoEl: btnPagoNovo
+    }
+  );
 });
 
-async function carregarPatrocinadores() {
-  if (enviandoDados) return;
+/* ==========================================================================
+   SINCRONIZAÇÃO COM GOOGLE SHEETS
+   ========================================================================== */
+async function carregarPatrocinadores(modoInicial = false) {
+  if (enviandoDados && !modoInicial) return;
   try {
     const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`);
     const dados = await resp.json();
     if (Array.isArray(dados)) {
       patrocinadores = dados;
       try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
-      renderizarTudo();
+      if (!modoInicial) renderizarTudo();
       return;
     }
   } catch {}
@@ -598,9 +798,7 @@ async function carregarPatrocinadores() {
     const salvo = localStorage.getItem(CHAVE_STORAGE);
     if (salvo) patrocinadores = JSON.parse(salvo);
   } catch {}
-  renderizarTudo();
+  if (!modoInicial) renderizarTudo();
 }
 
-montarCamadasCamisa();
-carregarPatrocinadores();
-setInterval(carregarPatrocinadores, 12000);
+iniciarAplicacao();
