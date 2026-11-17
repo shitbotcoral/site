@@ -98,7 +98,6 @@ function mostrarToast(msg) {
   toastEl._timer = setTimeout(() => toastEl.classList.remove("on"), 3500);
 }
 
-/* Retorna a classe de cor e descrição exata da cota conforme a colocação */
 function obterInfoPosicao(pos) {
   if (pos === 1) {
     return {
@@ -137,7 +136,7 @@ function obterInfoPosicao(pos) {
 }
 
 /* ==========================================================================
-   RECORTA BORDAS VAZIAS E FORÇA NO FORMATO HORIZONTAL 3:1 (600x200)
+   RECORTA BORDAS VAZIAS E COMPRIME EM WEBP HORIZONTAL 3:1 (360x120 · ~8KB)
    ========================================================================== */
 function converterParaHorizontal(file) {
   return new Promise((resolve, reject) => {
@@ -177,8 +176,8 @@ function converterParaHorizontal(file) {
         const cropW = encontrouPixel ? (maxX - minX + 1) : img.width;
         const cropH = encontrouPixel ? (maxY - minY + 1) : img.height;
 
-        const larguraAlvo = 600;
-        const alturaAlvo = 200;
+        const larguraAlvo = 360;
+        const alturaAlvo = 120;
         const canvas = document.createElement("canvas");
         canvas.width = larguraAlvo;
         canvas.height = alturaAlvo;
@@ -196,7 +195,7 @@ function converterParaHorizontal(file) {
         const offsetY = (alturaAlvo - drawH) / 2;
 
         ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, offsetX, offsetY, drawW, drawH);
-        resolve(canvas.toDataURL("image/png", 0.92));
+        resolve(canvas.toDataURL("image/webp", 0.85));
       };
       img.onerror = reject;
       img.src = ev.target.result;
@@ -219,7 +218,6 @@ inputLogo.addEventListener("change", async (e) => {
   }
 });
 
-/* Cria os 7 containers sobre a camisa */
 function montarCamadasCamisa() {
   POSICOES_CAMISA.forEach((pos) => {
     const div = document.createElement("div");
@@ -234,7 +232,6 @@ function montarCamadasCamisa() {
   });
 }
 
-/* Renderiza o Ranking Extenso + Estampa os 7 primeiros na camisa */
 function renderizarTudo() {
   patrocinadores.sort((a, b) => Number(b.valor) - Number(a.valor));
   const ativosTop10 = Math.min(patrocinadores.length, 10);
@@ -304,9 +301,6 @@ function renderizarTudo() {
   sincronizarEnquadramentoCamisa();
 }
 
-/* ==========================================================================
-   MODAL DE IMPULSIONAMENTO (A PARTIR DE R$ 1,00 · SEM LIMITES)
-   ========================================================================== */
 function abrirModalImpulso(pat, valorSugerido = 1) {
   patrocinadorSelecionadoModal = pat;
   const maiorValor = Number(patrocinadores[0].valor);
@@ -404,9 +398,9 @@ async function carregarPatrocinadores() {
 
   if (URL_SHEETS) {
     try {
-      const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`);
+      const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`, { redirect: "follow" });
       const dados = await resp.json();
-      if (Array.isArray(dados)) {
+      if (Array.isArray(dados) && dados.length > 0) {
         patrocinadores = dados;
         try {
           localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores));
@@ -434,25 +428,19 @@ async function persistirDados(registroAtualizado) {
 
   if (URL_SHEETS) {
     try {
+      // Envia sem custom headers para evitar preflight CORS e seguir o redirect 302 do Google
       await fetch(URL_SHEETS, {
         method: "POST",
-        mode: "no-cors",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        redirect: "follow",
         body: JSON.stringify(registroAtualizado)
       });
-      setTimeout(async () => {
-        enviandoDados = false;
-        await carregarPatrocinadores();
-      }, 2200);
-      return;
     } catch (err) {
-      console.warn("Erro ao enviar para o Google Sheets:", err);
+      console.warn("Aviso no POST para Google Sheets:", err);
     }
   }
   enviandoDados = false;
 }
 
-/* Envio do Formulário de Novo Patrocínio */
 document.getElementById("form-patrocinio").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -511,7 +499,6 @@ document.getElementById("form-patrocinio").addEventListener("submit", async (e) 
   mostrarToast(`${nome} registrado na planilha com R$ ${registroFinal.valor.toFixed(2).replace(".", ",")}!`);
 });
 
-/* Inicializa e sincroniza a cada 12 segundos para todos os usuários online */
 montarCamadasCamisa();
 carregarPatrocinadores();
 
@@ -520,5 +507,5 @@ window.addEventListener("storage", (e) => {
 });
 
 if (URL_SHEETS) {
-  setInterval(carregarPatrocinadores, 12000);
+  setInterval(carregarPatrocinadores, 15000);
 }
