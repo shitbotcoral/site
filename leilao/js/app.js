@@ -2,8 +2,13 @@
    CONFIGURAÇÃO DO BACKEND COMPARTILHADO (GOOGLE SHEETS / APPS SCRIPT)
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
-const CHAVE_STORAGE = "shitbot_patrocinadores_v4";
+const CHAVE_STORAGE = "shitbot_patrocinadores_v5";
 const TETO_MAXIMO = 2000;
+
+/* Limpa caches antigos utilizados em testes anteriores */
+["shitbot_patrocinadores_v1", "shitbot_patrocinadores_v2", "shitbot_patrocinadores_v3", "shitbot_patrocinadores_v4"].forEach(k => {
+  try { localStorage.removeItem(k); } catch {}
+});
 
 const POSICOES_CAMISA = [
   { id: "pos-1", x: 50.0, y: 66.5, w: 24.5, h: 11.0, rot: 0 },
@@ -78,33 +83,42 @@ if (logoSiteEl) {
 /* ==========================================================================
    MOVIMENTO DE CÂMERA AGRUPADO (FOTO + PATROCINADORES TRAVADOS JUNTOS)
    ========================================================================== */
-palcoFoto.addEventListener("mousemove", (e) => {
+palcoCamera.classList.add("modo-idle");
+
+function aplicarMovimentoCamera(clientX, clientY) {
   const rect = palcoFoto.getBoundingClientRect();
-  const normX = ((e.clientX - rect.left) / rect.width) - 0.5;
-  const normY = ((e.clientY - rect.top) / rect.height) - 0.5;
+  const normX = ((clientX - rect.left) / rect.width) - 0.5;
+  const normY = ((clientY - rect.top) / rect.height) - 0.5;
 
-  const moveX = (-normX * 22).toFixed(2) + "px";
-  const moveY = (-normY * 16).toFixed(2) + "px";
-  const rotY = (normX * 2.4).toFixed(2) + "deg";
-  const rotX = (-normY * 2.0).toFixed(2) + "deg";
+  palcoCamera.classList.remove("modo-idle");
+  palcoCamera.style.setProperty("--cam-x", (-normX * 26).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-y", (-normY * 18).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-rx", (-normY * 2.5).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-ry", (normX * 2.8).toFixed(2) + "deg");
+}
 
-  palcoCamera.style.setProperty("--cam-x", moveX);
-  palcoCamera.style.setProperty("--cam-y", moveY);
-  palcoCamera.style.setProperty("--cam-rx", rotX);
-  palcoCamera.style.setProperty("--cam-ry", rotY);
-});
-
-palcoFoto.addEventListener("mouseleave", () => {
+function resetarMovimentoCamera() {
   palcoCamera.style.setProperty("--cam-x", "0px");
   palcoCamera.style.setProperty("--cam-y", "0px");
   palcoCamera.style.setProperty("--cam-rx", "0deg");
   palcoCamera.style.setProperty("--cam-ry", "0deg");
-});
+  palcoCamera.classList.add("modo-idle");
+}
+
+palcoFoto.addEventListener("mousemove", (e) => aplicarMovimentoCamera(e.clientX, e.clientY));
+palcoFoto.addEventListener("mouseleave", resetarMovimentoCamera);
+
+palcoFoto.addEventListener("touchmove", (e) => {
+  if (e.touches && e.touches[0]) {
+    aplicarMovimentoCamera(e.touches[0].clientX, e.touches[0].clientY);
+  }
+}, { passive: true });
+palcoFoto.addEventListener("touchend", resetarMovimentoCamera);
 
 window.addEventListener("scroll", () => {
   const scrollY = window.scrollY;
   if (scrollY < 700) {
-    palcoCamera.style.setProperty("--cam-y", (scrollY * 0.04).toFixed(1) + "px");
+    palcoCamera.style.setProperty("--cam-y", (scrollY * 0.05).toFixed(1) + "px");
   }
 }, { passive: true });
 
