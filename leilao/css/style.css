@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SHITBOT CORAL — Glassmorphism, Grotesca Compacta & Movimento de Câmera
+   SHITBOT CORAL — Pílula Glass Compacta, Glassmorphism & Câmera Agrupada
    ========================================================================== */
 :root {
   --f-corpo: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
@@ -8,12 +8,12 @@
   --suave: cubic-bezier(.22, 1, .36, 1);
 
   --fundo: #09090B;
-  --glass-bg: rgba(18, 18, 24, .68);
-  --glass-card: rgba(255, 255, 255, .038);
-  --glass-card-hover: rgba(255, 255, 255, .065);
-  --glass-borda: rgba(255, 255, 255, .10);
+  --glass-bg: rgba(18, 18, 24, .58);
+  --glass-card: rgba(255, 255, 255, .042);
+  --glass-card-hover: rgba(255, 255, 255, .075);
+  --glass-borda: rgba(255, 255, 255, .11);
   --glass-borda-forte: rgba(255, 255, 255, .24);
-  --glass-brilho: inset 0 1px 0 0 rgba(255, 255, 255, .12);
+  --glass-brilho: inset 0 1px 0 0 rgba(255, 255, 255, .14);
 
   --texto: #F4F4F6;
   --texto-2: #A1A1AA;
@@ -38,7 +38,7 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(circle at 18% 0%, #191520 0%, var(--fundo) 48%);
+  background: radial-gradient(circle at 20% 0%, #1C1624 0%, var(--fundo) 48%);
   color: var(--texto);
   font-family: var(--f-corpo);
   -webkit-font-smoothing: antialiased;
@@ -71,101 +71,102 @@ p {
   display: none !important;
 }
 
-/* ---------- Cabeçalho Flutuante Glass (Estilo Loja Shitbot Coral) ---------- */
+/* ---------- Pílula Flutuante Glass Compacta (Só Logo + Botão YouTube) ---------- */
 .topo-flutuante {
   position: fixed;
-  top: 14px;
+  top: 12px;
   left: 0;
   right: 0;
   z-index: 60;
-  padding: 0 var(--gutter);
+  display: flex;
+  justify-content: center;
+  padding: 0 12px;
   pointer-events: none;
 }
 
 .nav-pill {
-  max-width: 1480px;
-  margin: 0 auto;
-  height: 58px;
-  padding: 0 10px 0 20px;
-  border-radius: 999px;
-  background: rgba(20, 20, 26, .62);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  backdrop-filter: blur(18px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, .14);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, .55), var(--glass-brilho);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  pointer-events: auto;
-}
-
-.nav-logo {
   display: inline-flex;
   align-items: center;
+  gap: 14px;
+  height: 46px;
+  padding: 0 6px 0 14px;
+  border-radius: 999px;
   text-decoration: none;
-  height: 36px;
+  background: rgba(18, 18, 24, .52);
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, .15);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .16);
+  pointer-events: auto;
+  transition: transform .25s var(--mola), border-color .2s, background-color .2s;
 }
 
-.nav-logo img {
-  height: 34px;
+.nav-pill:hover {
+  transform: translateY(-1px) scale(1.02);
+  background: rgba(26, 26, 34, .68);
+  border-color: rgba(255, 255, 255, .28);
+}
+
+.nav-logo-img {
+  height: 30px;
   width: auto;
   object-fit: contain;
   display: block;
-}
-
-.nav-acoes {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.nav-link {
-  padding: 8px 16px;
-  border-radius: 999px;
-  text-decoration: none;
-  font-size: .85rem;
-  font-weight: 700;
-  color: var(--texto);
-  transition: background-color .2s;
-}
-
-.nav-link:hover {
-  background: rgba(255, 255, 255, .1);
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, .6));
 }
 
 .nav-btn-yt {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  height: 40px;
-  padding: 0 18px;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px;
   border-radius: 999px;
   background: #FFFFFF;
   color: #09090B;
-  text-decoration: none;
-  font-size: .84rem;
+  font-size: .79rem;
   font-weight: 800;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
-  transition: transform .25s var(--mola), background-color .2s;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, .35);
 }
 
 .nav-btn-yt svg {
-  color: #FF0000;
   flex: none;
 }
 
-.nav-btn-yt:hover {
-  transform: scale(1.04);
-  background: #F4F4F5;
+@media (max-width: 480px) {
+  .topo-flutuante {
+    top: 10px;
+  }
+  .nav-pill {
+    height: 42px;
+    gap: 10px;
+    padding: 0 5px 0 12px;
+  }
+  .nav-logo-img {
+    height: 26px;
+  }
+  .nav-btn-yt {
+    height: 32px;
+    padding: 0 12px;
+    font-size: .76rem;
+  }
 }
 
 /* ---------- Utilitários Glassmorphism ---------- */
 .glass-panel {
   background: var(--glass-bg);
-  -webkit-backdrop-filter: blur(20px) saturate(150%);
-  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(22px) saturate(160%);
+  backdrop-filter: blur(22px) saturate(160%);
   border: 1px solid var(--glass-borda);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, .45), var(--glass-brilho);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .48), var(--glass-brilho);
+}
+
+.glass-chip {
+  background: rgba(255, 255, 255, .06);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-borda);
+  box-shadow: var(--glass-brilho);
 }
 
 /* ---------- Arena Superior: Foto com Câmera Agrupada + Ranking Glass ---------- */
@@ -191,7 +192,7 @@ p {
   aspect-ratio: 16 / 10;
   overflow: hidden;
   background: #0D0D12;
-  perspective: 1100px;
+  perspective: 1000px;
 }
 
 @media (min-width: 1024px) {
@@ -207,20 +208,19 @@ p {
   inset: 0;
   width: 100%;
   height: 100%;
-  transform: scale(1.06) translate3d(var(--cam-x, 0px), var(--cam-y, 0px), 0) rotateX(var(--cam-rx, 0deg)) rotateY(var(--cam-ry, 0deg));
-  transition: transform .35s cubic-bezier(.16, 1, .3, 1);
+  transform: scale(1.08) translate3d(var(--cam-x, 0px), var(--cam-y, 0px), 0) rotateX(var(--cam-rx, 0deg)) rotateY(var(--cam-ry, 0deg));
+  transition: transform .25s cubic-bezier(.16, 1, .3, 1);
   will-change: transform;
-  animation: respiro-camera 14s ease-in-out infinite alternate;
 }
 
-.palco-foto:hover .palco-camera {
-  animation-play-state: paused;
+.palco-camera.modo-idle {
+  animation: respiro-camera 10s ease-in-out infinite alternate;
 }
 
 @keyframes respiro-camera {
-  0%   { transform: scale(1.055) translate3d(-4px, -2px, 0); }
-  50%  { transform: scale(1.075) translate3d(4px, 2px, 0); }
-  100% { transform: scale(1.06) translate3d(-2px, 3px, 0); }
+  0%   { transform: scale(1.07) translate3d(-8px, -4px, 0) rotateY(-1deg); }
+  50%  { transform: scale(1.09) translate3d(8px, 4px, 0) rotateY(1deg); }
+  100% { transform: scale(1.075) translate3d(-5px, 6px, 0) rotateY(-0.5deg); }
 }
 
 .palco-camera > img.foto-jogador {
@@ -308,7 +308,6 @@ p {
   border-right: 0;
   border-bottom: 0;
   padding: clamp(18px, 2.5vw, 28px);
-  padding-top: 22px;
   display: flex;
   flex-direction: column;
   gap: 13px;
@@ -316,7 +315,7 @@ p {
 
 @media (min-width: 1024px) {
   .painel-ranking {
-    padding-top: 88px; /* Espaço livre para o header flutuante */
+    padding-top: 74px;
     max-height: min(88svh, 860px);
   }
 }
@@ -356,8 +355,6 @@ p {
 .contador-vagas {
   padding: 5px 11px;
   border-radius: 999px;
-  background: var(--glass-card);
-  border: 1px solid var(--glass-borda);
   font-size: .74rem;
   font-weight: 700;
   color: var(--texto-2);
@@ -409,6 +406,8 @@ p {
   padding: 11px 13px;
   border-radius: 15px;
   background: var(--glass-card);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   border: 1px solid var(--glass-borda);
   border-left: 3.5px solid var(--tier-cor, #fff);
   box-shadow: var(--glass-brilho);
@@ -433,7 +432,8 @@ p {
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: rgba(255, 255, 255, .06);
+  background: rgba(255, 255, 255, .07);
+  border: 1px solid rgba(255, 255, 255, .06);
   display: grid;
   place-items: center;
   font-family: var(--f-titulo);
@@ -521,7 +521,9 @@ p {
   min-height: 28px;
   border-radius: 999px;
   border: 1px solid var(--glass-borda-forte);
-  background: rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .08);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   font-size: .72rem;
   font-weight: 700;
   color: var(--texto);
@@ -535,8 +537,8 @@ p {
 }
 
 .btn-acao-rank.cobrir {
-  background: rgba(225, 29, 58, .18);
-  border-color: rgba(225, 29, 58, .5);
+  background: rgba(225, 29, 58, .22);
+  border-color: rgba(225, 29, 58, .55);
   color: #FF8598;
 }
 
@@ -620,8 +622,6 @@ p {
   border-radius: 999px;
   font-size: .74rem;
   font-weight: 700;
-  background: var(--glass-card);
-  border: 1px solid var(--glass-borda);
   color: var(--texto);
 }
 
@@ -662,8 +662,11 @@ p {
   width: 100%;
   padding: 10px 14px;
   border-radius: 13px;
-  background: rgba(255, 255, 255, .045);
+  background: rgba(255, 255, 255, .048);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border: 1px solid var(--glass-borda);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .06);
   color: var(--texto);
   font-size: .92rem;
   transition: border-color .2s, background-color .2s;
@@ -672,7 +675,7 @@ p {
 .input:focus {
   outline: none;
   border-color: rgba(255, 255, 255, .55);
-  background: rgba(255, 255, 255, .07);
+  background: rgba(255, 255, 255, .08);
 }
 
 .anexo {
@@ -683,7 +686,9 @@ p {
   padding: 6px 12px;
   min-height: 48px;
   border-radius: 13px;
-  background: rgba(255, 255, 255, .045);
+  background: rgba(255, 255, 255, .048);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   border: 1px dashed var(--glass-borda-forte);
   transition: border-color .2s, background-color .2s;
 }
@@ -754,7 +759,7 @@ p {
   color: #fff;
   font-weight: 700;
   font-size: .9rem;
-  box-shadow: 0 8px 22px rgba(225, 29, 58, .35), inset 0 1px 0 rgba(255, 255, 255, .25);
+  box-shadow: 0 8px 22px rgba(225, 29, 58, .35), inset 0 1px 0 rgba(255, 255, 255, .28);
   transition: transform .25s var(--mola), opacity .2s;
 }
 
@@ -818,8 +823,10 @@ p {
   gap: 10px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: rgba(255, 255, 255, .028);
-  border: 1px solid rgba(255, 255, 255, .05);
+  background: rgba(255, 255, 255, .035);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, .07);
   border-left: 3px solid var(--tier-cor, #fff);
   font-size: .78rem;
 }
@@ -863,8 +870,8 @@ p {
   inset: 0;
   z-index: 90;
   background: rgba(0, 0, 0, .72);
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   display: grid;
   place-items: center;
   padding: 16px;
@@ -873,9 +880,9 @@ p {
 .glass-modal {
   width: 100%;
   max-width: 430px;
-  background: rgba(22, 22, 29, .86);
-  -webkit-backdrop-filter: blur(24px) saturate(160%);
-  backdrop-filter: blur(24px) saturate(160%);
+  background: rgba(20, 20, 27, .78);
+  -webkit-backdrop-filter: blur(26px) saturate(170%);
+  backdrop-filter: blur(26px) saturate(170%);
   border: 1px solid var(--glass-borda-forte);
   border-radius: 24px;
   padding: 22px;
@@ -973,6 +980,7 @@ p {
   padding: 10px 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, .04);
+  border: 1px solid rgba(255, 255, 255, .06);
 }
 
 .modal-previsao b {
@@ -1057,9 +1065,9 @@ p {
   z-index: 120;
   padding: 12px 20px;
   border-radius: 999px;
-  background: rgba(24, 24, 32, .92);
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
+  background: rgba(24, 24, 32, .85);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
   color: #fff;
   border: 1px solid var(--glass-borda-forte);
   box-shadow: 0 18px 40px rgba(0, 0, 0, .7);
