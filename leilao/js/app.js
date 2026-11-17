@@ -2,9 +2,9 @@
    CONFIGURAÇÃO DO BACKEND COMPARTILHADO (GOOGLE SHEETS / APPS SCRIPT)
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
-const CHAVE_STORAGE = "shitbot_patrocinadores_v2";
+const CHAVE_STORAGE = "shitbot_patrocinadores_v3";
+const TETO_MAXIMO = 2000;
 
-/* Posições calibradas para o enquadramento do jogador deslocado à esquerda */
 const POSICOES_CAMISA = [
   { id: "pos-1", x: 50.0, y: 66.5, w: 24.5, h: 11.0, rot: 0 },
   { id: "pos-2", x: 50.0, y: 79.0, w: 23.5, h: 10.5, rot: 0 },
@@ -22,53 +22,52 @@ const inputLogo = document.getElementById("input-logo");
 const previewLogo = document.getElementById("preview-logo");
 const nomeArquivo = document.getElementById("nome-arquivo");
 const inputEmpresa = document.getElementById("nome-empresa");
+const inputDoadorNovo = document.getElementById("nome-doador-novo");
 const inputValor = document.getElementById("valor-lance");
 const areaRanking = document.getElementById("area-ranking");
 const contadorEl = document.getElementById("contador-patrocinadores");
-const btnSubmit = document.getElementById("btn-submit");
 const toastEl = document.getElementById("toast");
 
-/* Elementos do Modal de Impulsionamento */
+/* Elementos do Modal */
 const modalVeu = document.getElementById("modal-veu");
+const modalTitulo = document.getElementById("modal-titulo");
 const modalFechar = document.getElementById("modal-fechar");
 const modalMarcaInfo = document.getElementById("modal-marca-info");
+const formImpulsionar = document.getElementById("form-impulsionar");
+const inputDoadorImpulso = document.getElementById("nome-doador-impulso");
 const atalhosValor = document.getElementById("atalhos-valor");
 const inputAporte = document.getElementById("valor-aporte");
 const modalPrevisao = document.getElementById("modal-previsao");
 
+/* Etapa PIX no Modal */
+const etapaPix = document.getElementById("etapa-pix");
+const pixQrImg = document.getElementById("pix-qr-img");
+const pixValorLabel = document.getElementById("pix-valor-label");
+const pixCopiaCola = document.getElementById("pix-copia-cola");
+const btnCopiarPix = document.getElementById("btn-copiar-pix");
+const btnJaPaguei = document.getElementById("btn-ja-paguei");
+
 let patrocinadores = [];
 let logoHorizontalBase64 = null;
 let patrocinadorSelecionadoModal = null;
+let transacaoPendenteAtual = null;
 let enviandoDados = false;
 
-/* Busca automática para "apresentacao" */
-const formatosFoto = [
-  "apresentacao.jpg",
-  "apresentacao.png",
-  "apresentacao.jpeg",
-  "apresentacao.webp",
-  "apresentacao"
-];
+const formatosFoto = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp", "apresentacao"];
 let idxFoto = 0;
-
 fotoJogador.addEventListener("error", () => {
   idxFoto++;
-  if (idxFoto < formatosFoto.length) {
-    fotoJogador.src = formatosFoto[idxFoto];
-  }
+  if (idxFoto < formatosFoto.length) fotoJogador.src = formatosFoto[idxFoto];
 });
 
-/* Sincroniza a camada das estampas exatamente com o enquadramento real da imagem */
 function sincronizarEnquadramentoCamisa() {
   if (!fotoJogador.naturalWidth || !fotoJogador.naturalHeight) return;
-
   const boxW = palcoFoto.clientWidth;
   const boxH = palcoFoto.clientHeight;
   const imgRatio = fotoJogador.naturalWidth / fotoJogador.naturalHeight;
   const boxRatio = boxW / boxH;
 
   let renderW, renderH, offsetX, offsetY;
-
   if (boxRatio > imgRatio) {
     renderW = boxW;
     renderH = boxW / imgRatio;
@@ -95,50 +94,18 @@ function mostrarToast(msg) {
   toastEl.textContent = msg;
   toastEl.classList.add("on");
   clearTimeout(toastEl._timer);
-  toastEl._timer = setTimeout(() => toastEl.classList.remove("on"), 3500);
+  toastEl._timer = setTimeout(() => toastEl.classList.remove("on"), 3600);
 }
 
 function obterInfoPosicao(pos) {
-  if (pos === 1) {
-    return {
-      classeTier: "tier-t1",
-      descricao: "Barriga Master + Costas Sup. + Chamadas VIP na transmissão"
-    };
-  }
-  if (pos === 2 || pos === 3) {
-    return {
-      classeTier: "tier-t2",
-      descricao: "Barriga Abaixo + Costas Inf. + Chamadas na transmissão"
-    };
-  }
-  if (pos === 4 || pos === 5) {
-    return {
-      classeTier: "tier-t3",
-      descricao: "Ombros + Calção + Inserções leves na transmissão"
-    };
-  }
-  if (pos === 6 || pos === 7) {
-    return {
-      classeTier: "tier-t4",
-      descricao: "Mangas + Calção + Inserção conjunta na transmissão"
-    };
-  }
-  if (pos >= 8 && pos <= 10) {
-    return {
-      classeTier: "tier-t5",
-      descricao: "Calção + Inserção conjunta na transmissão"
-    };
-  }
-  return {
-    classeTier: "tier-out fora-top10",
-    descricao: "Fora do uniforme (Impulsione para voltar ao Top 10)"
-  };
+  if (pos === 1) return { classeTier: "tier-t1", descricao: "Barriga Master + Costas Sup. + Chamadas VIP na transmissão" };
+  if (pos === 2 || pos === 3) return { classeTier: "tier-t2", descricao: "Barriga Abaixo + Costas Inf. + Chamadas na transmissão" };
+  if (pos === 4 || pos === 5) return { classeTier: "tier-t3", descricao: "Ombros + Calção + Inserções leves na transmissão" };
+  if (pos === 6 || pos === 7) return { classeTier: "tier-t4", descricao: "Mangas + Calção + Inserção conjunta na transmissão" };
+  if (pos >= 8 && pos <= 10) return { classeTier: "tier-t5", descricao: "Calção + Inserção conjunta na transmissão" };
+  return { classeTier: "tier-out fora-top10", descricao: "Fora do uniforme (Impulsione para voltar ao Top 10)" };
 }
 
-/* ==========================================================================
-   RECORTA BORDAS VAZIAS E COMPRIME EM WEBP HORIZONTAL 3:1 (240x80 · ~4KB)
-   Cabe com folga na URL do Google Apps Script sem corte de redirect
-   ========================================================================== */
 function converterParaHorizontal(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -158,10 +125,7 @@ function converterParaHorizontal(file) {
         for (let y = 0; y < img.height; y++) {
           for (let x = 0; x < img.width; x++) {
             const idx = (y * img.width + x) * 4;
-            const r = imgData[idx];
-            const g = imgData[idx + 1];
-            const b = imgData[idx + 2];
-            const a = imgData[idx + 3];
+            const r = imgData[idx], g = imgData[idx + 1], b = imgData[idx + 2], a = imgData[idx + 3];
             if (a > 20 && !(r > 248 && g > 248 && b > 248)) {
               if (x < minX) minX = x;
               if (x > maxX) maxX = x;
@@ -177,25 +141,17 @@ function converterParaHorizontal(file) {
         const cropW = encontrouPixel ? (maxX - minX + 1) : img.width;
         const cropH = encontrouPixel ? (maxY - minY + 1) : img.height;
 
-        const larguraAlvo = 240;
-        const alturaAlvo = 80;
+        const larguraAlvo = 240, alturaAlvo = 80;
         const canvas = document.createElement("canvas");
         canvas.width = larguraAlvo;
         canvas.height = alturaAlvo;
         const ctx = canvas.getContext("2d");
-
         ctx.clearRect(0, 0, larguraAlvo, alturaAlvo);
 
         const margem = 3;
-        const maxW = larguraAlvo - margem * 2;
-        const maxH = alturaAlvo - margem * 2;
-        const escala = Math.min(maxW / cropW, maxH / cropH);
-        const drawW = cropW * escala;
-        const drawH = cropH * escala;
-        const offsetX = (larguraAlvo - drawW) / 2;
-        const offsetY = (alturaAlvo - drawH) / 2;
-
-        ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, offsetX, offsetY, drawW, drawH);
+        const escala = Math.min((larguraAlvo - margem * 2) / cropW, (alturaAlvo - margem * 2) / cropH);
+        const drawW = cropW * escala, drawH = cropH * escala;
+        ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, (larguraAlvo - drawW) / 2, (alturaAlvo - drawH) / 2, drawW, drawH);
         resolve(canvas.toDataURL("image/webp", 0.78));
       };
       img.onerror = reject;
@@ -209,7 +165,6 @@ function converterParaHorizontal(file) {
 inputLogo.addEventListener("change", async (e) => {
   const file = e.target.files[0];
   if (!file) return;
-
   nomeArquivo.textContent = file.name;
   try {
     logoHorizontalBase64 = await converterParaHorizontal(file);
@@ -245,12 +200,7 @@ function renderizarTudo() {
   });
 
   if (patrocinadores.length === 0) {
-    areaRanking.innerHTML = `
-      <div class="lista-vazia">
-        Nenhum patrocinador cadastrado ainda.<br>
-        Crie o primeiro abaixo a partir de R$ 20,00!
-      </div>
-    `;
+    areaRanking.innerHTML = `<div class="lista-vazia">Nenhum patrocinador cadastrado ainda.<br>Crie o primeiro abaixo a partir de R$ 20,00!</div>`;
     return;
   }
 
@@ -262,7 +212,7 @@ function renderizarTudo() {
     const info = obterInfoPosicao(pos);
     const qtdAportes = pat.aportes || 1;
     const diferencaParaLider = Number((maiorValor - Number(pat.valor)).toFixed(2));
-    const valorParaPassar = Number((diferencaParaLider + 1).toFixed(2));
+    const valorParaPassar = Math.min(TETO_MAXIMO, Number((diferencaParaLider + 1).toFixed(2)));
 
     const item = document.createElement("div");
     item.className = `rank-item ${info.classeTier}`;
@@ -276,25 +226,18 @@ function renderizarTudo() {
         </div>
         <span class="rank-cota-desc">${info.descricao}</span>
         <div class="rank-rodape-acoes">
-          <span class="rank-lances-qtd">${qtdAportes} ${qtdAportes === 1 ? "lance" : "lances acumulados"}</span>
+          <span class="rank-lances-qtd">${qtdAportes} ${qtdAportes === 1 ? "aporte" : "aportes"}</span>
           <div class="rank-botoes">
             <button type="button" class="btn-acao-rank" data-acao="impulsionar">+ Impulsionar</button>
-            ${pos > 1 ? `<button type="button" class="btn-acao-rank cobrir">Passar 1º (+R$ ${valorParaPassar.toFixed(0)})</button>` : ""}
+            ${pos > 1 && diferencaParaLider < TETO_MAXIMO ? `<button type="button" class="btn-acao-rank cobrir">Passar 1º (+R$ ${valorParaPassar.toFixed(0)})</button>` : ""}
           </div>
         </div>
       </div>
     `;
 
-    item.querySelector('[data-acao="impulsionar"]').addEventListener("click", () => {
-      abrirModalImpulso(pat, 1);
-    });
-
+    item.querySelector('[data-acao="impulsionar"]').addEventListener("click", () => abrirModalImpulso(pat, 1));
     const btnCobrir = item.querySelector(".cobrir");
-    if (btnCobrir) {
-      btnCobrir.addEventListener("click", () => {
-        abrirModalImpulso(pat, valorParaPassar);
-      });
-    }
+    if (btnCobrir) btnCobrir.addEventListener("click", () => abrirModalImpulso(pat, valorParaPassar));
 
     areaRanking.appendChild(item);
   });
@@ -302,11 +245,20 @@ function renderizarTudo() {
   sincronizarEnquadramentoCamisa();
 }
 
+/* ==========================================================================
+   FLUXO DE IMPULSÃO & PIX COPIA E COLA
+   ========================================================================== */
 function abrirModalImpulso(pat, valorSugerido = 1) {
   patrocinadorSelecionadoModal = pat;
+  transacaoPendenteAtual = null;
+
+  modalTitulo.textContent = "Impulsionar via PIX";
+  formImpulsionar.hidden = false;
+  etapaPix.hidden = true;
+
   const maiorValor = Number(patrocinadores[0].valor);
   const diffLider = Math.max(0, maiorValor - Number(pat.valor));
-  const valorParaPassar = Number((diffLider + 1).toFixed(2));
+  const valorParaPassar = Math.min(TETO_MAXIMO, Number((diffLider + 1).toFixed(2)));
 
   modalMarcaInfo.innerHTML = `
     <img src="${pat.logo}" alt="${pat.nome}">
@@ -321,7 +273,7 @@ function abrirModalImpulso(pat, valorSugerido = 1) {
     <button type="button" class="chip-atalho" data-soma="5">+ R$ 5</button>
     <button type="button" class="chip-atalho" data-soma="10">+ R$ 10</button>
     <button type="button" class="chip-atalho" data-soma="20">+ R$ 20</button>
-    ${diffLider > 0 ? `<button type="button" class="chip-atalho destaque" data-soma="${valorParaPassar}">Virar 1º (+R$ ${valorParaPassar.toFixed(2).replace(".", ",")})</button>` : ""}
+    ${diffLider > 0 && diffLider < TETO_MAXIMO ? `<button type="button" class="chip-atalho destaque" data-soma="${valorParaPassar}">Virar 1º (+R$ ${valorParaPassar.toFixed(2).replace(".", ",")})</button>` : ""}
   `;
 
   atalhosValor.querySelectorAll("button").forEach(btn => {
@@ -334,92 +286,192 @@ function abrirModalImpulso(pat, valorSugerido = 1) {
   inputAporte.value = valorSugerido;
   atualizarPrevisaoModal();
   modalVeu.hidden = false;
-  inputAporte.focus();
-  inputAporte.select();
+  inputDoadorImpulso.focus();
 }
 
 function atualizarPrevisaoModal() {
   if (!patrocinadorSelecionadoModal) return;
   const soma = Math.max(0, Number(inputAporte.value) || 0);
   const novoTotal = Number((Number(patrocinadorSelecionadoModal.valor) + soma).toFixed(2));
-
   const simulacao = patrocinadores
     .map(p => p.id === patrocinadorSelecionadoModal.id ? novoTotal : Number(p.valor))
     .sort((a, b) => b - a);
   const novaPos = simulacao.indexOf(novoTotal) + 1;
-
-  modalPrevisao.innerHTML = `
-    Novo acumulado: <b>R$ ${novoTotal.toFixed(2).replace(".", ",")}</b> · Assume o <b>${novaPos}º lugar</b>
-  `;
+  modalPrevisao.innerHTML = `Novo acumulado: <b>R$ ${novoTotal.toFixed(2).replace(".", ",")}</b> · Assume o <b>${novaPos}º lugar</b>`;
 }
 
 inputAporte.addEventListener("input", atualizarPrevisaoModal);
+modalFechar.addEventListener("click", () => { modalVeu.hidden = true; });
+modalVeu.addEventListener("click", (e) => { if (e.target === modalVeu) modalVeu.hidden = true; });
 
-modalFechar.addEventListener("click", () => {
+/* Gera o PIX Copia e Cola e QR Code no Modal */
+async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
+  transacaoPendenteAtual = { empresa, doador, tipo, valor, logo };
+
+  modalTitulo.textContent = "Pagamento PIX";
+  formImpulsionar.hidden = true;
+  etapaPix.hidden = false;
+  modalVeu.hidden = false;
+
+  modalMarcaInfo.innerHTML = `
+    ${logo ? `<img src="${logo}" alt="${empresa}">` : ""}
+    <div>
+      <strong style="display:block; font-size:.98rem;">${empresa}</strong>
+      <span style="font-size:.8rem; color:var(--texto-2);">Pagador: <b style="color:#fff;">${doador}</b> · ${tipo}</span>
+    </div>
+  `;
+
+  pixValorLabel.textContent = `R$ ${valor.toFixed(2).replace(".", ",")}`;
+  pixCopiaCola.value = "Gerando código PIX...";
+  pixQrImg.src = "";
+
+  try {
+    const resp = await fetch(`${URL_SHEETS}?acao=gerar_pix&valor=${valor}`);
+    const dados = await resp.json();
+    if (dados.ok && dados.payload) {
+      pixCopiaCola.value = dados.payload;
+      pixQrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(dados.payload)}`;
+    } else {
+      pixCopiaCola.value = "Erro ao gerar código PIX.";
+    }
+  } catch {
+    pixCopiaCola.value = "Erro de conexão ao gerar PIX.";
+  }
+}
+
+btnCopiarPix.addEventListener("click", async () => {
+  try {
+    await navigator.clipboard.writeText(pixCopiaCola.value);
+    mostrarToast("Código PIX Copia e Cola copiado!");
+  } catch {
+    pixCopiaCola.select();
+    document.execCommand("copy");
+    mostrarToast("Código PIX copiado!");
+  }
+});
+
+/* Quando o usuário clica em "Já fiz o PIX", grava na aba Transacoes e atualiza o Ranking */
+btnJaPaguei.addEventListener("click", async () => {
+  if (!transacaoPendenteAtual) return;
+
+  btnJaPaguei.disabled = true;
+  btnJaPaguei.textContent = "Registrando e atualizando ranking...";
+  enviandoDados = true;
+
+  try {
+    const params = new URLSearchParams({
+      acao: "registrar",
+      empresa: transacaoPendenteAtual.empresa,
+      doador: transacaoPendenteAtual.doador,
+      tipo: transacaoPendenteAtual.tipo,
+      valor: String(transacaoPendenteAtual.valor),
+      logo: transacaoPendenteAtual.logo || ""
+    });
+
+    const resp = await fetch(`${URL_SHEETS}?${params.toString()}`);
+    const res = await resp.json();
+
+    if (res.ok && Array.isArray(res.ranking)) {
+      patrocinadores = res.ranking;
+      try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
+      renderizarTudo();
+      mostrarToast(`PIX registrado! ${transacaoPendenteAtual.empresa} já está no ranking.`);
+    } else {
+      mostrarToast(res.erro || "Não foi possível registrar a transação.");
+    }
+  } catch {
+    mostrarToast("Erro de rede ao registrar o lance.");
+  }
+
+  enviandoDados = false;
+  btnJaPaguei.disabled = false;
+  btnJaPaguei.textContent = "Já fiz o PIX · Publicar no Ranking Agora";
   modalVeu.hidden = true;
+  transacaoPendenteAtual = null;
 });
 
-modalVeu.addEventListener("click", (e) => {
-  if (e.target === modalVeu) modalVeu.hidden = true;
-});
-
-document.getElementById("form-impulsionar").addEventListener("submit", async (e) => {
+/* Submit do Modal de Impulsão -> Vai para Etapa PIX */
+formImpulsionar.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!patrocinadorSelecionadoModal) return;
 
+  const doador = inputDoadorImpulso.value.trim();
   const aporte = Number(inputAporte.value);
-  if (isNaN(aporte) || aporte < 1) {
-    mostrarToast("O valor mínimo de impulsão é R$ 1,00.");
+
+  if (!doador) {
+    mostrarToast("Informe seu nome para identificação no extrato PIX.");
+    inputDoadorImpulso.focus();
+    return;
+  }
+  if (isNaN(aporte) || aporte < 1 || aporte > TETO_MAXIMO) {
+    mostrarToast(`O valor deve ser entre R$ 1,00 e R$ ${TETO_MAXIMO},00.`);
     inputAporte.focus();
     return;
   }
 
-  const btnConfirmar = document.getElementById("btn-confirmar-aporte");
-  btnConfirmar.disabled = true;
-  btnConfirmar.textContent = "Registrando impulsão...";
-
-  patrocinadorSelecionadoModal.valor = Number((Number(patrocinadorSelecionadoModal.valor) + aporte).toFixed(2));
-  patrocinadorSelecionadoModal.aportes = (patrocinadorSelecionadoModal.aportes || 1) + 1;
-
-  // Na impulsão não precisa reenviar a logo (já está na planilha)
-  await persistirDados({
-    id: patrocinadorSelecionadoModal.id,
-    nome: patrocinadorSelecionadoModal.nome,
-    valor: patrocinadorSelecionadoModal.valor,
-    aportes: patrocinadorSelecionadoModal.aportes,
-    logo: ""
+  await abrirTelaPagamentoPix({
+    empresa: patrocinadorSelecionadoModal.nome,
+    doador,
+    tipo: "IMPULSÃO",
+    valor: aporte,
+    logo: patrocinadorSelecionadoModal.logo
   });
-  renderizarTudo();
-
-  btnConfirmar.disabled = false;
-  btnConfirmar.textContent = "Impulsionar Agora";
-  modalVeu.hidden = true;
-
-  mostrarToast(`+R$ ${aporte.toFixed(2).replace(".", ",")} somados para ${patrocinadorSelecionadoModal.nome}!`);
 });
 
-/* ==========================================================================
-   PERSISTÊNCIA COMPARTILHADA (GOOGLE SHEETS VIA GET DIRETO)
-   ========================================================================== */
+/* Submit do Formulário de Novo Patrocínio -> Vai para Etapa PIX */
+document.getElementById("form-patrocinio").addEventListener("submit", async (e) => {
+  e.preventDefault();
+
+  const empresa = inputEmpresa.value.trim();
+  const doador = inputDoadorNovo.value.trim();
+  const valor = Number(inputValor.value);
+
+  if (!empresa || !doador) {
+    mostrarToast("Preencha o nome da marca e o seu nome (pagador PIX).");
+    return;
+  }
+  if (!logoHorizontalBase64) {
+    mostrarToast("Anexe a imagem do logo.");
+    return;
+  }
+  if (isNaN(valor) || valor < 20 || valor > TETO_MAXIMO) {
+    mostrarToast(`O lance inicial deve ser entre R$ 20,00 e R$ ${TETO_MAXIMO},00.`);
+    inputValor.focus();
+    return;
+  }
+
+  const logoEnviar = logoHorizontalBase64;
+
+  inputEmpresa.value = "";
+  inputDoadorNovo.value = "";
+  inputLogo.value = "";
+  logoHorizontalBase64 = null;
+  nomeArquivo.textContent = "Anexar";
+  previewLogo.innerHTML = `<span class="placeholder-logo">LOGO 3:1</span>`;
+  inputValor.value = 20;
+
+  await abrirTelaPagamentoPix({
+    empresa,
+    doador,
+    tipo: "NOVO PATROCÍNIO",
+    valor,
+    logo: logoEnviar
+  });
+});
+
+/* Carrega Ranking sincronizado com a aba Ranking da planilha */
 async function carregarPatrocinadores() {
   if (enviandoDados) return;
-
-  if (URL_SHEETS) {
-    try {
-      const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`);
-      const dados = await resp.json();
-      if (Array.isArray(dados)) {
-        patrocinadores = dados;
-        try {
-          localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores));
-        } catch {}
-        renderizarTudo();
-        return;
-      }
-    } catch (err) {
-      console.warn("Erro ao ler Google Sheets, exibindo cache local:", err);
+  try {
+    const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`);
+    const dados = await resp.json();
+    if (Array.isArray(dados)) {
+      patrocinadores = dados;
+      try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
+      renderizarTudo();
+      return;
     }
-  }
+  } catch {}
 
   try {
     const salvo = localStorage.getItem(CHAVE_STORAGE);
@@ -428,96 +480,6 @@ async function carregarPatrocinadores() {
   renderizarTudo();
 }
 
-async function persistirDados(registroAtualizado) {
-  enviandoDados = true;
-  try {
-    localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores));
-  } catch {}
-
-  if (URL_SHEETS) {
-    try {
-      const params = new URLSearchParams({
-        acao: "salvar",
-        id: String(registroAtualizado.id || Date.now()),
-        nome: String(registroAtualizado.nome || ""),
-        valor: String(registroAtualizado.valor || 0),
-        aportes: String(registroAtualizado.aportes || 1),
-        logo: String(registroAtualizado.logo || "")
-      });
-
-      await fetch(`${URL_SHEETS}?${params.toString()}`);
-    } catch (err) {
-      console.warn("Erro ao salvar no Google Sheets:", err);
-    }
-  }
-  enviandoDados = false;
-}
-
-document.getElementById("form-patrocinio").addEventListener("submit", async (e) => {
-  e.preventDefault();
-
-  const nome = inputEmpresa.value.trim();
-  const valor = Number(inputValor.value);
-
-  if (!nome) {
-    mostrarToast("Digite o nome da empresa ou meme.");
-    inputEmpresa.focus();
-    return;
-  }
-  if (!logoHorizontalBase64) {
-    mostrarToast("Anexe a imagem do logo.");
-    return;
-  }
-  if (valor < 20) {
-    mostrarToast("O lance inicial mínimo é R$ 20,00.");
-    inputValor.focus();
-    return;
-  }
-
-  btnSubmit.disabled = true;
-  btnSubmit.textContent = "Salvando na planilha...";
-
-  const existente = patrocinadores.find(p => p.nome.toLowerCase() === nome.toLowerCase());
-  let registroFinal;
-
-  if (existente) {
-    existente.valor = Number((Number(existente.valor) + valor).toFixed(2));
-    existente.aportes = (existente.aportes || 1) + 1;
-    existente.logo = logoHorizontalBase64;
-    registroFinal = existente;
-  } else {
-    registroFinal = {
-      id: Date.now(),
-      nome,
-      valor,
-      aportes: 1,
-      logo: logoHorizontalBase64
-    };
-    patrocinadores.push(registroFinal);
-  }
-
-  await persistirDados(registroFinal);
-  renderizarTudo();
-
-  inputEmpresa.value = "";
-  inputLogo.value = "";
-  logoHorizontalBase64 = null;
-  nomeArquivo.textContent = "Anexar imagem";
-  previewLogo.innerHTML = `<span class="placeholder-logo">LOGO 3:1</span>`;
-  inputValor.value = 20;
-
-  btnSubmit.disabled = false;
-  btnSubmit.textContent = "Criar Patrocínio";
-  mostrarToast(`${nome} registrado na planilha com R$ ${registroFinal.valor.toFixed(2).replace(".", ",")}!`);
-});
-
 montarCamadasCamisa();
 carregarPatrocinadores();
-
-window.addEventListener("storage", (e) => {
-  if (e.key === CHAVE_STORAGE) carregarPatrocinadores();
-});
-
-if (URL_SHEETS) {
-  setInterval(carregarPatrocinadores, 15000);
-}
+setInterval(carregarPatrocinadores, 12000);
