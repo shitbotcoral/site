@@ -1,7 +1,7 @@
 /* ==========================================================================
    CONFIGURAÇÃO DO BACKEND COMPARTILHADO (GOOGLE SHEETS / APPS SCRIPT)
    ========================================================================== */
-const URL_SHEETS = "";
+const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
 const CHAVE_STORAGE = "shitbot_patrocinadores_v2";
 
 /* Posições calibradas para o enquadramento do jogador deslocado à esquerda */
@@ -9,8 +9,8 @@ const POSICOES_CAMISA = [
   { id: "pos-1", x: 50.0, y: 66.5, w: 24.5, h: 11.0, rot: 0 },
   { id: "pos-2", x: 50.0, y: 79.0, w: 23.5, h: 10.5, rot: 0 },
   { id: "pos-3", x: 50.0, y: 91.0, w: 22.0, h: 9.5,  rot: 0 },
-  { id: "pos-4", x: 41.3, y: 46.0, w: 13.5,  h: 4.0,  rot: -15 },
-  { id: "pos-5", x: 58.6, y: 46.0, w: 13.5,  h: 4.0,  rot: 15 },
+  { id: "pos-4", x: 41.3, y: 44.0, w: 8.5,  h: 4.0,  rot: -15 },
+  { id: "pos-5", x: 58.6, y: 44.0, w: 8.5,  h: 4.0,  rot: 15 },
   { id: "pos-6", x: 35.4, y: 54.6, w: 8.5,  h: 4.0,  rot: -66 },
   { id: "pos-7", x: 64.5, y: 54.6, w: 8.5,  h: 4.0,  rot: 66 }
 ];
@@ -39,6 +39,7 @@ const modalPrevisao = document.getElementById("modal-previsao");
 let patrocinadores = [];
 let logoHorizontalBase64 = null;
 let patrocinadorSelecionadoModal = null;
+let enviandoDados = false;
 
 /* Busca automática para "apresentacao" */
 const formatosFoto = [
@@ -195,7 +196,7 @@ function converterParaHorizontal(file) {
         const offsetY = (alturaAlvo - drawH) / 2;
 
         ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, offsetX, offsetY, drawW, drawH);
-        resolve(canvas.toDataURL("image/png", 0.94));
+        resolve(canvas.toDataURL("image/png", 0.92));
       };
       img.onerror = reject;
       img.src = ev.target.result;
@@ -286,12 +287,10 @@ function renderizarTudo() {
       </div>
     `;
 
-    // Botão + Impulsionar (a partir de R$ 1,00 sem limites)
     item.querySelector('[data-acao="impulsionar"]').addEventListener("click", () => {
       abrirModalImpulso(pat, 1);
     });
 
-    // Botão Passar 1º (diferença exata + R$ 1,00)
     const btnCobrir = item.querySelector(".cobrir");
     if (btnCobrir) {
       btnCobrir.addEventListener("click", () => {
@@ -380,31 +379,43 @@ document.getElementById("form-impulsionar").addEventListener("submit", async (e)
     return;
   }
 
+  const btnConfirmar = document.getElementById("btn-confirmar-aporte");
+  btnConfirmar.disabled = true;
+  btnConfirmar.textContent = "Registrando impulsão...";
+
   patrocinadorSelecionadoModal.valor = Number((Number(patrocinadorSelecionadoModal.valor) + aporte).toFixed(2));
   patrocinadorSelecionadoModal.aportes = (patrocinadorSelecionadoModal.aportes || 1) + 1;
 
   await persistirDados(patrocinadorSelecionadoModal);
   renderizarTudo();
+
+  btnConfirmar.disabled = false;
+  btnConfirmar.textContent = "Impulsionar Agora";
   modalVeu.hidden = true;
 
   mostrarToast(`+R$ ${aporte.toFixed(2).replace(".", ",")} somados para ${patrocinadorSelecionadoModal.nome}!`);
 });
 
 /* ==========================================================================
-   PERSISTÊNCIA COMPARTILHADA (GOOGLE SHEETS OU STORAGE LOCAL)
+   PERSISTÊNCIA COMPARTILHADA (GOOGLE SHEETS INTEGRADO)
    ========================================================================== */
 async function carregarPatrocinadores() {
-  if (URL_SHEETS) {https://script.google.com/macros/s/AKfycbwdrr8E8h9Cl-yxsmZrGO31-QVdyZVSEwHwtp-y-H0N-ir0Nwissv3Ogvaanxv6vIpgZg/exec;
+  if (enviandoDados) return;
+
+  if (URL_SHEETS) {
     try {
-      const resp = await fetch(URL_SHEETS);
+      const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`);
       const dados = await resp.json();
       if (Array.isArray(dados)) {
         patrocinadores = dados;
+        try {
+          localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores));
+        } catch {}
         renderizarTudo();
         return;
       }
     } catch (err) {
-      console.warn("Erro ao ler Google Sheets, usando cache local:", err);
+      console.warn("Erro ao ler Google Sheets, exibindo cache local:", err);
     }
   }
 
@@ -416,6 +427,7 @@ async function carregarPatrocinadores() {
 }
 
 async function persistirDados(registroAtualizado) {
+  enviandoDados = true;
   try {
     localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores));
   } catch {}
@@ -425,13 +437,19 @@ async function persistirDados(registroAtualizado) {
       await fetch(URL_SHEETS, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
         body: JSON.stringify(registroAtualizado)
       });
+      setTimeout(async () => {
+        enviandoDados = false;
+        await carregarPatrocinadores();
+      }, 2200);
+      return;
     } catch (err) {
       console.warn("Erro ao enviar para o Google Sheets:", err);
     }
   }
+  enviandoDados = false;
 }
 
 /* Envio do Formulário de Novo Patrocínio */
@@ -457,7 +475,7 @@ document.getElementById("form-patrocinio").addEventListener("submit", async (e) 
   }
 
   btnSubmit.disabled = true;
-  btnSubmit.textContent = "Publicando...";
+  btnSubmit.textContent = "Salvando na planilha...";
 
   const existente = patrocinadores.find(p => p.nome.toLowerCase() === nome.toLowerCase());
   let registroFinal;
@@ -490,10 +508,10 @@ document.getElementById("form-patrocinio").addEventListener("submit", async (e) 
 
   btnSubmit.disabled = false;
   btnSubmit.textContent = "Criar Patrocínio";
-  mostrarToast(`${nome} entrou no leilão com R$ ${registroFinal.valor.toFixed(2).replace(".", ",")}!`);
+  mostrarToast(`${nome} registrado na planilha com R$ ${registroFinal.valor.toFixed(2).replace(".", ",")}!`);
 });
 
-/* Inicializa */
+/* Inicializa e sincroniza a cada 12 segundos para todos os usuários online */
 montarCamadasCamisa();
 carregarPatrocinadores();
 
@@ -502,5 +520,5 @@ window.addEventListener("storage", (e) => {
 });
 
 if (URL_SHEETS) {
-  setInterval(carregarPatrocinadores, 15000);
+  setInterval(carregarPatrocinadores, 12000);
 }
