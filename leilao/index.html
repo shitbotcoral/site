@@ -7,29 +7,52 @@
   <meta name="theme-color" content="#0A0A0C">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62.5..125,500..900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-  <!-- Arena Principal: Jogador à Esquerda + Ranking por Extenso à Direita -->
+  <!-- Cabeçalho Flutuante Glass (Identidade Visual da Loja Shitbot Coral) -->
+  <header class="topo-flutuante">
+    <nav class="nav-pill" aria-label="Navegação principal">
+      <a href="https://shitbotcoral.com.br/" class="nav-logo" aria-label="Shitbot Coral">
+        <img src="logo.png" alt="Shitbot Coral" id="logo-site">
+      </a>
+
+      <div class="nav-acoes">
+        <a href="https://shitbotcoral.com.br/loja/" class="nav-link">Loja</a>
+        <a href="https://www.youtube.com/@shitbotcoral" target="_blank" rel="noopener noreferrer" class="nav-btn-yt">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+          </svg>
+          <span>YouTube</span>
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Arena Principal: Jogador + Logos Travadas com Movimento de Câmera à Esquerda + Ranking Glass à Direita -->
   <section class="arena" aria-label="Uniforme oficial e ranking ao vivo">
     <div class="palco-foto" id="palco-foto">
-      <img
-        src="apresentacao.jpg"
-        alt="Jogador segurando o uniforme oficial"
-        class="foto-jogador"
-        id="foto-jogador"
-      >
+      <!-- Wrapper agrupado: foto e logos se movem juntas sem perder alinhamento -->
+      <div class="palco-camera" id="palco-camera">
+        <img
+          src="apresentacao.jpg"
+          alt="Jogador segurando o uniforme oficial"
+          class="foto-jogador"
+          id="foto-jogador"
+        >
+        <div class="camada-camisa" id="camada-camisa"></div>
+      </div>
+
       <div class="flashes" aria-hidden="true">
         <div class="flash f1"></div>
         <div class="flash f2"></div>
         <div class="flash f3"></div>
       </div>
-      <div class="camada-camisa" id="camada-camisa"></div>
     </div>
 
-    <aside class="painel-ranking" aria-label="Ranking ao vivo de patrocinadores">
+    <aside class="painel-ranking glass-panel" aria-label="Ranking ao vivo de patrocinadores">
       <div class="ranking-cab">
         <div>
           <span class="tag-vivo"><i></i> Leilão Acumulativo</span>
@@ -53,7 +76,7 @@
 
   <!-- Parte Inferior: Formulário de Novo Patrocínio + Cotas -->
   <main class="conteudo">
-    <section class="card-form" aria-labelledby="titulo-lance">
+    <section class="card-form glass-panel" aria-labelledby="titulo-lance">
       <div class="card-cab">
         <div>
           <h2 id="titulo-lance">Cadastrar Novo Patrocínio</h2>
@@ -99,7 +122,7 @@
     </section>
 
     <!-- Termos e Cotas Discretos -->
-    <section class="secao-termos" aria-labelledby="titulo-termos">
+    <section class="secao-termos glass-panel" aria-labelledby="titulo-termos">
       <div class="termos-cab">
         <h3 id="titulo-termos">Cotas do Uniforme & Transmissão</h3>
         <span>Os valores são cumulativos por patrocinador</span>
@@ -159,7 +182,7 @@
 
   <!-- Modal Unificado: Impulsão + Pagamento PIX -->
   <div class="modal-veu" id="modal-veu" hidden>
-    <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal-caixa glass-modal" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
       <div class="modal-topo">
         <h3 id="modal-titulo">Impulsionar Marca</h3>
         <button type="button" class="btn-fechar" id="modal-fechar" aria-label="Fechar">✕</button>
