@@ -2,7 +2,7 @@
    CONFIGURAÇÃO DO BACKEND COMPARTILHADO (GOOGLE SHEETS / APPS SCRIPT)
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
-const CHAVE_STORAGE = "shitbot_patrocinadores_v3";
+const CHAVE_STORAGE = "shitbot_patrocinadores_v4";
 const TETO_MAXIMO = 2000;
 
 const POSICOES_CAMISA = [
@@ -15,9 +15,11 @@ const POSICOES_CAMISA = [
   { id: "pos-7", x: 64.5, y: 54.6, w: 8.5,  h: 4.0,  rot: 66 }
 ];
 
-const camadaCamisa = document.getElementById("camada-camisa");
 const palcoFoto = document.getElementById("palco-foto");
+const palcoCamera = document.getElementById("palco-camera");
+const camadaCamisa = document.getElementById("camada-camisa");
 const fotoJogador = document.getElementById("foto-jogador");
+const logoSiteEl = document.getElementById("logo-site");
 const inputLogo = document.getElementById("input-logo");
 const previewLogo = document.getElementById("preview-logo");
 const nomeArquivo = document.getElementById("nome-arquivo");
@@ -54,17 +56,61 @@ let transacaoPendenteAtual = null;
 let timerBotaoPaguei = null;
 let enviandoDados = false;
 
-const formatosFoto = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp", "apresentacao"];
+/* Busca automática para "apresentacao" e "logo" */
+const formatosFoto = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp"];
 let idxFoto = 0;
 fotoJogador.addEventListener("error", () => {
   idxFoto++;
   if (idxFoto < formatosFoto.length) fotoJogador.src = formatosFoto[idxFoto];
 });
 
+if (logoSiteEl) {
+  logoSiteEl.addEventListener("error", () => {
+    if (!logoSiteEl.dataset.fallback) {
+      logoSiteEl.dataset.fallback = "1";
+      logoSiteEl.src = "logo.webp";
+    }
+  });
+}
+
+/* ==========================================================================
+   MOVIMENTO DE CÂMERA AGRUPADO (FOTO + PATROCINADORES TRAVADOS JUNTOS)
+   ========================================================================== */
+palcoFoto.addEventListener("mousemove", (e) => {
+  const rect = palcoFoto.getBoundingClientRect();
+  const normX = ((e.clientX - rect.left) / rect.width) - 0.5;
+  const normY = ((e.clientY - rect.top) / rect.height) - 0.5;
+
+  const moveX = (-normX * 22).toFixed(2) + "px";
+  const moveY = (-normY * 16).toFixed(2) + "px";
+  const rotY = (normX * 2.4).toFixed(2) + "deg";
+  const rotX = (-normY * 2.0).toFixed(2) + "deg";
+
+  palcoCamera.style.setProperty("--cam-x", moveX);
+  palcoCamera.style.setProperty("--cam-y", moveY);
+  palcoCamera.style.setProperty("--cam-rx", rotX);
+  palcoCamera.style.setProperty("--cam-ry", rotY);
+});
+
+palcoFoto.addEventListener("mouseleave", () => {
+  palcoCamera.style.setProperty("--cam-x", "0px");
+  palcoCamera.style.setProperty("--cam-y", "0px");
+  palcoCamera.style.setProperty("--cam-rx", "0deg");
+  palcoCamera.style.setProperty("--cam-ry", "0deg");
+});
+
+window.addEventListener("scroll", () => {
+  const scrollY = window.scrollY;
+  if (scrollY < 700) {
+    palcoCamera.style.setProperty("--cam-y", (scrollY * 0.04).toFixed(1) + "px");
+  }
+}, { passive: true });
+
+/* Sincroniza a camada das estampas exatamente com o enquadramento real da foto */
 function sincronizarEnquadramentoCamisa() {
   if (!fotoJogador.naturalWidth || !fotoJogador.naturalHeight) return;
-  const boxW = palcoFoto.clientWidth;
-  const boxH = palcoFoto.clientHeight;
+  const boxW = palcoCamera.clientWidth;
+  const boxH = palcoCamera.clientHeight;
   const imgRatio = fotoJogador.naturalWidth / fotoJogador.naturalHeight;
   const boxRatio = boxW / boxH;
 
@@ -107,7 +153,10 @@ function obterInfoPosicao(pos) {
   return { classeTier: "tier-out fora-top10", descricao: "Fora do uniforme (Impulsione para voltar ao Top 10)" };
 }
 
-function converterParaHorizontal(file) {
+/* ==========================================================================
+   ALTA RESOLUÇÃO PES 2020: RECORTA BORDAS E GERA PNG PURO 1200x400 (3:1)
+   ========================================================================== */
+function converterParaHorizontalAltaRes(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (ev) => {
@@ -142,18 +191,27 @@ function converterParaHorizontal(file) {
         const cropW = encontrouPixel ? (maxX - minX + 1) : img.width;
         const cropH = encontrouPixel ? (maxY - minY + 1) : img.height;
 
-        const larguraAlvo = 240, alturaAlvo = 80;
+        // Resolução Full HD 3:1 (1200x400) em PNG puro para aplicação direta no kit PES 2020
+        const larguraAlvo = 1200;
+        const alturaAlvo = 400;
         const canvas = document.createElement("canvas");
         canvas.width = larguraAlvo;
         canvas.height = alturaAlvo;
         const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, larguraAlvo, alturaAlvo);
 
-        const margem = 3;
+        ctx.clearRect(0, 0, larguraAlvo, alturaAlvo);
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+
+        const margem = 8;
         const escala = Math.min((larguraAlvo - margem * 2) / cropW, (alturaAlvo - margem * 2) / cropH);
-        const drawW = cropW * escala, drawH = cropH * escala;
-        ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, (larguraAlvo - drawW) / 2, (alturaAlvo - drawH) / 2, drawW, drawH);
-        resolve(canvas.toDataURL("image/webp", 0.78));
+        const drawW = cropW * escala;
+        const drawH = cropH * escala;
+        const offsetX = (larguraAlvo - drawW) / 2;
+        const offsetY = (alturaAlvo - drawH) / 2;
+
+        ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, offsetX, offsetY, drawW, drawH);
+        resolve(canvas.toDataURL("image/png", 1.0));
       };
       img.onerror = reject;
       img.src = ev.target.result;
@@ -168,7 +226,7 @@ inputLogo.addEventListener("change", async (e) => {
   if (!file) return;
   nomeArquivo.textContent = file.name;
   try {
-    logoHorizontalBase64 = await converterParaHorizontal(file);
+    logoHorizontalBase64 = await converterParaHorizontalAltaRes(file);
     previewLogo.innerHTML = `<img src="${logoHorizontalBase64}" alt="Prévia horizontal">`;
   } catch {
     mostrarToast("Não foi possível ler essa imagem. Tente PNG ou JPG.");
@@ -266,8 +324,8 @@ function abrirModalImpulso(pat, valorSugerido = 1) {
   modalMarcaInfo.innerHTML = `
     <img src="${pat.logo}" alt="${pat.nome}">
     <div>
-      <strong style="display:block; font-size:.98rem;">${pat.nome}</strong>
-      <span style="font-size:.8rem; color:var(--texto-2);">Acumulado atual: <b style="color:#fff;">R$ ${Number(pat.valor).toFixed(2).replace(".", ",")}</b></span>
+      <strong style="display:block; font-size:.95rem;">${pat.nome}</strong>
+      <span style="font-size:.78rem; color:var(--texto-2);">Acumulado atual: <b style="color:#fff;">R$ ${Number(pat.valor).toFixed(2).replace(".", ",")}</b></span>
     </div>
   `;
 
@@ -315,7 +373,6 @@ modalVeu.addEventListener("click", (e) => {
   }
 });
 
-/* Gera o PIX Copia e Cola e QR Code no Modal (Botão "Já paguei" oculto inicialmente) */
 async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
   transacaoPendenteAtual = { empresa, doador, tipo, valor, logo };
   clearTimeout(timerBotaoPaguei);
@@ -329,8 +386,8 @@ async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
   modalMarcaInfo.innerHTML = `
     ${logo ? `<img src="${logo}" alt="${empresa}">` : ""}
     <div>
-      <strong style="display:block; font-size:.98rem;">${empresa}</strong>
-      <span style="font-size:.8rem; color:var(--texto-2);">${doador} · R$ ${valor.toFixed(2).replace(".", ",")}</span>
+      <strong style="display:block; font-size:.95rem;">${empresa}</strong>
+      <span style="font-size:.78rem; color:var(--texto-2);">${doador} · R$ ${valor.toFixed(2).replace(".", ",")}</span>
     </div>
   `;
 
@@ -352,7 +409,7 @@ async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
   }
 }
 
-/* Ao clicar em Copiar Código, libera o botão "Já paguei" após 3 segundos */
+/* Libera o botão "Já paguei" 3 segundos após copiar o código PIX */
 btnCopiarPix.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(pixCopiaCola.value);
@@ -369,7 +426,7 @@ btnCopiarPix.addEventListener("click", async () => {
   }, 3000);
 });
 
-/* Quando clica em "Já paguei", envia para a planilha e atualiza o ranking */
+/* Envia via POST quando tem logo PNG de alta resolução, ou via GET leve na impulsão */
 btnJaPaguei.addEventListener("click", async () => {
   if (!transacaoPendenteAtual) return;
 
@@ -378,38 +435,73 @@ btnJaPaguei.addEventListener("click", async () => {
   enviandoDados = true;
 
   try {
-    const params = new URLSearchParams({
-      acao: "registrar",
-      empresa: transacaoPendenteAtual.empresa,
-      doador: transacaoPendenteAtual.doador,
-      tipo: transacaoPendenteAtual.tipo,
-      valor: String(transacaoPendenteAtual.valor),
-      logo: transacaoPendenteAtual.logo || ""
-    });
+    const temImagemAltaRes = Boolean(transacaoPendenteAtual.logo && transacaoPendenteAtual.logo.startsWith("data:image"));
 
-    const resp = await fetch(`${URL_SHEETS}?${params.toString()}`);
-    const res = await resp.json();
+    if (temImagemAltaRes) {
+      // POST sem headers customizados para enviar PNG 1200x400 sem limite de URL
+      await fetch(URL_SHEETS, {
+        method: "POST",
+        mode: "no-cors",
+        body: JSON.stringify(transacaoPendenteAtual)
+      });
 
-    if (res.ok && Array.isArray(res.ranking)) {
-      patrocinadores = res.ranking;
-      try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
+      // Atualiza otimisticamente na tela e sincroniza com a planilha logo em seguida
+      const existente = patrocinadores.find(p => p.nome.toLowerCase() === transacaoPendenteAtual.empresa.toLowerCase());
+      if (existente) {
+        existente.valor = Number((Number(existente.valor) + transacaoPendenteAtual.valor).toFixed(2));
+        existente.aportes = (existente.aportes || 1) + 1;
+        existente.logo = transacaoPendenteAtual.logo;
+      } else {
+        patrocinadores.push({
+          id: Date.now(),
+          nome: transacaoPendenteAtual.empresa,
+          valor: transacaoPendenteAtual.valor,
+          aportes: 1,
+          logo: transacaoPendenteAtual.logo
+        });
+      }
       renderizarTudo();
-      mostrarToast(`${transacaoPendenteAtual.empresa} atualizado no ranking!`);
+      mostrarToast(`${transacaoPendenteAtual.empresa} registrado com sucesso!`);
+
+      setTimeout(() => {
+        enviandoDados = false;
+        carregarPatrocinadores();
+      }, 3500);
     } else {
-      mostrarToast(res.erro || "Não foi possível confirmar agora.");
+      // Impulsão leve via GET direto
+      const params = new URLSearchParams({
+        acao: "registrar",
+        empresa: transacaoPendenteAtual.empresa,
+        doador: transacaoPendenteAtual.doador,
+        tipo: transacaoPendenteAtual.tipo,
+        valor: String(transacaoPendenteAtual.valor),
+        logo: ""
+      });
+
+      const resp = await fetch(`${URL_SHEETS}?${params.toString()}`);
+      const res = await resp.json();
+
+      if (res.ok && Array.isArray(res.ranking)) {
+        patrocinadores = res.ranking;
+        try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
+        renderizarTudo();
+        mostrarToast(`${transacaoPendenteAtual.empresa} atualizado no ranking!`);
+      } else {
+        mostrarToast(res.erro || "Não foi possível confirmar agora.");
+      }
+      enviandoDados = false;
     }
   } catch {
+    enviandoDados = false;
     mostrarToast("Erro de rede ao confirmar.");
   }
 
-  enviandoDados = false;
   btnJaPaguei.disabled = false;
   btnJaPaguei.textContent = "Já paguei";
   modalVeu.hidden = true;
   transacaoPendenteAtual = null;
 });
 
-/* Submit do Modal de Impulsão */
 formImpulsionar.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!patrocinadorSelecionadoModal) return;
@@ -437,7 +529,6 @@ formImpulsionar.addEventListener("submit", async (e) => {
   });
 });
 
-/* Submit do Formulário de Novo Patrocínio */
 document.getElementById("form-patrocinio").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -478,7 +569,6 @@ document.getElementById("form-patrocinio").addEventListener("submit", async (e) 
   });
 });
 
-/* Carrega Ranking sincronizado com a aba Ranking da planilha */
 async function carregarPatrocinadores() {
   if (enviandoDados) return;
   try {
