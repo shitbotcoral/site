@@ -64,11 +64,13 @@ fotoJogador.addEventListener("error", () => {
   if (idxFoto < formatosFoto.length) fotoJogador.src = formatosFoto[idxFoto];
 });
 
+const formatosLogoSite = ["logo.png", "logo.webp", "logo.jpg"];
+let idxLogoSite = 0;
 if (logoSiteEl) {
   logoSiteEl.addEventListener("error", () => {
-    if (!logoSiteEl.dataset.fallback) {
-      logoSiteEl.dataset.fallback = "1";
-      logoSiteEl.src = "logo.webp";
+    idxLogoSite++;
+    if (idxLogoSite < formatosLogoSite.length) {
+      logoSiteEl.src = formatosLogoSite[idxLogoSite];
     }
   });
 }
@@ -191,7 +193,6 @@ function converterParaHorizontalAltaRes(file) {
         const cropW = encontrouPixel ? (maxX - minX + 1) : img.width;
         const cropH = encontrouPixel ? (maxY - minY + 1) : img.height;
 
-        // Resolução Full HD 3:1 (1200x400) em PNG puro para aplicação direta no kit PES 2020
         const larguraAlvo = 1200;
         const alturaAlvo = 400;
         const canvas = document.createElement("canvas");
@@ -438,14 +439,12 @@ btnJaPaguei.addEventListener("click", async () => {
     const temImagemAltaRes = Boolean(transacaoPendenteAtual.logo && transacaoPendenteAtual.logo.startsWith("data:image"));
 
     if (temImagemAltaRes) {
-      // POST sem headers customizados para enviar PNG 1200x400 sem limite de URL
       await fetch(URL_SHEETS, {
         method: "POST",
         mode: "no-cors",
         body: JSON.stringify(transacaoPendenteAtual)
       });
 
-      // Atualiza otimisticamente na tela e sincroniza com a planilha logo em seguida
       const existente = patrocinadores.find(p => p.nome.toLowerCase() === transacaoPendenteAtual.empresa.toLowerCase());
       if (existente) {
         existente.valor = Number((Number(existente.valor) + transacaoPendenteAtual.valor).toFixed(2));
@@ -468,7 +467,6 @@ btnJaPaguei.addEventListener("click", async () => {
         carregarPatrocinadores();
       }, 3500);
     } else {
-      // Impulsão leve via GET direto
       const params = new URLSearchParams({
         acao: "registrar",
         empresa: transacaoPendenteAtual.empresa,
