@@ -51,6 +51,7 @@ let patrocinadores = [];
 let logoHorizontalBase64 = null;
 let patrocinadorSelecionadoModal = null;
 let transacaoPendenteAtual = null;
+let timerBotaoPaguei = null;
 let enviandoDados = false;
 
 const formatosFoto = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp", "apresentacao"];
@@ -251,10 +252,12 @@ function renderizarTudo() {
 function abrirModalImpulso(pat, valorSugerido = 1) {
   patrocinadorSelecionadoModal = pat;
   transacaoPendenteAtual = null;
+  clearTimeout(timerBotaoPaguei);
 
-  modalTitulo.textContent = "Impulsionar via PIX";
+  modalTitulo.textContent = "Impulsionar Marca";
   formImpulsionar.hidden = false;
   etapaPix.hidden = true;
+  btnJaPaguei.hidden = true;
 
   const maiorValor = Number(patrocinadores[0].valor);
   const diffLider = Math.max(0, maiorValor - Number(pat.valor));
@@ -301,23 +304,33 @@ function atualizarPrevisaoModal() {
 }
 
 inputAporte.addEventListener("input", atualizarPrevisaoModal);
-modalFechar.addEventListener("click", () => { modalVeu.hidden = true; });
-modalVeu.addEventListener("click", (e) => { if (e.target === modalVeu) modalVeu.hidden = true; });
+modalFechar.addEventListener("click", () => {
+  clearTimeout(timerBotaoPaguei);
+  modalVeu.hidden = true;
+});
+modalVeu.addEventListener("click", (e) => {
+  if (e.target === modalVeu) {
+    clearTimeout(timerBotaoPaguei);
+    modalVeu.hidden = true;
+  }
+});
 
-/* Gera o PIX Copia e Cola e QR Code no Modal */
+/* Gera o PIX Copia e Cola e QR Code no Modal (Botão "Já paguei" oculto inicialmente) */
 async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
   transacaoPendenteAtual = { empresa, doador, tipo, valor, logo };
+  clearTimeout(timerBotaoPaguei);
 
   modalTitulo.textContent = "Pagamento PIX";
   formImpulsionar.hidden = true;
   etapaPix.hidden = false;
+  btnJaPaguei.hidden = true;
   modalVeu.hidden = false;
 
   modalMarcaInfo.innerHTML = `
     ${logo ? `<img src="${logo}" alt="${empresa}">` : ""}
     <div>
       <strong style="display:block; font-size:.98rem;">${empresa}</strong>
-      <span style="font-size:.8rem; color:var(--texto-2);">Pagador: <b style="color:#fff;">${doador}</b> · ${tipo}</span>
+      <span style="font-size:.8rem; color:var(--texto-2);">${doador} · R$ ${valor.toFixed(2).replace(".", ",")}</span>
     </div>
   `;
 
@@ -339,23 +352,29 @@ async function abrirTelaPagamentoPix({ empresa, doador, tipo, valor, logo }) {
   }
 }
 
+/* Ao clicar em Copiar Código, libera o botão "Já paguei" após 3 segundos */
 btnCopiarPix.addEventListener("click", async () => {
   try {
     await navigator.clipboard.writeText(pixCopiaCola.value);
-    mostrarToast("Código PIX Copia e Cola copiado!");
   } catch {
     pixCopiaCola.select();
     document.execCommand("copy");
-    mostrarToast("Código PIX copiado!");
   }
+
+  mostrarToast("Código PIX copiado! Abra o app do seu banco para pagar.");
+
+  clearTimeout(timerBotaoPaguei);
+  timerBotaoPaguei = setTimeout(() => {
+    btnJaPaguei.hidden = false;
+  }, 3000);
 });
 
-/* Quando o usuário clica em "Já fiz o PIX", grava na aba Transacoes e atualiza o Ranking */
+/* Quando clica em "Já paguei", envia para a planilha e atualiza o ranking */
 btnJaPaguei.addEventListener("click", async () => {
   if (!transacaoPendenteAtual) return;
 
   btnJaPaguei.disabled = true;
-  btnJaPaguei.textContent = "Registrando e atualizando ranking...";
+  btnJaPaguei.textContent = "Confirmando...";
   enviandoDados = true;
 
   try {
@@ -375,22 +394,22 @@ btnJaPaguei.addEventListener("click", async () => {
       patrocinadores = res.ranking;
       try { localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores)); } catch {}
       renderizarTudo();
-      mostrarToast(`PIX registrado! ${transacaoPendenteAtual.empresa} já está no ranking.`);
+      mostrarToast(`${transacaoPendenteAtual.empresa} atualizado no ranking!`);
     } else {
-      mostrarToast(res.erro || "Não foi possível registrar a transação.");
+      mostrarToast(res.erro || "Não foi possível confirmar agora.");
     }
   } catch {
-    mostrarToast("Erro de rede ao registrar o lance.");
+    mostrarToast("Erro de rede ao confirmar.");
   }
 
   enviandoDados = false;
   btnJaPaguei.disabled = false;
-  btnJaPaguei.textContent = "Já fiz o PIX · Publicar no Ranking Agora";
+  btnJaPaguei.textContent = "Já paguei";
   modalVeu.hidden = true;
   transacaoPendenteAtual = null;
 });
 
-/* Submit do Modal de Impulsão -> Vai para Etapa PIX */
+/* Submit do Modal de Impulsão */
 formImpulsionar.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!patrocinadorSelecionadoModal) return;
@@ -399,7 +418,7 @@ formImpulsionar.addEventListener("submit", async (e) => {
   const aporte = Number(inputAporte.value);
 
   if (!doador) {
-    mostrarToast("Informe seu nome para identificação no extrato PIX.");
+    mostrarToast("Digite seu nome.");
     inputDoadorImpulso.focus();
     return;
   }
@@ -418,7 +437,7 @@ formImpulsionar.addEventListener("submit", async (e) => {
   });
 });
 
-/* Submit do Formulário de Novo Patrocínio -> Vai para Etapa PIX */
+/* Submit do Formulário de Novo Patrocínio */
 document.getElementById("form-patrocinio").addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -427,7 +446,7 @@ document.getElementById("form-patrocinio").addEventListener("submit", async (e) 
   const valor = Number(inputValor.value);
 
   if (!empresa || !doador) {
-    mostrarToast("Preencha o nome da marca e o seu nome (pagador PIX).");
+    mostrarToast("Preencha o nome da marca e o seu nome.");
     return;
   }
   if (!logoHorizontalBase64) {
