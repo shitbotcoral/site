@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SHITBOT CORAL v2.0 — Preloader Real, Fullscreen 100dvh, Modais & PES 1200x400
+   SHITBOT CORAL v2.0 — Art Direction Dual PNG, Preloader Real & PES 1200x400
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
 const CHAVE_STORAGE = "shitbot_patrocinadores_v6";
@@ -10,14 +10,26 @@ const TETO_MAXIMO = 2000;
   try { localStorage.removeItem(k); } catch {}
 });
 
-const POSICOES_CAMISA = [
-  { id: "pos-1", x: 50.0, y: 66.5, w: 24.5, h: 11.0, rot: 0 },
-  { id: "pos-2", x: 50.0, y: 79.0, w: 23.5, h: 10.5, rot: 0 },
-  { id: "pos-3", x: 50.0, y: 91.0, w: 22.0, h: 9.5,  rot: 0 },
-  { id: "pos-4", x: 41.3, y: 44.0, w: 8.5,  h: 4.0,  rot: -15 },
-  { id: "pos-5", x: 58.6, y: 44.0, w: 8.5,  h: 4.0,  rot: 15 },
-  { id: "pos-6", x: 35.4, y: 54.6, w: 8.5,  h: 4.0,  rot: -66 },
-  { id: "pos-7", x: 64.5, y: 54.6, w: 8.5,  h: 4.0,  rot: 66 }
+/* Coordenadas calibradas para apresentacao.png (16:9 Desktop) */
+const POSICOES_DESKTOP = [
+  { id: "pos-1", x: 53.2, y: 62.5, w: 18.5, h: 8.5, rot: -1 },
+  { id: "pos-2", x: 53.2, y: 73.5, w: 18.0, h: 8.0, rot: -1 },
+  { id: "pos-3", x: 53.2, y: 84.5, w: 17.5, h: 7.5, rot: -1 },
+  { id: "pos-4", x: 45.8, y: 39.2, w: 6.2,  h: 3.2, rot: -12 },
+  { id: "pos-5", x: 60.5, y: 39.2, w: 6.2,  h: 3.2, rot: 12 },
+  { id: "pos-6", x: 40.3, y: 48.0, w: 6.5,  h: 3.2, rot: -74 },
+  { id: "pos-7", x: 66.2, y: 48.0, w: 6.5,  h: 3.2, rot: 74 }
+];
+
+/* Coordenadas calibradas para apresentacao-mobile.png (9:16 Mobile) */
+const POSICOES_MOBILE = [
+  { id: "pos-1", x: 41.8, y: 59.0, w: 38.0, h: 6.5, rot: -1 },
+  { id: "pos-2", x: 41.8, y: 67.2, w: 37.0, h: 6.2, rot: -1 },
+  { id: "pos-3", x: 41.8, y: 75.2, w: 36.0, h: 6.0, rot: -1 },
+  { id: "pos-4", x: 25.0, y: 41.2, w: 13.0, h: 2.6, rot: -10 },
+  { id: "pos-5", x: 58.5, y: 41.2, w: 13.0, h: 2.6, rot: 10 },
+  { id: "pos-6", x: 13.0, y: 47.8, w: 13.5, h: 2.6, rot: -72 },
+  { id: "pos-7", x: 71.2, y: 47.8, w: 13.5, h: 2.6, rot: 72 }
 ];
 
 /* Preloader Elements */
@@ -78,6 +90,15 @@ let transacaoPendenteAtual = null;
 let timerBotaoPaguei = null;
 let enviandoDados = false;
 let preloaderFinalizado = false;
+let modoMobileAtual = window.innerWidth < 1024;
+
+function obterPosicoesAtivas() {
+  return window.innerWidth < 1024 ? POSICOES_MOBILE : POSICOES_DESKTOP;
+}
+
+function obterSrcFotoIdeal() {
+  return window.innerWidth < 1024 ? "apresentacao-mobile.png" : "apresentacao.png";
+}
 
 /* ==========================================================================
    UTILITÁRIOS DE SANITIZAÇÃO & CONVERSÃO DE @INSTAGRAM / SITE
@@ -148,13 +169,11 @@ function finalizarPreloader() {
 
 function aguardarFotoJogador() {
   return new Promise((resolve) => {
-    const formatos = ["apresentacao.jpg", "apresentacao.png", "apresentacao.jpeg", "apresentacao.webp"];
+    const srcIdeal = obterSrcFotoIdeal();
+    const fallbacks = window.innerWidth < 1024
+      ? ["apresentacao-mobile.png", "apresentacao.png"]
+      : ["apresentacao.png", "apresentacao-mobile.png"];
     let idx = 0;
-
-    if (fotoJogador.complete && fotoJogador.naturalWidth > 0) {
-      resolve();
-      return;
-    }
 
     const onLoad = () => {
       fotoJogador.removeEventListener("load", onLoad);
@@ -164,8 +183,8 @@ function aguardarFotoJogador() {
 
     const onError = () => {
       idx++;
-      if (idx < formatos.length) {
-        fotoJogador.src = formatos[idx];
+      if (idx < fallbacks.length) {
+        fotoJogador.src = fallbacks[idx];
       } else {
         fotoJogador.removeEventListener("load", onLoad);
         fotoJogador.removeEventListener("error", onError);
@@ -175,6 +194,12 @@ function aguardarFotoJogador() {
 
     fotoJogador.addEventListener("load", onLoad);
     fotoJogador.addEventListener("error", onError);
+
+    if (fotoJogador.getAttribute("src") !== srcIdeal) {
+      fotoJogador.src = srcIdeal;
+    } else if (fotoJogador.complete && fotoJogador.naturalWidth > 0) {
+      onLoad();
+    }
   });
 }
 
@@ -199,7 +224,6 @@ async function iniciarAplicacao() {
   montarCamadasCamisa();
   atualizarProgresso(15, "Carregando uniforme oficial...");
 
-  /* Trava de segurança de 4.5s para redes móveis lentas */
   const travaSeguranca = setTimeout(() => {
     renderizarTudo();
     finalizarPreloader();
@@ -231,10 +255,10 @@ function aplicarMovimentoCamera(clientX, clientY) {
   const normY = ((clientY - rect.top) / rect.height) - 0.5;
 
   palcoCamera.classList.remove("modo-idle");
-  palcoCamera.style.setProperty("--cam-x", (-normX * 24).toFixed(2) + "px");
-  palcoCamera.style.setProperty("--cam-y", (-normY * 16).toFixed(2) + "px");
-  palcoCamera.style.setProperty("--cam-rx", (-normY * 2.2).toFixed(2) + "deg");
-  palcoCamera.style.setProperty("--cam-ry", (normX * 2.6).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-x", (-normX * 22).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-y", (-normY * 14).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-rx", (-normY * 2.0).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-ry", (normX * 2.4).toFixed(2) + "deg");
 }
 
 function resetarMovimentoCamera() {
@@ -255,8 +279,23 @@ palcoFoto.addEventListener("touchmove", (e) => {
 }, { passive: true });
 palcoFoto.addEventListener("touchend", resetarMovimentoCamera);
 
+function aplicarCoordenadasCamisa() {
+  const posicoes = obterPosicoesAtivas();
+  posicoes.forEach((pos) => {
+    const div = document.getElementById(pos.id);
+    if (!div) return;
+    div.style.left = pos.x + "%";
+    div.style.top = pos.y + "%";
+    div.style.width = pos.w + "%";
+    div.style.height = pos.h + "%";
+    div.style.setProperty("--rot", pos.rot + "deg");
+  });
+}
+
 function sincronizarEnquadramentoCamisa() {
+  aplicarCoordenadasCamisa();
   if (!fotoJogador.naturalWidth || !fotoJogador.naturalHeight) return;
+
   const boxW = palcoCamera.clientWidth;
   const boxH = palcoCamera.clientHeight;
   const imgRatio = fotoJogador.naturalWidth / fotoJogador.naturalHeight;
@@ -267,12 +306,11 @@ function sincronizarEnquadramentoCamisa() {
     renderW = boxW;
     renderH = boxW / imgRatio;
     offsetX = 0;
-    const alignY = window.innerWidth >= 1024 ? 0.5 : 0.18;
-    offsetY = (boxH - renderH) * alignY;
+    offsetY = (boxH - renderH) * 0.5;
   } else {
     renderH = boxH;
     renderW = boxH * imgRatio;
-    const alignX = window.innerWidth >= 1024 ? 0.35 : 0.5;
+    const alignX = window.innerWidth >= 1024 ? 0.45 : 0.5;
     offsetX = (boxW - renderW) * alignX;
     offsetY = 0;
   }
@@ -283,7 +321,16 @@ function sincronizarEnquadramentoCamisa() {
   camadaCamisa.style.top = offsetY + "px";
 }
 
-window.addEventListener("resize", sincronizarEnquadramentoCamisa);
+window.addEventListener("resize", () => {
+  const novoModoMobile = window.innerWidth < 1024;
+  if (novoModoMobile !== modoMobileAtual) {
+    modoMobileAtual = novoModoMobile;
+    fotoJogador.src = obterSrcFotoIdeal();
+  }
+  sincronizarEnquadramentoCamisa();
+});
+
+fotoJogador.addEventListener("load", sincronizarEnquadramentoCamisa);
 
 /* ==========================================================================
    CONVERSÃO ALTA RESOLUÇÃO 1200x400 PNG (FIEL À LOGO ORIGINAL)
@@ -368,17 +415,14 @@ inputLogo.addEventListener("change", async (e) => {
    RENDERIZAÇÃO DA CAMISA & MINI-TABELA GLASS (VALORES OCULTOS NA HOME)
    ========================================================================== */
 function montarCamadasCamisa() {
-  POSICOES_CAMISA.forEach((pos) => {
+  camadaCamisa.innerHTML = "";
+  POSICOES_DESKTOP.forEach((pos) => {
     const div = document.createElement("div");
     div.className = "estampa-auto";
     div.id = pos.id;
-    div.style.left = pos.x + "%";
-    div.style.top = pos.y + "%";
-    div.style.width = pos.w + "%";
-    div.style.height = pos.h + "%";
-    div.style.setProperty("--rot", pos.rot + "deg");
     camadaCamisa.appendChild(div);
   });
+  aplicarCoordenadasCamisa();
 }
 
 function obterClasseTier(pos) {
@@ -391,8 +435,9 @@ function obterClasseTier(pos) {
 }
 
 function destacarEstampaCamisa(posIdx, ativo) {
-  if (posIdx < 0 || posIdx >= POSICOES_CAMISA.length) return;
-  const el = document.getElementById(POSICOES_CAMISA[posIdx].id);
+  const posicoes = obterPosicoesAtivas();
+  if (posIdx < 0 || posIdx >= posicoes.length) return;
+  const el = document.getElementById(posicoes[posIdx].id);
   if (el) el.classList.toggle("destaque-camisa", ativo);
 }
 
@@ -401,10 +446,11 @@ function renderizarTudo() {
   const ativosTop10 = Math.min(patrocinadores.length, 10);
   contadorEl.textContent = `${ativosTop10}/10 no kit`;
 
-  POSICOES_CAMISA.forEach((pos, idx) => {
+  const posicoes = obterPosicoesAtivas();
+  posicoes.forEach((pos, idx) => {
     const el = document.getElementById(pos.id);
     const pat = patrocinadores[idx];
-    el.innerHTML = pat ? `<img src="${pat.logo}" alt="${pat.nome}">` : "";
+    if (el) el.innerHTML = pat ? `<img src="${pat.logo}" alt="${pat.nome}">` : "";
   });
 
   if (patrocinadores.length === 0) {
@@ -488,7 +534,6 @@ document.getElementById("btn-abrir-cadastro").addEventListener("click", () => {
   modalCadastroVeu.hidden = false;
 });
 
-/* Modal 1: Impulsionar (+) */
 function abrirModalImpulso(pat) {
   fecharTodosModais();
   patrocinadorSelecionadoModal = pat;
@@ -561,7 +606,6 @@ function atualizarPrevisaoImpulso() {
 
 inputAporte.addEventListener("input", atualizarPrevisaoImpulso);
 
-/* Geração e Cópia de PIX (Compartilhado entre os 2 modais) */
 async function iniciarCheckoutPix(transacao, refs) {
   transacaoPendenteAtual = transacao;
   clearTimeout(timerBotaoPaguei);
@@ -685,7 +729,6 @@ function aplicarAtualizacaoOtimista(tx) {
 configurarBotoesPix(btnCopiarImpulso, pixCodeImpulso, btnPagoImpulso);
 configurarBotoesPix(btnCopiarNovo, pixCodeNovo, btnPagoNovo);
 
-/* Submit Modal 1 (Impulsão) */
 formImpulsionar.addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!patrocinadorSelecionadoModal) return;
@@ -724,7 +767,6 @@ formImpulsionar.addEventListener("submit", async (e) => {
   );
 });
 
-/* Submit Modal 2 (Novo Patrocínio) */
 formPatrocinio.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -778,9 +820,6 @@ formPatrocinio.addEventListener("submit", async (e) => {
   );
 });
 
-/* ==========================================================================
-   SINCRONIZAÇÃO COM GOOGLE SHEETS
-   ========================================================================== */
 async function carregarPatrocinadores(modoInicial = false) {
   if (enviandoDados && !modoInicial) return;
   try {
