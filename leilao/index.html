@@ -14,7 +14,6 @@
 
   <!-- Arena Principal: Jogador à Esquerda + Ranking por Extenso à Direita -->
   <section class="arena" aria-label="Uniforme oficial e ranking ao vivo">
-    <!-- Palco da Foto (Deslocado para a esquerda) -->
     <div class="palco-foto" id="palco-foto">
       <img
         src="apresentacao.jpg"
@@ -22,19 +21,14 @@
         class="foto-jogador"
         id="foto-jogador"
       >
-
-      <!-- Flashes sutis de imprensa -->
       <div class="flashes" aria-hidden="true">
         <div class="flash f1"></div>
         <div class="flash f2"></div>
         <div class="flash f3"></div>
       </div>
-
-      <!-- Camada das 7 estampas automáticas na camisa -->
       <div class="camada-camisa" id="camada-camisa"></div>
     </div>
 
-    <!-- Coluna Direita: Ranking ao Vivo por Extenso -->
     <aside class="painel-ranking" aria-label="Ranking ao vivo de patrocinadores">
       <div class="ranking-cab">
         <div>
@@ -45,7 +39,7 @@
       </div>
 
       <p class="ranking-sub">
-        Qualquer pessoa pode <b>impulsionar</b> uma marca existente a partir de <b>R$ 1,00</b> somando ao total dela, ou cadastrar uma nova abaixo.
+        Impulsione qualquer marca a partir de <b>R$ 1,00</b> via PIX ou cadastre uma nova abaixo. O saldo sobe na hora e passa por auditoria de extrato.
       </p>
 
       <div class="ranking-lista" id="area-ranking">
@@ -57,68 +51,58 @@
     </aside>
   </section>
 
-  <!-- Parte Inferior: Formulário de Novo Patrocínio + Termos Discretos -->
+  <!-- Parte Inferior: Formulário de Novo Patrocínio + Termos -->
   <main class="conteudo">
-    <!-- Bloco Principal: Cadastrar Novo Patrocínio -->
     <section class="card-form" aria-labelledby="titulo-lance">
       <div class="card-cab">
         <div>
           <h2 id="titulo-lance">Cadastrar Novo Patrocínio</h2>
-          <p class="card-desc">Lance inicial a partir de R$ 20,00. Depois de criado, qualquer pessoa pode injetar a partir de R$ 1,00 sem limites para fazê-lo subir.</p>
+          <p class="card-desc">Lance inicial de <b>R$ 20,00</b> a <b>R$ 2.000,00</b> por envio. Informe seu nome para identificação no extrato PIX.</p>
         </div>
         <span class="badge-min">Inicial · R$ 20+</span>
       </div>
 
-      <form class="form-grid" id="form-patrocinio">
+      <form class="form-grid-5" id="form-patrocinio">
         <div class="campo">
-          <label for="nome-empresa">Nome da Marca ou Meme</label>
-          <input
-            type="text"
-            id="nome-empresa"
-            class="input"
-            placeholder="Ex: Granja da Lau, Pipico, Bar do Zé..."
-            required
-          >
+          <label for="nome-empresa">Nome da Marca / Meme</label>
+          <input type="text" id="nome-empresa" class="input" placeholder="Ex: Granja da Lau..." required>
         </div>
 
         <div class="campo">
-          <label for="input-logo">Imagem / Logo <span>Ajuste horizontal 3:1</span></label>
+          <label for="nome-doador-novo">Seu Nome (Pagador PIX)</label>
+          <input type="text" id="nome-doador-novo" class="input" placeholder="Nome no comprovante" required>
+        </div>
+
+        <div class="campo">
+          <label for="input-logo">Logo <span>Auto 3:1</span></label>
           <div class="anexo">
             <div class="anexo-preview" id="preview-logo">
               <span class="placeholder-logo">LOGO 3:1</span>
             </div>
             <div class="anexo-texto">
-              <strong id="nome-arquivo">Anexar imagem</strong>
-              <small>PNG ou JPG</small>
+              <strong id="nome-arquivo">Anexar</strong>
+              <small>PNG/JPG</small>
             </div>
             <input type="file" id="input-logo" accept="image/*" required>
           </div>
         </div>
 
         <div class="campo">
-          <label for="valor-lance">Lance Inicial (R$)</label>
-          <input
-            type="number"
-            id="valor-lance"
-            class="input"
-            min="20"
-            step="1"
-            value="20"
-            required
-          >
+          <label for="valor-lance">Valor (R$)</label>
+          <input type="number" id="valor-lance" class="input" min="20" max="2000" step="1" value="20" required>
         </div>
 
         <div class="campo campo-acao">
-          <button type="submit" class="btn-enviar" id="btn-submit">Criar Patrocínio</button>
+          <button type="submit" class="btn-enviar" id="btn-submit">Gerar PIX e Criar</button>
         </div>
       </form>
     </section>
 
-    <!-- Bloco Discreto: Cotas da Camisa, Transmissão e Termos -->
+    <!-- Termos e Cotas Discretos -->
     <section class="secao-termos" aria-labelledby="titulo-termos">
       <div class="termos-cab">
-        <h3 id="titulo-termos">Cotas do Uniforme, Transmissão & Regras do Leilão</h3>
-        <span>Os valores são cumulativos por patrocinador</span>
+        <h3 id="titulo-termos">Cotas do Uniforme, Transmissão & Auditoria PIX</h3>
+        <span>Lances não compensados são removidos automaticamente na revisão</span>
       </div>
 
       <div class="termos-lista">
@@ -173,34 +157,51 @@
     </section>
   </main>
 
-  <!-- Modal Rápido de Impulsionamento / Cobrir Lance -->
+  <!-- Modal Unificado: Impulsão + Pagamento PIX Copia e Cola -->
   <div class="modal-veu" id="modal-veu" hidden>
     <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
       <div class="modal-topo">
-        <h3 id="modal-titulo">Impulsionar Marca</h3>
+        <h3 id="modal-titulo">Impulsionar via PIX</h3>
         <button type="button" class="btn-fechar" id="modal-fechar" aria-label="Fechar">✕</button>
       </div>
 
-      <div class="modal-marca-info" id="modal-marca-info">
-        <!-- Preenchido via JS -->
-      </div>
+      <div class="modal-marca-info" id="modal-marca-info"></div>
 
+      <!-- Etapa 1: Escolher Valor e Nome do Doador (para impulsões) -->
       <form id="form-impulsionar" class="modal-form">
-        <div class="atalhos-valor" id="atalhos-valor">
-          <!-- Botões rápidos (+R$ 1, +R$ 5, +R$ 10, +R$ 20, Virar 1º) -->
+        <div class="campo">
+          <label for="nome-doador-impulso">Seu Nome (Para conferir no extrato PIX)</label>
+          <input type="text" id="nome-doador-impulso" class="input" placeholder="Digite seu nome..." required>
         </div>
+
+        <div class="atalhos-valor" id="atalhos-valor"></div>
 
         <div class="campo">
-          <label for="valor-aporte">Valor da Impulsão (R$) <span>A partir de R$ 1,00 · Sem limite</span></label>
-          <input type="number" id="valor-aporte" class="input" min="1" step="0.01" value="1" required>
+          <label for="valor-aporte">Valor da Impulsão (R$) <span>Mín R$ 1 · Máx R$ 2.000</span></label>
+          <input type="number" id="valor-aporte" class="input" min="1" max="2000" step="0.01" value="1" required>
         </div>
 
-        <p class="modal-previsao" id="modal-previsao">
-          Novo total: <b>R$ 0,00</b>
-        </p>
+        <p class="modal-previsao" id="modal-previsao">Novo acumulado: <b>R$ 0,00</b></p>
 
-        <button type="submit" class="btn-enviar" id="btn-confirmar-aporte">Impulsionar Agora</button>
+        <button type="submit" class="btn-enviar" id="btn-gerar-pix-impulso">Gerar Código PIX</button>
       </form>
+
+      <!-- Etapa 2: Exibição do QR Code + Copia e Cola + Confirmação -->
+      <div id="etapa-pix" class="etapa-pix" hidden>
+        <div class="pix-qr-box">
+          <img id="pix-qr-img" src="" alt="QR Code PIX">
+        </div>
+        <p class="pix-instrucao">
+          Pague <b id="pix-valor-label">R$ 0,00</b> para <b>SHITBOT LTDA</b> usando o QR Code ou Copia e Cola abaixo:
+        </p>
+        <div class="pix-copia-box">
+          <input type="text" id="pix-copia-cola" class="input" readonly>
+          <button type="button" class="btn-copiar-pix" id="btn-copiar-pix">Copiar Código PIX</button>
+        </div>
+        <button type="button" class="btn-enviar btn-confirmar-pago" id="btn-ja-paguei">
+          Já fiz o PIX · Publicar no Ranking Agora
+        </button>
+      </div>
     </div>
   </div>
 
