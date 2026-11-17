@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SHITBOT CORAL v2.0 — Fullscreen 100dvh, Preloader, Glassmorphism & Modais
+   SHITBOT CORAL v2.0 — Art Direction Dual PNG, Fullscreen 100dvh & Glass UI
    ========================================================================== */
 :root {
   --f-corpo: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
@@ -251,7 +251,7 @@ p {
   inset: 0;
   width: 100%;
   height: 100%;
-  transform: scale(1.07) translate3d(var(--cam-x, 0px), var(--cam-y, 0px), 0) rotateX(var(--cam-rx, 0deg)) rotateY(var(--cam-ry, 0deg));
+  transform: scale(1.06) translate3d(var(--cam-x, 0px), var(--cam-y, 0px), 0) rotateX(var(--cam-rx, 0deg)) rotateY(var(--cam-ry, 0deg));
   transition: transform .25s cubic-bezier(.16, 1, .3, 1);
   will-change: transform;
 }
@@ -261,16 +261,16 @@ p {
 }
 
 @keyframes respiro-camera {
-  0%   { transform: scale(1.06) translate3d(-7px, -4px, 0) rotateY(-1deg); }
-  50%  { transform: scale(1.08) translate3d(7px, 4px, 0) rotateY(1deg); }
-  100% { transform: scale(1.065) translate3d(-4px, 5px, 0) rotateY(-0.5deg); }
+  0%   { transform: scale(1.055) translate3d(-6px, -3px, 0) rotateY(-1deg); }
+  50%  { transform: scale(1.075) translate3d(6px, 3px, 0) rotateY(1deg); }
+  100% { transform: scale(1.06) translate3d(-4px, 4px, 0) rotateY(-0.5deg); }
 }
 
 .palco-camera > img.foto-jogador {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 35% center;
+  object-position: 45% center;
   display: block;
   pointer-events: none;
   user-select: none;
@@ -278,7 +278,7 @@ p {
 
 @media (max-width: 1023px) {
   .palco-camera > img.foto-jogador {
-    object-position: center 18%;
+    object-position: center center;
   }
 }
 
@@ -372,16 +372,16 @@ p {
   }
 }
 
-/* Mobile: Gaveta Glass compacta na parte inferior acima da pílula de ação */
+/* Mobile: Gaveta Glass compacta repousando na mesa abaixo do uniforme */
 @media (max-width: 1023px) {
   .mini-ranking {
     left: 12px;
     right: 12px;
-    bottom: calc(74px + env(safe-area-inset-bottom));
-    max-height: 34dvh;
-    padding: 12px 13px;
+    bottom: calc(68px + env(safe-area-inset-bottom));
+    max-height: 24dvh;
+    padding: 10px 12px;
     border-radius: 18px;
-    gap: 8px;
+    gap: 7px;
   }
 }
 
@@ -396,12 +396,12 @@ p {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: .68rem;
+  font-size: .66rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .05em;
   color: #FF788B;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .tag-vivo i {
@@ -413,13 +413,13 @@ p {
 }
 
 .mini-ranking-cab h1 {
-  font-size: clamp(1.12rem, 1.8vw, 1.42rem);
+  font-size: clamp(1.05rem, 1.8vw, 1.42rem);
 }
 
 .contador-vagas {
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: .71rem;
+  font-size: .7rem;
   font-weight: 700;
   color: var(--texto-2);
   white-space: nowrap;
@@ -430,7 +430,7 @@ p {
   overflow-y: auto;
   display: grid;
   align-content: start;
-  gap: 7px;
+  gap: 6px;
   padding-right: 3px;
 }
 
@@ -450,14 +450,13 @@ p {
 .tier-t5 { --tier-cor: var(--c-t5); }
 .tier-out { --tier-cor: var(--c-out); }
 
-/* Linha Ultra-Enxuta: [Posição] + [Logo] + [Nome] + [+] */
 .mini-item {
   display: grid;
   grid-template-columns: 28px 72px 1fr 32px;
   align-items: center;
   gap: 10px;
-  padding: 7px 9px;
-  border-radius: 13px;
+  padding: 6px 9px;
+  border-radius: 12px;
   background: var(--glass-card);
   border: 1px solid var(--glass-borda);
   border-left: 3px solid var(--tier-cor, #fff);
@@ -505,7 +504,7 @@ p {
 }
 
 .mini-nome {
-  font-size: .86rem;
+  font-size: .85rem;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -539,7 +538,7 @@ p {
   align-items: center;
   gap: 8px;
   margin: 2px 0;
-  font-size: .67rem;
+  font-size: .65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .04em;
@@ -555,14 +554,14 @@ p {
 }
 
 .lista-vazia {
-  padding: 18px 12px;
+  padding: 14px 12px;
   text-align: center;
-  border-radius: 13px;
+  border-radius: 12px;
   background: var(--glass-card);
   border: 1px dashed var(--glass-borda);
   color: var(--texto-2);
-  font-size: .8rem;
-  line-height: 1.45;
+  font-size: .78rem;
+  line-height: 1.4;
 }
 
 /* ---------- Pílula Inferior Flutuante de Ação ---------- */
@@ -570,7 +569,7 @@ p {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: max(14px, env(safe-area-inset-bottom));
+  bottom: max(12px, env(safe-area-inset-bottom));
   z-index: 60;
   display: flex;
   justify-content: center;
