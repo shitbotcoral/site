@@ -136,7 +136,8 @@ function obterInfoPosicao(pos) {
 }
 
 /* ==========================================================================
-   RECORTA BORDAS VAZIAS E COMPRIME EM WEBP HORIZONTAL 3:1 (360x120 · ~8KB)
+   RECORTA BORDAS VAZIAS E COMPRIME EM WEBP HORIZONTAL 3:1 (240x80 · ~4KB)
+   Cabe com folga na URL do Google Apps Script sem corte de redirect
    ========================================================================== */
 function converterParaHorizontal(file) {
   return new Promise((resolve, reject) => {
@@ -176,8 +177,8 @@ function converterParaHorizontal(file) {
         const cropW = encontrouPixel ? (maxX - minX + 1) : img.width;
         const cropH = encontrouPixel ? (maxY - minY + 1) : img.height;
 
-        const larguraAlvo = 360;
-        const alturaAlvo = 120;
+        const larguraAlvo = 240;
+        const alturaAlvo = 80;
         const canvas = document.createElement("canvas");
         canvas.width = larguraAlvo;
         canvas.height = alturaAlvo;
@@ -185,7 +186,7 @@ function converterParaHorizontal(file) {
 
         ctx.clearRect(0, 0, larguraAlvo, alturaAlvo);
 
-        const margem = 4;
+        const margem = 3;
         const maxW = larguraAlvo - margem * 2;
         const maxH = alturaAlvo - margem * 2;
         const escala = Math.min(maxW / cropW, maxH / cropH);
@@ -195,7 +196,7 @@ function converterParaHorizontal(file) {
         const offsetY = (alturaAlvo - drawH) / 2;
 
         ctx.drawImage(tempCanvas, cropX, cropY, cropW, cropH, offsetX, offsetY, drawW, drawH);
-        resolve(canvas.toDataURL("image/webp", 0.85));
+        resolve(canvas.toDataURL("image/webp", 0.78));
       };
       img.onerror = reject;
       img.src = ev.target.result;
@@ -380,7 +381,14 @@ document.getElementById("form-impulsionar").addEventListener("submit", async (e)
   patrocinadorSelecionadoModal.valor = Number((Number(patrocinadorSelecionadoModal.valor) + aporte).toFixed(2));
   patrocinadorSelecionadoModal.aportes = (patrocinadorSelecionadoModal.aportes || 1) + 1;
 
-  await persistirDados(patrocinadorSelecionadoModal);
+  // Na impulsão não precisa reenviar a logo (já está na planilha)
+  await persistirDados({
+    id: patrocinadorSelecionadoModal.id,
+    nome: patrocinadorSelecionadoModal.nome,
+    valor: patrocinadorSelecionadoModal.valor,
+    aportes: patrocinadorSelecionadoModal.aportes,
+    logo: ""
+  });
   renderizarTudo();
 
   btnConfirmar.disabled = false;
@@ -391,16 +399,16 @@ document.getElementById("form-impulsionar").addEventListener("submit", async (e)
 });
 
 /* ==========================================================================
-   PERSISTÊNCIA COMPARTILHADA (GOOGLE SHEETS INTEGRADO)
+   PERSISTÊNCIA COMPARTILHADA (GOOGLE SHEETS VIA GET DIRETO)
    ========================================================================== */
 async function carregarPatrocinadores() {
   if (enviandoDados) return;
 
   if (URL_SHEETS) {
     try {
-      const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`, { redirect: "follow" });
+      const resp = await fetch(`${URL_SHEETS}?t=${Date.now()}`);
       const dados = await resp.json();
-      if (Array.isArray(dados) && dados.length > 0) {
+      if (Array.isArray(dados)) {
         patrocinadores = dados;
         try {
           localStorage.setItem(CHAVE_STORAGE, JSON.stringify(patrocinadores));
@@ -428,14 +436,18 @@ async function persistirDados(registroAtualizado) {
 
   if (URL_SHEETS) {
     try {
-      // Envia sem custom headers para evitar preflight CORS e seguir o redirect 302 do Google
-      await fetch(URL_SHEETS, {
-        method: "POST",
-        redirect: "follow",
-        body: JSON.stringify(registroAtualizado)
+      const params = new URLSearchParams({
+        acao: "salvar",
+        id: String(registroAtualizado.id || Date.now()),
+        nome: String(registroAtualizado.nome || ""),
+        valor: String(registroAtualizado.valor || 0),
+        aportes: String(registroAtualizado.aportes || 1),
+        logo: String(registroAtualizado.logo || "")
       });
+
+      await fetch(`${URL_SHEETS}?${params.toString()}`);
     } catch (err) {
-      console.warn("Aviso no POST para Google Sheets:", err);
+      console.warn("Erro ao salvar no Google Sheets:", err);
     }
   }
   enviandoDados = false;
