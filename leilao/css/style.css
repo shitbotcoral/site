@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SHITBOT CORAL — Leilão Acumulativo & Estampa Automatizada
+   SHITBOT CORAL — Leilão Acumulativo, PIX Oficial & Estampa Automatizada
    ========================================================================== */
 :root {
   --f: "Archivo", system-ui, -apple-system, sans-serif;
@@ -85,7 +85,6 @@ p {
   }
 }
 
-/* Palco da Foto */
 .palco-foto {
   position: relative;
   width: 100%;
@@ -497,16 +496,17 @@ p {
   color: var(--texto);
 }
 
-.form-grid {
+/* Grid de 5 colunas para o formulário com Nome do Doador */
+.form-grid-5 {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 14px;
+  gap: 12px;
   align-items: end;
 }
 
-@media (min-width: 860px) {
-  .form-grid {
-    grid-template-columns: 1.2fr 1.2fr .7fr .9fr;
+@media (min-width: 1024px) {
+  .form-grid-5 {
+    grid-template-columns: 1.15fr 1.1fr 1.05fr .65fr .95fr;
   }
 }
 
@@ -574,7 +574,7 @@ p {
 }
 
 .anexo-preview {
-  width: 78px;
+  width: 74px;
   height: 28px;
   border-radius: 6px;
   background: #fff;
@@ -635,6 +635,11 @@ p {
 
 .btn-enviar:active:not(:disabled) {
   transform: scale(.97);
+}
+
+.btn-enviar:disabled {
+  opacity: .55;
+  cursor: wait;
 }
 
 /* ---------- Termos e Cotas Discretos na Parte Inferior ---------- */
@@ -727,12 +732,12 @@ p {
   }
 }
 
-/* ---------- Modal de Impulsionamento ---------- */
+/* ---------- Modal Unificado: Impulsionamento + PIX ---------- */
 .modal-veu {
   position: fixed;
   inset: 0;
   z-index: 90;
-  background: rgba(0, 0, 0, .72);
+  background: rgba(0, 0, 0, .75);
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   display: grid;
@@ -742,7 +747,7 @@ p {
 
 .modal-caixa {
   width: 100%;
-  max-width: 430px;
+  max-width: 440px;
   background: var(--sup);
   border: 1px solid var(--linha-forte);
   border-radius: 24px;
@@ -847,6 +852,73 @@ p {
 .modal-previsao b {
   color: #fff;
   font-size: .95rem;
+}
+
+/* Etapa 2 do Modal: QR Code e Copia e Cola PIX */
+.etapa-pix {
+  display: grid;
+  gap: 12px;
+  text-align: center;
+}
+
+.pix-qr-box {
+  width: 184px;
+  height: 184px;
+  margin: 0 auto;
+  padding: 10px;
+  border-radius: 16px;
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.pix-qr-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.pix-instrucao {
+  font-size: .85rem;
+  color: var(--texto-2);
+  line-height: 1.4;
+}
+
+.pix-instrucao b {
+  color: var(--c-t1);
+  font-size: .95rem;
+}
+
+.pix-copia-box {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+}
+
+.pix-copia-box input {
+  font-size: .78rem;
+  color: var(--texto-2);
+  min-height: 44px;
+}
+
+.btn-copiar-pix {
+  padding: 0 14px;
+  min-height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--linha-forte);
+  background: var(--sup-3);
+  font-size: .8rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.btn-copiar-pix:hover {
+  background: #fff;
+  color: #08080B;
+}
+
+.btn-confirmar-pago {
+  background: #16A34A;
 }
 
 /* Toast */
