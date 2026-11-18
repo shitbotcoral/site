@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SHITBOT CORAL v2.1 — Foco Total na Camisa, Zero Obstrução & Glass UI
+   SHITBOT CORAL v2.1 — CTA Esquerda (Desktop) + Ranking Topo Direito (Mobile)
    ========================================================================== */
 :root {
   --f-corpo: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
@@ -195,11 +195,11 @@ p {
   box-shadow: 0 3px 10px rgba(0, 0, 0, .35);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 1023px) {
   .nav-pill {
     height: 38px;
-    gap: 8px;
-    padding: 0 5px 0 10px;
+    gap: 7px;
+    padding: 0 5px 0 9px;
   }
   .nav-logo-img {
     height: 22px;
@@ -246,7 +246,6 @@ p {
   perspective: 1000px;
 }
 
-/* Zoom calibrado (1.025) para não cortar cabeça nem barra da camisa */
 .palco-camera {
   position: absolute;
   inset: 0;
@@ -352,37 +351,37 @@ p {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* ---------- Mini-Tabela Glass do Ranking (Sem Valores na Tela Inicial) ---------- */
+/* ---------- Mini-Tabela Glass do Ranking ---------- */
 .mini-ranking {
   position: fixed;
   z-index: 50;
-  border-radius: 22px;
-  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
 }
 
-/* Desktop: Card flutuante à direita sem invadir a camisa */
+/* Desktop: Card flutuante na direita de cima a baixo */
 @media (min-width: 1024px) {
   .mini-ranking {
-    top: 20px;
-    right: 22px;
-    bottom: 82px;
+    top: 22px;
+    right: 24px;
+    bottom: 24px;
     width: 375px;
+    border-radius: 22px;
+    padding: 16px;
+    gap: 10px;
   }
 }
 
-/* Mobile: Gaveta Glass baixa sobre a bancada de madeira (100% abaixo da camisa) */
+/* Mobile: Card flutuante no canto superior direito ao lado da cabeça (acima da mão) */
 @media (max-width: 1023px) {
   .mini-ranking {
-    left: 10px;
+    top: max(12px, env(safe-area-inset-top));
     right: 10px;
-    bottom: calc(62px + env(safe-area-inset-bottom));
-    max-height: 146px;
-    padding: 9px 11px;
+    width: min(56vw, 232px);
+    max-height: 29dvh;
     border-radius: 16px;
-    gap: 6px;
+    padding: 8px 9px;
+    gap: 5px;
   }
 }
 
@@ -390,17 +389,17 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 6px;
 }
 
 .tag-vivo {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: .64rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: .05em;
+  letter-spacing: .04em;
   color: #FF788B;
   margin-bottom: 1px;
 }
@@ -414,16 +413,29 @@ p {
 }
 
 .mini-ranking-cab h1 {
-  font-size: clamp(1rem, 1.8vw, 1.4rem);
+  font-size: clamp(.94rem, 1.8vw, 1.4rem);
 }
 
 .contador-vagas {
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 999px;
-  font-size: .68rem;
+  font-size: .66rem;
   font-weight: 700;
   color: var(--texto-2);
   white-space: nowrap;
+}
+
+@media (max-width: 1023px) {
+  .tag-vivo {
+    font-size: .56rem;
+  }
+  .mini-ranking-cab h1 {
+    font-size: .88rem;
+  }
+  .contador-vagas {
+    padding: 2px 6px;
+    font-size: .58rem;
+  }
 }
 
 .mini-ranking-lista {
@@ -432,15 +444,15 @@ p {
   display: grid;
   align-content: start;
   gap: 5px;
-  padding-right: 3px;
+  padding-right: 2px;
 }
 
 .mini-ranking-lista::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .mini-ranking-lista::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, .2);
+  background: rgba(255, 255, 255, .24);
   border-radius: 999px;
 }
 
@@ -534,12 +546,45 @@ p {
   color: #fff;
 }
 
+/* Ajuste ultra-compacto das linhas no Mobile para caber o Top 5 visível */
+@media (max-width: 1023px) {
+  .mini-ranking-lista {
+    gap: 4px;
+  }
+  .mini-item {
+    grid-template-columns: 20px 44px 1fr 22px;
+    gap: 6px;
+    padding: 3px 6px;
+    border-radius: 9px;
+  }
+  .mini-pos {
+    width: 19px;
+    height: 19px;
+    font-size: .64rem;
+    border-radius: 5px;
+  }
+  .mini-logo {
+    width: 44px;
+    height: 17px;
+    padding: 1px 2px;
+    border-radius: 4px;
+  }
+  .mini-nome {
+    font-size: .7rem;
+  }
+  .btn-mais {
+    width: 22px;
+    height: 22px;
+    font-size: .85rem;
+  }
+}
+
 .divisor-top10 {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
   margin: 2px 0;
-  font-size: .63rem;
+  font-size: .58rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .04em;
@@ -555,97 +600,203 @@ p {
 }
 
 .lista-vazia {
-  padding: 12px;
+  padding: 10px;
   text-align: center;
-  border-radius: 12px;
+  border-radius: 10px;
   background: var(--glass-card);
   border: 1px dashed var(--glass-borda);
   color: var(--texto-2);
-  font-size: .76rem;
-  line-height: 1.4;
+  font-size: .72rem;
+  line-height: 1.35;
 }
 
-/* ---------- Pílula Inferior Flutuante de Ação ---------- */
+/* ---------- Bloco de Ação Flutuante ("ESTAMPE SUA MARCA" + "Cotas") ---------- */
 .rodape-flutuante {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: max(10px, env(safe-area-inset-bottom));
   z-index: 60;
-  display: flex;
-  justify-content: center;
-  padding: 0 12px;
   pointer-events: none;
 }
 
-.acao-pill {
+.acao-chamada-desk {
+  display: none;
+}
+
+.acao-secundaria {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 4px 12px 4px 5px;
-  border-radius: 999px;
-  background: rgba(16, 16, 22, .68);
-  -webkit-backdrop-filter: blur(22px) saturate(180%);
-  backdrop-filter: blur(22px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, .18);
-  box-shadow: 0 14px 36px rgba(0, 0, 0, .65), var(--glass-brilho);
-  pointer-events: auto;
 }
 
-.btn-estampe {
-  height: 38px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--coral);
-  color: #fff;
-  font-family: var(--f-titulo);
-  font-size: .82rem;
-  font-weight: 700;
-  letter-spacing: .02em;
-  box-shadow: 0 6px 20px rgba(225, 29, 58, .48), inset 0 1px 0 rgba(255, 255, 255, .3);
-  transition: transform .25s var(--mola), background-color .2s;
-}
-
-.btn-estampe:hover {
-  transform: translateY(-1px) scale(1.02);
-  background: #F42442;
-}
-
-.btn-cotas {
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 999px;
-  border: 1px solid var(--glass-borda);
-  background: rgba(255, 255, 255, .07);
-  color: var(--texto);
-  font-size: .76rem;
-  font-weight: 700;
-  transition: background-color .2s;
-}
-
-.btn-cotas:hover {
-  background: rgba(255, 255, 255, .16);
-}
-
-.selo-versao {
-  font-size: .66rem;
-  font-weight: 700;
-  color: var(--texto-2);
-  opacity: .75;
-  padding-left: 2px;
-}
-
-@media (max-width: 420px) {
-  .btn-estampe {
-    height: 36px;
-    padding: 0 14px;
-    font-size: .76rem;
+/* DESKTOP: Card de destaque grandão no lado esquerdo vago */
+@media (min-width: 1024px) {
+  .rodape-flutuante {
+    left: 28px;
+    bottom: 28px;
+    width: 315px;
   }
+
+  .acao-pill {
+    width: 100%;
+    display: grid;
+    gap: 12px;
+    padding: 20px;
+    border-radius: 24px;
+    background: rgba(16, 16, 22, .68);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .2);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, .75), var(--glass-brilho);
+    pointer-events: auto;
+  }
+
+  .acao-chamada-desk {
+    display: grid;
+    gap: 4px;
+  }
+
+  .acao-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(225, 29, 58, .22);
+    border: 1px solid rgba(225, 29, 58, .45);
+    color: #FF8597;
+    font-size: .68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+  }
+
+  .acao-chamada-desk strong {
+    font-family: var(--f-titulo);
+    font-size: 1.25rem;
+    line-height: 1.15;
+    color: #fff;
+  }
+
+  .acao-chamada-desk small {
+    font-size: .8rem;
+    color: var(--texto-2);
+    line-height: 1.38;
+  }
+
+  .btn-estampe {
+    width: 100%;
+    height: 52px;
+    padding: 0 22px;
+    border: 0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--coral), #FF2A4B);
+    color: #fff;
+    font-family: var(--f-titulo);
+    font-size: .98rem;
+    font-weight: 700;
+    letter-spacing: .03em;
+    box-shadow: 0 12px 28px rgba(225, 29, 58, .55), inset 0 1px 0 rgba(255, 255, 255, .35);
+    transition: transform .25s var(--mola), box-shadow .2s, filter .2s;
+  }
+
+  .btn-estampe:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 16px 36px rgba(225, 29, 58, .7), inset 0 1px 0 rgba(255, 255, 255, .45);
+    filter: brightness(1.06);
+  }
+
+  .acao-secundaria {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+
   .btn-cotas {
-    height: 32px;
-    padding: 0 10px;
+    flex: 1;
+    height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    border: 1px solid var(--glass-borda-forte);
+    background: rgba(255, 255, 255, .07);
+    color: var(--texto);
+    font-size: .8rem;
+    font-weight: 700;
+    transition: background-color .2s;
+  }
+
+  .btn-cotas:hover {
+    background: rgba(255, 255, 255, .16);
+  }
+
+  .selo-versao {
     font-size: .72rem;
+    font-weight: 700;
+    color: var(--texto-2);
+    opacity: .8;
+    padding-left: 6px;
+  }
+}
+
+/* MOBILE: Pílula inferior elevada sobre a bancada de madeira */
+@media (max-width: 1023px) {
+  .rodape-flutuante {
+    left: 0;
+    right: 0;
+    bottom: max(24px, calc(env(safe-area-inset-bottom) + 14px));
+    display: flex;
+    justify-content: center;
+    padding: 0 12px;
+  }
+
+  .acao-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px 6px 6px;
+    border-radius: 999px;
+    background: rgba(16, 16, 22, .72);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+    backdrop-filter: blur(22px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, .2);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, .72), var(--glass-brilho);
+    pointer-events: auto;
+  }
+
+  .btn-estampe {
+    height: 44px;
+    padding: 0 18px;
+    border: 0;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--coral), #FF2A4B);
+    color: #fff;
+    font-family: var(--f-titulo);
+    font-size: .84rem;
+    font-weight: 700;
+    letter-spacing: .02em;
+    box-shadow: 0 8px 22px rgba(225, 29, 58, .52), inset 0 1px 0 rgba(255, 255, 255, .32);
+    transition: transform .25s var(--mola);
+  }
+
+  .btn-estampe:active {
+    transform: scale(.97);
+  }
+
+  .btn-cotas {
+    height: 38px;
+    padding: 0 12px;
+    border-radius: 999px;
+    border: 1px solid var(--glass-borda);
+    background: rgba(255, 255, 255, .08);
+    color: var(--texto);
+    font-size: .76rem;
+    font-weight: 700;
+  }
+
+  .selo-versao {
+    font-size: .68rem;
+    font-weight: 700;
+    color: var(--texto-2);
+    opacity: .8;
   }
 }
 
