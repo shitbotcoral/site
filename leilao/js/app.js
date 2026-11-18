@@ -1,11 +1,11 @@
 /* ==========================================================================
-   SHITBOT CORAL v2.2 — Posições da Camisa Calibradas + Enquadramento Central
+   SHITBOT CORAL v2.3 — Preload Paralelo Rápido & Alinhamento <picture>
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
 const CHAVE_STORAGE = "shitbot_patrocinadores_v6";
 const TETO_MAXIMO = 2000;
 
-/* Coordenadas recalibradas para apresentacao.png (16:9 Desktop - 3 estampas bem dentro da camisa) */
+/* Coordenadas calibradas para apresentacao.png (16:9 Desktop) */
 const POSICOES_DESKTOP = [
   { id: "pos-1", x: 53.2, y: 58.0, w: 17.5, h: 7.0, rot: -1 },
   { id: "pos-2", x: 53.2, y: 66.8, w: 17.0, h: 6.6, rot: -1 },
@@ -16,7 +16,7 @@ const POSICOES_DESKTOP = [
   { id: "pos-7", x: 66.2, y: 48.2, w: 7.2,  h: 3.6, rot: 74 }
 ];
 
-/* Coordenadas recalibradas para apresentacao-mobile.png (9:16 Mobile) */
+/* Coordenadas calibradas para apresentacao-mobile.png (9:16 Mobile) */
 const POSICOES_MOBILE = [
   { id: "pos-1", x: 41.8, y: 55.2, w: 35.5, h: 5.2, rot: -1 },
   { id: "pos-2", x: 41.8, y: 61.6, w: 34.5, h: 4.9, rot: -1 },
@@ -85,14 +85,9 @@ let transacaoPendenteAtual = null;
 let timerBotaoPaguei = null;
 let enviandoDados = false;
 let preloaderFinalizado = false;
-let modoMobileAtual = window.innerWidth < 1024;
 
 function obterPosicoesAtivas() {
   return window.innerWidth < 1024 ? POSICOES_MOBILE : POSICOES_DESKTOP;
-}
-
-function obterSrcFotoIdeal() {
-  return window.innerWidth < 1024 ? "apresentacao-mobile.png" : "apresentacao.png";
 }
 
 function sanitizarTexto(txt, max = 50) {
@@ -140,7 +135,7 @@ function mostrarToast(msg) {
 }
 
 /* ==========================================================================
-   PRELOADER COM BARRA DE PROGRESSO REAL (0% -> 100%)
+   PRELOADER PARALELO COM BARRA DE PROGRESSO REAL (0% -> 100%)
    ========================================================================== */
 function atualizarProgresso(pct, texto) {
   const val = Math.min(100, Math.max(0, Math.round(pct)));
@@ -156,42 +151,22 @@ function finalizarPreloader() {
   sincronizarEnquadramentoCamisa();
   setTimeout(() => {
     preloaderEl.classList.add("oculto");
-  }, 240);
+  }, 180);
 }
 
 function aguardarFotoJogador() {
   return new Promise((resolve) => {
-    const srcIdeal = obterSrcFotoIdeal();
-    const fallbacks = window.innerWidth < 1024
-      ? ["apresentacao-mobile.png", "apresentacao.png"]
-      : ["apresentacao.png", "apresentacao-mobile.png"];
-    let idx = 0;
-
-    const onLoad = () => {
-      fotoJogador.removeEventListener("load", onLoad);
-      fotoJogador.removeEventListener("error", onError);
+    if (fotoJogador.complete && fotoJogador.naturalWidth > 0) {
+      resolve();
+      return;
+    }
+    const concluir = () => {
+      fotoJogador.removeEventListener("load", concluir);
+      fotoJogador.removeEventListener("error", concluir);
       resolve();
     };
-
-    const onError = () => {
-      idx++;
-      if (idx < fallbacks.length) {
-        fotoJogador.src = fallbacks[idx];
-      } else {
-        fotoJogador.removeEventListener("load", onLoad);
-        fotoJogador.removeEventListener("error", onError);
-        resolve();
-      }
-    };
-
-    fotoJogador.addEventListener("load", onLoad);
-    fotoJogador.addEventListener("error", onError);
-
-    if (fotoJogador.getAttribute("src") !== srcIdeal) {
-      fotoJogador.src = srcIdeal;
-    } else if (fotoJogador.complete && fotoJogador.naturalWidth > 0) {
-      onLoad();
-    }
+    fotoJogador.addEventListener("load", concluir);
+    fotoJogador.addEventListener("error", concluir);
   });
 }
 
@@ -214,18 +189,28 @@ async function precarregarLogosTop10(lista) {
 
 async function iniciarAplicacao() {
   montarCamadasCamisa();
-  atualizarProgresso(15, "Carregando uniforme oficial...");
+
+  /* Renderiza imediatamente o cache local se existir enquanto busca atualizações */
+  try {
+    const salvo = localStorage.getItem(CHAVE_STORAGE);
+    if (salvo) {
+      patrocinadores = JSON.parse(salvo);
+      renderizarTudo();
+    }
+  } catch {}
+
+  atualizarProgresso(25, "Carregando uniforme e ranking...");
 
   const travaSeguranca = setTimeout(() => {
     renderizarTudo();
     finalizarPreloader();
-  }, 4500);
+  }, 3800);
 
-  await aguardarFotoJogador();
-  atualizarProgresso(45, "Sincronizando ranking ao vivo...");
-
-  await carregarPatrocinadores(true);
-  atualizarProgresso(78, "Estampando marcas no manto...");
+  /* Carrega foto e planilha em paralelo (muito mais rápido) */
+  await Promise.all([
+    aguardarFotoJogador().then(() => atualizarProgresso(60, "Sincronizando marcas...")),
+    carregarPatrocinadores(true).then(() => atualizarProgresso(80, "Estampando no manto..."))
+  ]);
 
   await precarregarLogosTop10(patrocinadores);
   renderizarTudo();
@@ -247,10 +232,10 @@ function aplicarMovimentoCamera(clientX, clientY) {
   const normY = ((clientY - rect.top) / rect.height) - 0.5;
 
   palcoCamera.classList.remove("modo-idle");
-  palcoCamera.style.setProperty("--cam-x", (-normX * 14).toFixed(2) + "px");
-  palcoCamera.style.setProperty("--cam-y", (-normY * 10).toFixed(2) + "px");
-  palcoCamera.style.setProperty("--cam-rx", (-normY * 1.5).toFixed(2) + "deg");
-  palcoCamera.style.setProperty("--cam-ry", (normX * 1.8).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-x", (-normX * 10).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-y", (-normY * 7).toFixed(2) + "px");
+  palcoCamera.style.setProperty("--cam-rx", (-normY * 1.1).toFixed(2) + "deg");
+  palcoCamera.style.setProperty("--cam-ry", (normX * 1.3).toFixed(2) + "deg");
 }
 
 function resetarMovimentoCamera() {
@@ -298,7 +283,7 @@ function sincronizarEnquadramentoCamisa() {
     renderW = boxW;
     renderH = boxW / imgRatio;
     offsetX = 0;
-    const alignY = window.innerWidth >= 1024 ? 0.12 : 0.08;
+    const alignY = window.innerWidth >= 1024 ? 0.10 : 0.14;
     offsetY = (boxH - renderH) * alignY;
   } else {
     renderH = boxH;
@@ -314,15 +299,7 @@ function sincronizarEnquadramentoCamisa() {
   camadaCamisa.style.top = offsetY + "px";
 }
 
-window.addEventListener("resize", () => {
-  const novoModoMobile = window.innerWidth < 1024;
-  if (novoModoMobile !== modoMobileAtual) {
-    modoMobileAtual = novoModoMobile;
-    fotoJogador.src = obterSrcFotoIdeal();
-  }
-  sincronizarEnquadramentoCamisa();
-});
-
+window.addEventListener("resize", sincronizarEnquadramentoCamisa);
 fotoJogador.addEventListener("load", sincronizarEnquadramentoCamisa);
 
 /* ==========================================================================
@@ -405,7 +382,7 @@ inputLogo.addEventListener("change", async (e) => {
 });
 
 /* ==========================================================================
-   RENDERIZAÇÃO DA CAMISA & MINI-TABELA GLASS (VALORES OCULTOS NA HOME)
+   RENDERIZAÇÃO DA CAMISA & MINI-TABELA GLASS
    ========================================================================== */
 function montarCamadasCamisa() {
   camadaCamisa.innerHTML = "";
