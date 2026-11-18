@@ -1,26 +1,26 @@
 /* ==========================================================================
-   SHITBOT CORAL v2.1 — Enquadramento Cirúrgico Desktop/Mobile & 7 Estampas
+   SHITBOT CORAL v2.2 — Posições da Camisa Calibradas + Enquadramento Central
    ========================================================================== */
 const URL_SHEETS = "https://script.google.com/macros/s/AKfycbxDD4sEQooBZzYA0-0mHm3AkFxOtPtLLWpMfHS-Rl0zB1Xt5q6N_tZFMvQ62mqrbLkuAg/exec";
 const CHAVE_STORAGE = "shitbot_patrocinadores_v6";
 const TETO_MAXIMO = 2000;
 
-/* Coordenadas recalibradas para apresentacao.png (16:9 Desktop - 3 estampas na barriga + ombros + mangas) */
+/* Coordenadas recalibradas para apresentacao.png (16:9 Desktop - 3 estampas bem dentro da camisa) */
 const POSICOES_DESKTOP = [
-  { id: "pos-1", x: 53.2, y: 60.5, w: 18.0, h: 7.4, rot: -1 },
-  { id: "pos-2", x: 53.2, y: 70.2, w: 17.5, h: 7.0, rot: -1 },
-  { id: "pos-3", x: 53.2, y: 79.8, w: 17.0, h: 6.8, rot: -1 },
+  { id: "pos-1", x: 53.2, y: 58.0, w: 17.5, h: 7.0, rot: -1 },
+  { id: "pos-2", x: 53.2, y: 66.8, w: 17.0, h: 6.6, rot: -1 },
+  { id: "pos-3", x: 53.2, y: 75.5, w: 16.5, h: 6.4, rot: -1 },
   { id: "pos-4", x: 45.6, y: 40.0, w: 7.4,  h: 3.8, rot: -12 },
   { id: "pos-5", x: 60.6, y: 40.0, w: 7.4,  h: 3.8, rot: 12 },
   { id: "pos-6", x: 40.2, y: 48.2, w: 7.2,  h: 3.6, rot: -74 },
   { id: "pos-7", x: 66.2, y: 48.2, w: 7.2,  h: 3.6, rot: 74 }
 ];
 
-/* Coordenadas recalibradas para apresentacao-mobile.png (9:16 Mobile - 100% acima da bancada) */
+/* Coordenadas recalibradas para apresentacao-mobile.png (9:16 Mobile) */
 const POSICOES_MOBILE = [
-  { id: "pos-1", x: 41.8, y: 57.5, w: 36.5, h: 5.5, rot: -1 },
-  { id: "pos-2", x: 41.8, y: 64.4, w: 35.5, h: 5.2, rot: -1 },
-  { id: "pos-3", x: 41.8, y: 71.2, w: 34.5, h: 5.0, rot: -1 },
+  { id: "pos-1", x: 41.8, y: 55.2, w: 35.5, h: 5.2, rot: -1 },
+  { id: "pos-2", x: 41.8, y: 61.6, w: 34.5, h: 4.9, rot: -1 },
+  { id: "pos-3", x: 41.8, y: 68.0, w: 33.5, h: 4.7, rot: -1 },
   { id: "pos-4", x: 25.0, y: 41.2, w: 14.5, h: 3.0, rot: -10 },
   { id: "pos-5", x: 58.5, y: 41.2, w: 14.5, h: 3.0, rot: 10 },
   { id: "pos-6", x: 13.0, y: 47.8, w: 14.5, h: 3.0, rot: -72 },
@@ -303,7 +303,7 @@ function sincronizarEnquadramentoCamisa() {
   } else {
     renderH = boxH;
     renderW = boxH * imgRatio;
-    const alignX = window.innerWidth >= 1024 ? 0.33 : 0.5;
+    const alignX = window.innerWidth >= 1024 ? 0.48 : 0.5;
     offsetX = (boxW - renderW) * alignX;
     offsetY = 0;
   }
@@ -447,7 +447,7 @@ function renderizarTudo() {
   });
 
   if (patrocinadores.length === 0) {
-    areaRanking.innerHTML = `<div class="lista-vazia">Nenhuma marca estampada ainda.<br>Toque em <b>Estampe sua Marca</b> abaixo!</div>`;
+    areaRanking.innerHTML = `<div class="lista-vazia">Nenhuma marca estampada ainda.<br>Toque em <b>Estampe sua Marca</b>!</div>`;
     return;
   }
 
