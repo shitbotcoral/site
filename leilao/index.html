@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <!-- Preloader v2.0 com Barra de Progresso Real -->
+  <!-- Preloader com Barra de Progresso Real -->
   <div class="preloader" id="preloader" aria-live="polite">
     <div class="preloader-box">
       <img src="logo.png" alt="Shitbot Coral" class="preloader-logo" id="preloader-logo">
@@ -60,11 +60,11 @@
       </div>
     </div>
 
-    <!-- Mini-Tabela Glass Flutuante (Sem valores expostos na tela inicial) -->
+    <!-- Mini-Tabela Glass Flutuante (Direita no PC / Superior Direito ao lado da cabeça no Mobile) -->
     <aside class="mini-ranking glass-panel" aria-label="Ranking ao vivo de patrocinadores">
       <div class="mini-ranking-cab">
         <div>
-          <span class="tag-vivo"><i></i> Campanha Santa Cruz · PES</span>
+          <span class="tag-vivo"><i></i> Santa Cruz · PES</span>
           <h1>Manto Oficial</h1>
         </div>
         <span class="contador-vagas glass-chip" id="contador-patrocinadores">0/10 no kit</span>
@@ -73,22 +73,29 @@
       <div class="mini-ranking-lista" id="area-ranking">
         <div class="lista-vazia">
           Nenhuma marca estampada ainda.<br>
-          Toque em <b>Estampe sua Marca</b> abaixo!
+          Toque em <b>Estampe sua Marca</b>!
         </div>
       </div>
     </aside>
   </main>
 
-  <!-- Pílula Inferior Flutuante de Ação -->
+  <!-- Bloco de Ação Flutuante (Esquerda em destaque no Desktop / Inferior elevado no Mobile) -->
   <footer class="rodape-flutuante">
     <div class="acao-pill">
+      <div class="acao-chamada-desk">
+        <span class="acao-badge">Leilão ao Vivo</span>
+        <strong>Coloque sua marca no manto</strong>
+        <small>As 10 maiores entram nos vídeos e lives da campanha.</small>
+      </div>
       <button type="button" class="btn-estampe" id="btn-abrir-cadastro">
         ESTAMPE SUA MARCA
       </button>
-      <button type="button" class="btn-cotas" id="btn-abrir-cotas">
-        Cotas
-      </button>
-      <span class="selo-versao">v2.0</span>
+      <div class="acao-secundaria">
+        <button type="button" class="btn-cotas" id="btn-abrir-cotas">
+          Cotas & Regras
+        </button>
+        <span class="selo-versao">v2.1</span>
+      </div>
     </div>
   </footer>
 
