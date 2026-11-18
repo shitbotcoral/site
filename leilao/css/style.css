@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SHITBOT CORAL v2.1 — CTA Esquerda (Desktop) + Ranking Topo Direito (Mobile)
+   SHITBOT CORAL v2.2 — Quadro Esquerdo + Cotas (Desktop) & Ranking Topo (Mobile)
    ========================================================================== */
 :root {
   --f-corpo: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
@@ -8,7 +8,7 @@
   --suave: cubic-bezier(.22, 1, .36, 1);
 
   --fundo: #09090B;
-  --glass-bg: rgba(16, 16, 22, .64);
+  --glass-bg: rgba(16, 16, 22, .66);
   --glass-card: rgba(255, 255, 255, .055);
   --glass-card-hover: rgba(255, 255, 255, .095);
   --glass-borda: rgba(255, 255, 255, .13);
@@ -197,17 +197,17 @@ p {
 
 @media (max-width: 1023px) {
   .nav-pill {
-    height: 38px;
-    gap: 7px;
-    padding: 0 5px 0 9px;
+    height: 36px;
+    gap: 6px;
+    padding: 0 4px 0 8px;
   }
   .nav-logo-img {
-    height: 22px;
+    height: 20px;
   }
   .nav-btn-yt {
-    height: 28px;
-    padding: 0 9px;
-    font-size: .7rem;
+    height: 26px;
+    padding: 0 8px;
+    font-size: .68rem;
   }
 }
 
@@ -251,7 +251,7 @@ p {
   inset: 0;
   width: 100%;
   height: 100%;
-  transform: scale(1.025) translate3d(var(--cam-x, 0px), var(--cam-y, 0px), 0) rotateX(var(--cam-rx, 0deg)) rotateY(var(--cam-ry, 0deg));
+  transform: scale(1.022) translate3d(var(--cam-x, 0px), var(--cam-y, 0px), 0) rotateX(var(--cam-rx, 0deg)) rotateY(var(--cam-ry, 0deg));
   transition: transform .25s cubic-bezier(.16, 1, .3, 1);
   will-change: transform;
 }
@@ -261,16 +261,16 @@ p {
 }
 
 @keyframes respiro-camera {
-  0%   { transform: scale(1.02) translate3d(-4px, -2px, 0) rotateY(-0.7deg); }
-  50%  { transform: scale(1.032) translate3d(4px, 2px, 0) rotateY(0.7deg); }
-  100% { transform: scale(1.022) translate3d(-3px, 3px, 0) rotateY(-0.4deg); }
+  0%   { transform: scale(1.018) translate3d(-4px, -2px, 0) rotateY(-0.6deg); }
+  50%  { transform: scale(1.028) translate3d(4px, 2px, 0) rotateY(0.6deg); }
+  100% { transform: scale(1.02) translate3d(-3px, 3px, 0) rotateY(-0.3deg); }
 }
 
 .palco-camera > img.foto-jogador {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: 33% 12%;
+  object-position: 48% 12%;
   display: block;
   pointer-events: none;
   user-select: none;
@@ -363,22 +363,23 @@ p {
 @media (min-width: 1024px) {
   .mini-ranking {
     top: 22px;
-    right: 24px;
-    bottom: 24px;
-    width: 375px;
+    right: 22px;
+    bottom: 22px;
+    width: 365px;
     border-radius: 22px;
     padding: 16px;
     gap: 10px;
   }
 }
 
-/* Mobile: Card flutuante no canto superior direito ao lado da cabeça (acima da mão) */
+/* Mobile: Card flutuante no canto superior direito ao lado da cabeça (até a altura da mão) */
 @media (max-width: 1023px) {
   .mini-ranking {
-    top: max(12px, env(safe-area-inset-top));
+    top: max(10px, env(safe-area-inset-top));
     right: 10px;
     width: min(56vw, 232px);
-    max-height: 29dvh;
+    height: 33dvh;
+    max-height: 245px;
     border-radius: 16px;
     padding: 8px 9px;
     gap: 5px;
@@ -427,14 +428,14 @@ p {
 
 @media (max-width: 1023px) {
   .tag-vivo {
-    font-size: .56rem;
+    font-size: .54rem;
   }
   .mini-ranking-cab h1 {
-    font-size: .88rem;
+    font-size: .85rem;
   }
   .contador-vagas {
     padding: 2px 6px;
-    font-size: .58rem;
+    font-size: .56rem;
   }
 }
 
@@ -546,14 +547,13 @@ p {
   color: #fff;
 }
 
-/* Ajuste ultra-compacto das linhas no Mobile para caber o Top 5 visível */
 @media (max-width: 1023px) {
   .mini-ranking-lista {
     gap: 4px;
   }
   .mini-item {
     grid-template-columns: 20px 44px 1fr 22px;
-    gap: 6px;
+    gap: 5px;
     padding: 3px 6px;
     border-radius: 9px;
   }
@@ -570,7 +570,7 @@ p {
     border-radius: 4px;
   }
   .mini-nome {
-    font-size: .7rem;
+    font-size: .69rem;
   }
   .btn-mais {
     width: 22px;
@@ -610,38 +610,34 @@ p {
   line-height: 1.35;
 }
 
-/* ---------- Bloco de Ação Flutuante ("ESTAMPE SUA MARCA" + "Cotas") ---------- */
+/* ---------- Bloco de Ação Flutuante ---------- */
 .rodape-flutuante {
   position: fixed;
   z-index: 60;
   pointer-events: none;
 }
 
-.acao-chamada-desk {
+.acao-chamada-desk,
+.cotas-resumo-desk {
   display: none;
 }
 
-.acao-secundaria {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* DESKTOP: Card de destaque grandão no lado esquerdo vago */
+/* DESKTOP: Quadro Glass na Esquerda (Área Roxa) com CTA + Quadro de Cotas Aberto */
 @media (min-width: 1024px) {
   .rodape-flutuante {
-    left: 28px;
-    bottom: 28px;
-    width: 315px;
+    left: 22px;
+    bottom: 22px;
+    width: 340px;
+    max-height: calc(100dvh - 86px);
   }
 
   .acao-pill {
     width: 100%;
     display: grid;
     gap: 12px;
-    padding: 20px;
+    padding: 18px;
     border-radius: 24px;
-    background: rgba(16, 16, 22, .68);
+    background: rgba(16, 16, 22, .7);
     -webkit-backdrop-filter: blur(24px) saturate(180%);
     backdrop-filter: blur(24px) saturate(180%);
     border: 1px solid rgba(255, 255, 255, .2);
@@ -663,7 +659,7 @@ p {
     background: rgba(225, 29, 58, .22);
     border: 1px solid rgba(225, 29, 58, .45);
     color: #FF8597;
-    font-size: .68rem;
+    font-size: .66rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: .05em;
@@ -671,27 +667,27 @@ p {
 
   .acao-chamada-desk strong {
     font-family: var(--f-titulo);
-    font-size: 1.25rem;
+    font-size: 1.22rem;
     line-height: 1.15;
     color: #fff;
   }
 
   .acao-chamada-desk small {
-    font-size: .8rem;
+    font-size: .78rem;
     color: var(--texto-2);
-    line-height: 1.38;
+    line-height: 1.35;
   }
 
   .btn-estampe {
     width: 100%;
-    height: 52px;
-    padding: 0 22px;
+    height: 48px;
+    padding: 0 20px;
     border: 0;
-    border-radius: 16px;
+    border-radius: 15px;
     background: linear-gradient(135deg, var(--coral), #FF2A4B);
     color: #fff;
     font-family: var(--f-titulo);
-    font-size: .98rem;
+    font-size: .94rem;
     font-weight: 700;
     letter-spacing: .03em;
     box-shadow: 0 12px 28px rgba(225, 29, 58, .55), inset 0 1px 0 rgba(255, 255, 255, .35);
@@ -704,6 +700,39 @@ p {
     filter: brightness(1.06);
   }
 
+  .cotas-resumo-desk {
+    display: grid;
+    gap: 5px;
+    padding-top: 2px;
+  }
+
+  .cota-mini-linha {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 9px;
+    border-radius: 10px;
+    background: var(--glass-card);
+    border: 1px solid var(--glass-borda);
+    border-left: 3px solid var(--tier-cor, #fff);
+  }
+
+  .cota-mini-linha b {
+    font-family: var(--f-titulo);
+    font-size: .74rem;
+    color: var(--tier-cor, #fff);
+  }
+
+  .cota-mini-linha span {
+    font-size: .74rem;
+    font-weight: 600;
+    color: var(--texto);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .acao-secundaria {
     display: flex;
     justify-content: space-between;
@@ -713,13 +742,13 @@ p {
 
   .btn-cotas {
     flex: 1;
-    height: 38px;
-    padding: 0 14px;
-    border-radius: 12px;
+    height: 36px;
+    padding: 0 12px;
+    border-radius: 11px;
     border: 1px solid var(--glass-borda-forte);
     background: rgba(255, 255, 255, .07);
     color: var(--texto);
-    font-size: .8rem;
+    font-size: .78rem;
     font-weight: 700;
     transition: background-color .2s;
   }
@@ -732,17 +761,17 @@ p {
     font-size: .72rem;
     font-weight: 700;
     color: var(--texto-2);
-    opacity: .8;
-    padding-left: 6px;
+    opacity: .85;
+    padding-left: 8px;
   }
 }
 
-/* MOBILE: Pílula inferior elevada sobre a bancada de madeira */
+/* MOBILE: Pílula inferior compacta sobre a bancada de madeira */
 @media (max-width: 1023px) {
   .rodape-flutuante {
     left: 0;
     right: 0;
-    bottom: max(24px, calc(env(safe-area-inset-bottom) + 14px));
+    bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px));
     display: flex;
     justify-content: center;
     padding: 0 12px;
@@ -752,7 +781,7 @@ p {
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 14px 6px 6px;
+    padding: 5px 13px 5px 5px;
     border-radius: 999px;
     background: rgba(16, 16, 22, .72);
     -webkit-backdrop-filter: blur(22px) saturate(180%);
@@ -763,14 +792,14 @@ p {
   }
 
   .btn-estampe {
-    height: 44px;
+    height: 42px;
     padding: 0 18px;
     border: 0;
     border-radius: 999px;
     background: linear-gradient(135deg, var(--coral), #FF2A4B);
     color: #fff;
     font-family: var(--f-titulo);
-    font-size: .84rem;
+    font-size: .82rem;
     font-weight: 700;
     letter-spacing: .02em;
     box-shadow: 0 8px 22px rgba(225, 29, 58, .52), inset 0 1px 0 rgba(255, 255, 255, .32);
@@ -781,22 +810,28 @@ p {
     transform: scale(.97);
   }
 
+  .acao-secundaria {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+
   .btn-cotas {
-    height: 38px;
+    height: 36px;
     padding: 0 12px;
     border-radius: 999px;
     border: 1px solid var(--glass-borda);
     background: rgba(255, 255, 255, .08);
     color: var(--texto);
-    font-size: .76rem;
+    font-size: .74rem;
     font-weight: 700;
   }
 
   .selo-versao {
-    font-size: .68rem;
+    font-size: .66rem;
     font-weight: 700;
     color: var(--texto-2);
-    opacity: .8;
+    opacity: .85;
   }
 }
 
