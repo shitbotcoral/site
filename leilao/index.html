@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=2.2">
+  <link rel="stylesheet" href="css/style.css?v=2.3">
 </head>
 <body>
 
@@ -40,16 +40,21 @@
     </a>
   </header>
 
-  <!-- Tela Única Fullscreen (100dvh): Jogador + Camisa Agrupada + Mini-Tabela Glass -->
+  <!-- Tela Única Fullscreen (100dvh): <picture> Nativo Carrega Só a Imagem Certa -->
   <main class="palco-fullscreen" aria-label="Uniforme oficial Santa Cruz e ranking ao vivo">
     <div class="palco-foto" id="palco-foto">
       <div class="palco-camera" id="palco-camera">
-        <img
-          src="apresentacao.png"
-          alt="Jogador segurando o uniforme oficial do Santa Cruz"
-          class="foto-jogador"
-          id="foto-jogador"
-        >
+        <picture class="picture-jogador">
+          <source media="(max-width: 1023px)" srcset="apresentacao-mobile.png">
+          <img
+            src="apresentacao.png"
+            alt="Jogador segurando o uniforme oficial do Santa Cruz"
+            class="foto-jogador"
+            id="foto-jogador"
+            fetchpriority="high"
+            decoding="async"
+          >
+        </picture>
         <div class="camada-camisa" id="camada-camisa"></div>
       </div>
 
@@ -60,7 +65,7 @@
       </div>
     </div>
 
-    <!-- Mini-Tabela Glass Flutuante (Direita no PC / Superior Direito ao lado da cabeça no Mobile) -->
+    <!-- Mini-Tabela Glass Flutuante -->
     <aside class="mini-ranking glass-panel" aria-label="Ranking ao vivo de patrocinadores">
       <div class="mini-ranking-cab">
         <div>
@@ -79,7 +84,7 @@
     </aside>
   </main>
 
-  <!-- Bloco de Ação Flutuante (Quadro Esquerdo com Cotas no Desktop / Pílula Inferior no Mobile) -->
+  <!-- Bloco de Ação Flutuante -->
   <footer class="rodape-flutuante">
     <div class="acao-pill">
       <div class="acao-chamada-desk">
@@ -92,7 +97,6 @@
         ESTAMPE SUA MARCA
       </button>
 
-      <!-- Quadro reduzido e visual das Cotas aberto no Desktop -->
       <div class="cotas-resumo-desk" aria-label="Resumo das cotas do uniforme">
         <div class="cota-mini-linha tier-t1">
           <b>1º</b>
@@ -120,7 +124,7 @@
         <button type="button" class="btn-cotas" id="btn-abrir-cotas">
           Cotas & Regras
         </button>
-        <span class="selo-versao">v2.2</span>
+        <span class="selo-versao">v2.3</span>
       </div>
     </div>
   </footer>
@@ -303,6 +307,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/app.js?v=2.2"></script>
+  <script src="js/app.js?v=2.3"></script>
 </body>
 </html>
