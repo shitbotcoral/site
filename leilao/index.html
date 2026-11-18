@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=2.2">
 </head>
 <body>
 
@@ -79,22 +79,48 @@
     </aside>
   </main>
 
-  <!-- Bloco de Ação Flutuante (Esquerda em destaque no Desktop / Inferior elevado no Mobile) -->
+  <!-- Bloco de Ação Flutuante (Quadro Esquerdo com Cotas no Desktop / Pílula Inferior no Mobile) -->
   <footer class="rodape-flutuante">
     <div class="acao-pill">
       <div class="acao-chamada-desk">
         <span class="acao-badge">Leilão ao Vivo</span>
         <strong>Coloque sua marca no manto</strong>
-        <small>As 10 maiores entram nos vídeos e lives da campanha.</small>
+        <small>Valores cumulativos. As 10 maiores entram nos vídeos e lives da campanha.</small>
       </div>
+
       <button type="button" class="btn-estampe" id="btn-abrir-cadastro">
         ESTAMPE SUA MARCA
       </button>
+
+      <!-- Quadro reduzido e visual das Cotas aberto no Desktop -->
+      <div class="cotas-resumo-desk" aria-label="Resumo das cotas do uniforme">
+        <div class="cota-mini-linha tier-t1">
+          <b>1º</b>
+          <span>Barriga Master + Costas Sup. + Arena</span>
+        </div>
+        <div class="cota-mini-linha tier-t2">
+          <b>2º–3º</b>
+          <span>Barriga Abaixo + Costas Inferior</span>
+        </div>
+        <div class="cota-mini-linha tier-t3">
+          <b>4º–5º</b>
+          <span>Ombros da Camisa + Calção Oficial</span>
+        </div>
+        <div class="cota-mini-linha tier-t4">
+          <b>6º–7º</b>
+          <span>Mangas da Camisa + Calção Oficial</span>
+        </div>
+        <div class="cota-mini-linha tier-t5">
+          <b>8º–10º</b>
+          <span>Exclusivo no Calção + Créditos</span>
+        </div>
+      </div>
+
       <div class="acao-secundaria">
         <button type="button" class="btn-cotas" id="btn-abrir-cotas">
           Cotas & Regras
         </button>
-        <span class="selo-versao">v2.1</span>
+        <span class="selo-versao">v2.2</span>
       </div>
     </div>
   </footer>
@@ -277,6 +303,6 @@
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-  <script src="js/app.js"></script>
+  <script src="js/app.js?v=2.2"></script>
 </body>
 </html>
