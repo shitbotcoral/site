@@ -89,7 +89,7 @@ const PRODUTOS = [
     ],
     resumo: "A camisa ainda vai ser produzida. Você garante a sua agora e recebe quando a produção ficar pronta.",
     entregaPrevista: "26 de novembro",
-    encerraEm: "2026-11-24T23:59:00-03:00", // Se 26/11 for o encerramento das vendas, coloque: "2026-11-26T23:59:00-03:00"
+    encerraEm: "2026-11-25T23:59:00-03:00", // Se 26/11 for o encerramento das vendas, coloque: "2026-11-26T23:59:00-03:00"
     detalhes: [
       "Pré-venda: produção iniciada após o fechamento",
       "Entrega via Motoqueiro Fantasma (R$ 10 na Grande Recife) ou Correios para todo o Brasil",
