@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Pro Evolution Santa — Patrocinadores Oficiais | Shitbot Coral</title>
+  <meta name="description" content="Estampe sua empresa ou projeto no uniforme oficial da temporada. Cadastre sua marca a partir de R$ 20 e impulsione via PIX.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=3.3">
+</head>
+<body>
+
+  <div class="preloader" id="preloader" role="status" aria-live="polite">
+    <div class="preloader-box">
+      <img src="logo.png" alt="Pro Evolution Santa" class="preloader-logo" id="preloader-logo" onerror="this.style.display='none'">
+      <div class="preloader-trilho">
+        <div class="preloader-barra" id="preloader-barra"></div>
+      </div>
+      <div class="preloader-meta">
+        <span id="preloader-texto">Preparando o manto tricolor...</span>
+        <b id="preloader-pct">0%</b>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cabeçalho Flutuante: SC LOGO + logo da Campanha + YouTube -->
+  <header class="topo-flutuante">
+    <div class="nav-pill">
+      <a href="https://shitbotcoral.com.br/" class="nav-logo-link" aria-label="Shitbot Coral">
+        <img src="SC LOGO.png" alt="Shitbot Coral" class="nav-logo-sc" id="logo-shitbot" onerror="this.style.display='none'">
+      </a>
+      <span class="nav-sep" aria-hidden="true"></span>
+      <a href="#topo" class="nav-logo-link" aria-label="Pro Evolution Santa">
+        <img src="logo.png" alt="Pro Evolution Santa" class="nav-logo-campanha" id="logo-site" onerror="this.style.display='none'">
+      </a>
+      <a href="https://www.youtube.com/@shitbotcoral" target="_blank" rel="noopener" class="nav-btn-yt" aria-label="Canal Shitbot Coral no YouTube">
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="#FF0000" aria-hidden="true">
+          <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+        </svg>
+        <span>YouTube</span>
+      </a>
+    </div>
+  </header>
+
+  <main class="app-vitrine" id="topo">
+
+    <!-- 1. PARTE SUPERIOR: Texto Institucional -->
+    <section class="cabecalho-campanha" aria-label="Apresentação da campanha">
+      <div class="inst-header-linha">
+        <span class="badge-campanha"><i></i> Campanha Oficial · Patrocinadores</span>
+        <span class="contador-vagas" id="contador-vagas">0/10 no manto</span>
+      </div>
+      <p class="inst-resumo">
+        Estampe sua empresa ou projeto no uniforme oficial da temporada. Cadastre sua marca a partir de <b>R$ 20</b> e impulsione quem já está no manto a partir de <b>R$ 1</b> via PIX.
+      </p>
+    </section>
+
+    <!-- 2. CENTRO: Imagem Quadrada 1:1 + Setas Laterais + Barra Flutuante de Ação -->
+    <section class="palco-wrapper" aria-label="Visualização do uniforme oficial">
+      <div class="palco-visual" id="palco-visual">
+        <div class="palco-frame" id="palco-frame">
+          <div class="palco-camera modo-idle" id="palco-camera">
+            <div class="cenas-container" id="cenas-container"></div>
+          </div>
+        </div>
+
+        <div class="flashes" aria-hidden="true">
+          <span class="flash f1"></span>
+          <span class="flash f2"></span>
+        </div>
+
+        <button type="button" class="seta-lateral seta-esq" id="btn-cena-ant" aria-label="Ângulo anterior">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button type="button" class="seta-lateral seta-dir" id="btn-cena-prox" aria-label="Próximo ângulo">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+
+      <!-- Botões Flutuantes logo abaixo da imagem -->
+      <div class="barra-flutuante-cta">
+        <button type="button" class="btn-patrocinar-cta" id="btn-abrir-patrocinar">
+          QUERO PATROCINAR
+        </button>
+        <button type="button" class="btn-secundario-inst" id="btn-abrir-regras">
+          Cotas & Regras
+        </button>
+        <button type="button" class="btn-secundario-inst" id="btn-abrir-fila" hidden>
+          Fila (<span id="qtd-fila">0</span>)
+        </button>
+      </div>
+    </section>
+
+    <!-- 3. BASE: Rodapé Oficial de Patrocinadores (3 + 4 + 3) -->
+    <section class="rodape-patrocinadores" aria-label="Patrocinadores oficiais">
+      <div class="rodape-titulo-linha">
+        <span>Patrocinadores Oficiais</span>
+        <small>Toque na marca para visitar ou impulsionar</small>
+      </div>
+
+      <div class="grid-tier tier-linha-1" id="grid-tier-1" aria-label="Patrocinadores Master"></div>
+      <div class="grid-tier tier-linha-2" id="grid-tier-2" aria-label="Patrocinadores Oficiais (4º ao 6º)"></div>
+      <div class="grid-tier tier-linha-3" id="grid-tier-3" aria-label="Apoiadores do Manto (7º ao 10º)"></div>
+
+      <div class="rodape-meta-versao">
+        <span>Pro Evolution Santa · Ranking acumulativo contínuo</span>
+        <span class="selo-versao">v3.6</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- MODAL 1: FLUXO COMPLETO "QUERO PATROCINAR" -->
+  <div class="modal-veu" id="modal-patrocinar" hidden>
+    <div class="modal-box glass-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-pat">
+      <div class="modal-topo">
+        <h3 id="titulo-modal-pat">Patrocinar o Manto</h3>
+        <button type="button" class="btn-fechar" data-fechar="modal-patrocinar" aria-label="Fechar">✕</button>
+      </div>
+
+      <div class="modal-tabs" id="modal-tabs" role="tablist">
+        <button type="button" class="tab-btn ativo" data-tab="nova">Nova Marca (R$ 20+)</button>
+        <button type="button" class="tab-btn" data-tab="impulsionar">Impulsionar (R$ 1+)</button>
+        <button type="button" class="tab-btn" data-tab="termos">Especificações</button>
+      </div>
+
+      <div class="tab-painel" id="tab-nova">
+        <div class="passo-passo-mini">
+          <div><b>1.</b> Preencha os dados e anexe sua logo (fundo branco é removido automaticamente).</div>
+          <div><b>2.</b> Copie o PIX gerado (SHITBOT LTDA) e confirme o pagamento para entrar no manto.</div>
+        </div>
+
+        <form id="form-novo-patrocinio" class="modal-form">
+          <div class="campo">
+            <label for="novo-empresa">Nome da Marca / Empresa *</label>
+            <input type="text" id="novo-empresa" class="input" placeholder="Ex: Barbearia do Arruda" maxlength="40" required>
+          </div>
+
+          <div class="grid-2-campos">
+            <div class="campo">
+              <label for="novo-social">@Instagram ou Site <span>(Opcional)</span></label>
+              <input type="text" id="novo-social" class="input" placeholder="@suamarca" maxlength="70">
+            </div>
+
+            <div class="campo">
+              <label for="novo-valor">Aporte (R$) * <span>Mín. 20</span></label>
+              <input type="number" id="novo-valor" class="input" min="20" max="2000" step="1" value="20" required>
+            </div>
+          </div>
+
+          <div class="modal-previsao" id="previsao-nova-marca">
+            Com <b>R$ 20,00</b> você garante vaga no uniforme oficial.
+          </div>
+
+          <div class="campo">
+            <label for="novo-doador">Seu Nome (Pagador PIX) *</label>
+            <input type="text" id="novo-doador" class="input" placeholder="Para conferência do comprovante" maxlength="45" required>
+          </div>
+
+          <div class="campo">
+            <label for="input-logo">Logo da Marca * <span>PNG/JPG (1200x400)</span></label>
+            <div class="anexo">
+              <input type="file" id="input-logo" accept="image/*" required>
+              <div class="anexo-preview" id="preview-logo">
+                <span class="placeholder-logo">LOGO</span>
+              </div>
+              <div class="anexo-texto">
+                <strong id="nome-arquivo">Selecionar arquivo da logo</strong>
+                <small>Recorte automático + fundo transparente</small>
+              </div>
+            </div>
+          </div>
+
+          <p class="aviso-corte">
+            Ao continuar, você concorda com as regras da campanha. Sua marca entra na vitrine na hora e é aplicada no uniforme na próxima atualização de episódio/live.
+          </p>
+
+          <button type="submit" class="btn-enviar" id="btn-gerar-pix-novo">Continuar para o PIX</button>
+        </form>
+      </div>
+
+      <div class="tab-painel" id="tab-impulsionar" hidden>
+        <form id="form-impulsionar" class="modal-form">
+          <div class="campo">
+            <label for="select-marca-impulso">Escolha a Marca para Impulsionar *</label>
+            <select id="select-marca-impulso" class="input"></select>
+          </div>
+
+          <div id="card-marca-selecionada" class="modal-marca-info" hidden></div>
+
+          <div class="campo">
+            <label for="impulso-valor">Valor para somar (R$) * <span>Mín. R$ 1,00</span></label>
+            <div class="atalhos-valor" id="atalhos-valor"></div>
+            <input type="number" id="impulso-valor" class="input" min="1" max="2000" step="1" value="5" required>
+          </div>
+
+          <div class="modal-previsao" id="previsao-impulso"></div>
+
+          <div class="campo">
+            <label for="impulso-doador">Seu Nome (Pagador PIX) *</label>
+            <input type="text" id="impulso-doador" class="input" placeholder="Para conferência do comprovante" maxlength="45" required>
+          </div>
+
+          <button type="submit" class="btn-enviar" id="btn-gerar-pix-impulso">Gerar PIX de Impulsão</button>
+        </form>
+      </div>
+
+      <div class="tab-painel" id="tab-termos" hidden>
+        <div class="cotas-lista">
+          <div class="cota-card tier-t1">
+            <span class="cota-tag">1º Lugar · Patrocinador Master</span>
+            <strong>Barriga Master + Costas Superior + Coletiva</strong>
+            <p>Maior destaque visual na frente da camisa, topo das costas e menções VIP nas lives e vídeos da campanha.</p>
+          </div>
+          <div class="cota-card tier-t2">
+            <span class="cota-tag">2º e 3º Lugares · Co-Master</span>
+            <strong>Barriga Meio/Inferior + Costas Meio/Inferior + Coletiva</strong>
+            <p>Destaque nobre na parte frontal e traseira do manto durante toda a campanha.</p>
+          </div>
+          <div class="cota-card tier-t3">
+            <span class="cota-tag">4º e 5º Lugares · Ombros + Calção</span>
+            <strong>Ombros da Camisa + Barra do Calção</strong>
+            <p>Presença nos ombros (frente e coletiva) e repetição na barra inferior do calção.</p>
+          </div>
+          <div class="cota-card tier-t4">
+            <span class="cota-tag">6º e 7º Lugares · Mangas + Calção</span>
+            <strong>Mangas da Camisa + Costas do Calção</strong>
+            <p>Estampa nas mangas em todos os ângulos e repetição na barra traseira do calção.</p>
+          </div>
+          <div class="cota-card tier-t5">
+            <span class="cota-tag">8º, 9º e 10º Lugares · Calção Oficial</span>
+            <strong>Frente e Costas do Calção</strong>
+            <p>Estampa aplicada diretamente no calção oficial da temporada.</p>
+          </div>
+          <div class="cota-card">
+            <span class="cota-tag">Regras Gerais & Termos</span>
+            <strong>Ranking Acumulativo Contínuo (1 Mês de Campanha)</strong>
+            <p>Os valores são acumulativos: qualquer apoiador pode somar a partir de R$ 1,00 em uma marca já cadastrada para fazê-la subir de posição. Marcas com conteúdo ofensivo ou ilegal serão removidas sem reembolso.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="etapa-pix" id="etapa-pix" hidden>
+        <div class="pix-qr-box">
+          <img id="pix-qr-img" src="" alt="QR Code PIX SHITBOT LTDA">
+        </div>
+        <p class="pix-instrucao" id="pix-instrucao-texto"></p>
+        <div class="pix-copia-box">
+          <input type="text" id="pix-copia-cola" class="input" readonly aria-label="Código PIX Copia e Cola">
+          <button type="button" class="btn-copiar-pix" id="btn-copiar-pix">Copiar PIX</button>
+        </div>
+        <p class="aviso-corte" id="pix-aviso-timer">
+          Copie o código acima ou escaneie o QR Code no app do seu banco. O botão de confirmação libera logo em seguida.
+        </p>
+        <button type="button" class="btn-enviar btn-confirmar-pago" id="btn-confirmar-pago" hidden>
+          Já paguei · Estampar Agora
+        </button>
+        <button type="button" class="btn-voltar-pix" id="btn-voltar-pix">← Voltar e editar dados</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 2: FICHA RÁPIDA DO PATROCINADOR -->
+  <div class="modal-veu" id="modal-ficha" hidden>
+    <div class="modal-box glass-modal modal-ficha-box" role="dialog" aria-modal="true" aria-labelledby="titulo-ficha">
+      <div class="modal-topo">
+        <h3 id="titulo-ficha">Detalhes do Patrocinador</h3>
+        <button type="button" class="btn-fechar" data-fechar="modal-ficha" aria-label="Fechar">✕</button>
+      </div>
+      <div id="conteudo-ficha"></div>
+    </div>
+  </div>
+
+  <!-- MODAL 3: FILA DE ESPERA -->
+  <div class="modal-veu" id="modal-fila" hidden>
+    <div class="modal-box glass-modal" role="dialog" aria-modal="true" aria-labelledby="titulo-fila">
+      <div class="modal-topo">
+        <h3 id="titulo-fila">Zona de Disputa (11º+)</h3>
+        <button type="button" class="btn-fechar" data-fechar="modal-fila" aria-label="Fechar">✕</button>
+      </div>
+      <p class="modal-sub">
+        Marcas fora do Top 10 atual. Impulsione a partir de <b>R$ 1,00</b> para colocar sua marca de volta no uniforme!
+      </p>
+      <div class="lista-fila" id="lista-fila"></div>
+    </div>
+  </div>
+
+    <a href="https://wa.me/5581994465372?text=Quero%20patrocinar%20o%20Pro%20Evolution%20Santa!" target="_blank" rel="noopener" class="btn-zap-flutuante" aria-label="Falar no WhatsApp">
+    <svg viewBox="0 0 32 32" width="22" height="22" fill="#FFFFFF" aria-hidden="true">
+      <path d="M16.004 3.2c-7.06 0-12.8 5.74-12.8 12.8 0 2.256.59 4.458 1.71 6.398L3.1 29l6.79-1.78a12.74 12.74 0 0 0 6.114 1.56h.006c7.058 0 12.798-5.74 12.798-12.8 0-3.42-1.332-6.636-3.75-9.054A12.715 12.715 0 0 0 16.004 3.2zm0 23.418h-.005a10.6 10.6 0 0 1-5.404-1.48l-.388-.23-4.028 1.056 1.075-3.926-.252-.402a10.578 10.578 0 0 1-1.624-5.636c0-5.858 4.768-10.624 10.63-10.624 2.838 0 5.506 1.106 7.512 3.114a10.556 10.556 0 0 1 3.11 7.514c0 5.86-4.768 10.614-10.626 10.614zm5.828-7.954c-.32-.16-1.89-.932-2.182-1.038-.292-.106-.506-.16-.718.16-.214.32-.826 1.038-1.012 1.252-.186.212-.372.24-.692.08-.32-.16-1.35-.498-2.572-1.588-.95-.848-1.592-1.894-1.778-2.214-.186-.32-.02-.492.14-.652.144-.144.32-.372.48-.558.16-.186.212-.32.32-.532.106-.214.052-.4-.026-.56-.08-.16-.718-1.732-.984-2.37-.26-.622-.524-.538-.718-.548l-.612-.01c-.214 0-.56.08-.852.4-.292.32-1.118 1.092-1.118 2.664s1.144 3.09 1.304 3.304c.16.212 2.252 3.438 5.456 4.822.762.328 1.356.524 1.82.672.766.244 1.462.21 2.012.128.614-.092 1.89-.772 2.156-1.518.266-.746.266-1.384.186-1.518-.08-.134-.292-.214-.612-.374z"/>
+    </svg>
+    <span>Dúvidas? Zap</span>
+  </a>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/app.js?v=3.3"></script>
+</body>
+</html>
